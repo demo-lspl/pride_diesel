@@ -1,0 +1,697 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class Account_model extends MY_Model {
+	public function __construct(){
+		parent::__construct();
+	}
+	//Form Validation rules for Ledger Form
+	public $ledger_rules = array(
+							'name'=>array('field'=> 'name', 'label'=> 'name', 'rules'=> 'required'),
+							'phone'=>array('field'=> 'phone', 'label'=> 'Phone', 'rules'=> 'required'),
+							'opening_balance'=>array('field'=> 'opening_balance', 'label'=> 'Opening Balance', 'rules'=> 'required'),
+							//'registration_type'=>array('field'=> 'registration_type', 'label'=> 'Registration Type', 'rules'=> 'required'),
+							//'account_group_id'=>array('field'=> 'account_group_id', 'label'=> 'Account Group', 'rules'=> 'required'),
+							'email'=>array('field'=> 'email', 'label'=> 'Email', 'rules'=> 'required'),
+							);
+	//Form Validation rules for Invoice Form	
+	public $invoice_rules = array(
+			'party_name' => array('field'=> 'party_name', 'label'=> 'Party Name', 'rules'=> 'required|trim'),
+			'party_address'=> array('field'=> 'party_address', 'label'=> 'Party Address', 'rules'=> 'required|trim'),
+			'invoice_number' => array('field'=> 'invoice_number', 'label'=> 'Invoice Number', 'rules'=> 'required|trim'),
+		);
+	//Form Validation rules for Tax Form
+	public $tax_rules = array(
+			'state' => array('field'=> 'state', 'label'=> 'State', 'rules'=> ''),
+			'tax_type'=> array('field'=> 'tax_type', 'label'=> 'Tax Type', 'rules'=> ''),
+			'is_per_is_val'=> array('field'=> 'is_per_is_val', 'label'=> 'Percentage/Value', 'rules'=> 'required'),
+			'tax_rate'=> array('field'=> 'tax_rate', 'label'=> 'Tax Rate', 'rules'=> 'trim|required'),
+		);
+
+	public function get_new_ledger_fields(){
+		$ledgerFields = new stdClass();
+		$ledgerFields->name = '';
+		$ledgerFields->account_group_id = '';
+		$ledgerFields->email = '';
+		$ledgerFields->phone = '';
+		$ledgerFields->opening_balance = '';
+		$ledgerFields->registration_type = '';
+				
+		return $ledgerFields;
+	}		
+	
+	public function get_new_invoice_fields(){
+		$invoiceFields = new stdClass();
+		$invoiceFields->party_name = '';
+		$invoiceFields->party_address = '';
+		$invoiceFields->driver_id = '';
+		$invoiceFields->product_id = '';
+		$invoiceFields->unit = '';
+		$invoiceFields->invoice_number = '';
+		$invoiceFields->invoice_date = date('Y-m-d');
+		$invoiceFields->descr_of_products = '';
+		$invoiceFields->card_number = '';
+		$invoiceFields->quantity = '';
+		$invoiceFields->price_unit = '';
+		$invoiceFields->fuel_taxes = '';
+				
+		return $invoiceFields;
+	}
+	
+	public function get_new_tax(){
+		$tax = new stdClass();
+		$tax->isfederaltax = '';
+		$tax->state = '';
+		$tax->tax_type = '';
+		$tax->is_per_is_val = '';
+		$tax->tax_rate = '';
+	
+		return $tax;
+	}	
+	
+	public function get_ledgers($where = null){
+		
+		//$this->db->select('ledger.*, users.company_name');
+		if(!empty($where)){
+			$this->db->like('company_name', $where);
+		}
+		$this->db->order_by('id', 'DESC');	
+		//$this->db->join('users', 'users.id=ledger.name');
+		return $this->db->get('users')->result();
+	}
+	
+    public function get_pagination($limit, $offset, $where = null)
+    {
+		$offset = ($offset-1) * $limit;
+		//$this->db->select('ledger.*, users.company_name');	
+		if(!empty($where)){
+			$this->db->like('company_name', $where);
+		}
+		//$this->db->join('users', 'users.id=ledger.name');
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+        $query = $this->db->get('users');
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	
+	public function get_account_group(){
+		$this->db->select('name, id');
+		return $this->db->get('account_group')->result();
+	}
+	
+	public function get_companies(){
+		$this->db->select('company_name, id');
+		$this->db->where('role !=', 'admin');
+		return $this->db->get('users')->result();
+	}	
+	
+	public function get_ledger_by_id($id){
+		$this->db->where('id', $id);
+		return $this->db->get('ledger')->row();
+	}
+	
+	public function create_ledger($data){
+		$this->db->insert('ledger', $data);
+		return $this->db->insert_id();
+	}
+
+	public function edit_ledger($data, $id){
+		if($id){
+			$this->db->set($data);
+			$this->db->where('id', $id);
+			$this->db->update('ledger');
+		}else{
+			$this->db->insert('ledger', $data);
+			$id = $this->db->insert_id();
+		}
+
+		return $id;
+	}
+	
+	public function ledger_delete($id){
+		$this->db->where('id', $id);
+		$this->db->delete('ledger');
+		return true;
+	}	
+	/*******************************	Invoice Code	*********************/
+	public function get_invoices($where = null){
+		$this->db->select('invoices.*, users.company_name');
+		$this->db->from('invoices', 'users', 'drivers');
+		$this->db->join('users', 'users.id=invoices.party_name');
+		if(!empty($where)){
+			$this->db->like('invoice_number', $where);
+		}		
+		//$this->db->join('drivers', 'drivers.id=invoices.driver_id');
+		return $this->db->get()->result();
+	}	
+	
+    public function get_pagination_invoice($limit, $offset, $where = null)
+    {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('invoices.*, users.company_name');
+		$this->db->from('invoices', 'users', 'drivers');
+		$this->db->join('users', 'users.id=invoices.party_name');		
+		if(!empty($where)){
+			$this->db->like('invoice_number', $where);
+		}
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+
+	public function get_trans_invoices($where = null){
+		$this->db->select('transaction_invoice.*, users.company_name');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);
+		if(!empty($where)){
+			$this->db->like('invoice_id', $where);
+		}		
+
+		return $this->db->get()->result();
+	}
+	
+    public function get_pagination_trans_invoice($limit, $offset, $where = null)
+    {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where)){
+			$this->db->like('invoice_id', $where);
+		}
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	
+	public function get_invoiced_transactions($id, $where = null){
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');		
+		/* if(!empty($where)){
+			$this->db->like('invoice_id', $where);
+		} */
+		$this->db->where('transaction_invoice.company_id', $id);	
+
+		return $this->db->get()->result();
+	}	
+	
+	public function get_company_invoices($cid, $where=null){
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');		
+		$this->db->where('company_id', $cid);
+		if(!empty($where)){
+			$this->db->like('invoice_id', $where);
+		}		
+
+		return $this->db->get()->result();
+	}	
+	
+    public function get_company_invoice_pagination($limit, $offset, $cid, $where = null)
+    {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');		
+		if(!empty($where)){
+			$this->db->like('invoice_id', $where);
+		}
+		$this->db->where('company_id', $cid);
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+			//print_r($query->result());
+            return $query->result();
+            
+        return array();
+    }	
+
+    public function get_pagination_invoiced_trans($limit, $offset, $id, $where = null)
+    {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');		
+		if(!empty($where)){
+			$this->db->like('invoice_number', $where);
+		}
+		$this->db->where('transaction_invoice.company_id', $id);
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }		
+
+	public function save_invoice($data, $id = null){
+		/* $data['driver_id'] = json_encode($data['driver_id']);
+		$data['product_id'] = json_encode($data['product_id']);
+		$data['unit'] = json_encode($data['unit']);
+		$data['quantity'] = json_encode($data['quantity']);
+		$data['sub_total'] = json_encode($data['sub_total']);
+		$data['price_unit'] = json_encode($data['price_unit']);
+		$data['fuel_taxes'] = json_encode($data['fuel_taxes']); */
+		//echo "<pre>";print_r($data);die;
+		if($id){
+			$this->db->set($data);
+			$this->db->where('id', $id);
+			$this->db->update('invoices');			
+		}else{
+			
+			$this->db->insert('invoices', $data);
+			$id = $this->db->insert_id();
+		}
+		
+		return $id;
+	}
+	
+	public function set_invoice_paid_status($invid){
+		$this->db->set('status', 1);
+		$this->db->where('id', $invid);
+		$this->db->update('transaction_invoice');
+	}
+
+	public function get_invoice_by_id($id){
+		$this->db->select('invoices.*, users.company_name, users.company_email');
+		$this->db->join('users', 'users.id = invoices.party_name');		
+		//$this->db->join('drivers', 'drivers.id = invoices.driver_id');		
+		$this->db->where('invoices.id', $id);
+		$query = $this->db->get('invoices');
+		//print_r($this->db->last_query());die;
+		foreach($query->result() as $invresults){
+			$invresult = $invresults;
+		}
+		return $invresult;
+	}
+	
+	public function get_trans_invoice_by_id($id){
+		$this->db->select('transaction_invoice.*, users.company_name, users.company_email');
+		$this->db->join('users', 'users.id = transaction_invoice.company_id');				
+		$this->db->where('transaction_invoice.id', $id);
+		$query = $this->db->get('transaction_invoice');
+		foreach($query->result() as $invresults){
+			$invresult = $invresults;
+		}
+		return $invresult;
+	}	
+	
+	public function get_max_id(){
+		$this->db->select_max('id');
+		return $this->db->get('invoices')->row();
+	}
+	
+	public function get_products(){
+		return $this->db->get('products')->result();
+	}
+	
+	public function get_product_by_id($id){
+		$this->db->where('id', $id);
+		return $this->db->get('products')->row();
+	}
+
+	public function export_invoice_pdf($id){
+		$this->db->select('invoices.*, users.company_name');
+		$this->db->join('users', 'users.id = invoices.party_name');
+		$this->db->where('invoices.id', $id);
+		$this->db->from('invoices');
+        $query = $this->db->get();
+
+        return $query->row();
+	}
+	/*******************************	End Invoice Code	*********************/
+	public function get_users(){
+		$this->db->where('role', 'company');
+		$this->db->order_by('company_name', 'ASC');
+		$results = $this->db->get('users')->result();
+		return $results;
+	}
+
+	public function get_comp_addr($id){
+		//echo $id;
+		$this->db->select('users.address, drivers.id, drivers.name');
+		$this->db->from('users', 'drivers');
+		$this->db->join('drivers', 'drivers.company_id=users.id');
+		$this->db->where('users.id', $id);
+		$query = $this->db->get()->result();
+		/* foreach($query->result() as $row){
+			$comp_details = $row;
+		} */
+		//print_r($query);die;
+		return $query;
+		//echo "hello";
+		//echo array('did'=>$comp_details->address,'did'=>$comp_details->id,'dname'=>$comp_details->name);		
+	}
+
+	/*******************************	Start Tax Code	*********************/
+	public function get_taxes($where = null){
+		if(!empty($where)){
+			$this->db->like('state', $where);
+		}		
+		return $this->db->get('tax')->result();
+	}
+	
+    public function get_pagination_tax($limit, $offset, $where = null)
+    {
+		$offset = ($offset-1) * $limit;	
+		if(!empty($where)){
+			$this->db->like('state', $where);
+		}
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+        $query = $this->db->get('tax');
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	
+	public function save_tax($data, $id){
+		if($id){
+			$this->db->where('id', $id);
+			$this->db->set($data);
+			$this->db->update('tax');
+		}else{
+			$this->db->insert('tax', $data);
+			$id = $this->db->insert_id();
+		}
+		return $id;
+	}
+
+	public function get_tax_by_id($id){
+		$this->db->where('id', $id);
+		return $this->db->get('tax')->row();
+	}
+	
+	public function delete_tax($id){
+		$this->db->where('id', $id);
+		$this->db->delete('tax');
+		return true;
+	}
+	/*******************************	End Tax Code	*********************/	
+	/*******************************	Start Transaction Code	*********************/
+	public function get_transactions($where = null, $where2=null){
+		$this->db->select('transactions.id as tid, cards.card_number, drivers.name, cards.card_status, MAX(transactions.transaction_date) as transdate, transactions.transaction_id');
+		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			$start_date=$where2[0];
+			$end_date=$where2[1];
+
+			$this->db->where('transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+		}		
+		//$this->db->where('cards.company_id', $cid);
+		$this->db->group_by('transactions.card_number');	
+		$this->db->order_by('transactions.id', 'DESC');	
+		return $this->db->get('cards')->result();
+	}
+	
+    public function get_pagination_transactions($limit, $offset, $where = null, $where2)
+    {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transactions.id as tid, cards.id, cards.card_number, drivers.name, cards.card_status, MAX(transactions.transaction_date) as transdate');
+		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');	
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			$start_date=$where2[0];
+			$end_date=$where2[1];
+			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+		}		
+		//$this->db->where('cards.company_id', $cid);
+		$this->db->group_by('transactions.card_number');
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('transactions.id','DESC');
+        $query = $this->db->get('cards');
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+
+	public function getLastTransaction(){
+		$this->db->select('transaction_date, transaction_id');
+		//$this->db->limit(1);
+		//$this->db->order_by('id', 'DESC');
+		$getTransResults = $this->db->get('transactions')->result();
+		//pre($this->db->last_query());die;
+		return $getTransResults;
+	}	
+	
+	public function get_transactions_api($where = null, $where2=null, $limit, $offset){
+		if(empty($limit)){
+			$limit = 10;
+		}
+		$offset = ($offset-1) * $limit;
+		$this->db->select('transactions.amount, cards.card_number, drivers.name, cards.card_status, transactions.transaction_date, transactions.transaction_id');
+		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			$start_date=$where2[0];
+			$end_date=$where2[1];
+
+			$this->db->where('transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+		}		
+		//$this->db->where('cards.company_id', $cid);
+		$this->db->limit($limit, $offset);
+		$this->db->group_by('transactions.card_number', 'DESC');
+		//$this->db->order_by('transactions.transaction_date', 'DESC');	
+		return $this->db->get('cards')->result();
+	}		
+	
+	public function get_comp_transactions($where = null, $where2=null, $cid){
+		$this->db->select('cards.card_number, drivers.name, cards.card_status, transactions.transaction_date');
+		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			$start_date=$where2[0];
+			$end_date=$where2[1];
+
+			$this->db->where('transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+		}		
+		$this->db->where('cards.company_id', $cid);
+		$this->db->group_by('transactions.card_number');	
+		return $this->db->get('cards')->result();
+	}	
+	
+    public function get_comp_pagination_transactions($limit, $offset, $where = null, $where2=null, $cid)
+    {
+		$offset = ($offset-1) * $limit;
+		$this->db->select('cards.card_number, drivers.name, cards.card_status, transactions.transaction_date');
+		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');	
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			$start_date=$where2[0];
+			$end_date=$where2[1];
+			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+		}		
+		$this->db->where('cards.company_id', $cid);
+		$this->db->group_by('transactions.card_number');
+        $this->db->limit($limit, $offset);
+		$this->db->order_by('transactions.id','DESC');
+        $query = $this->db->get('cards');
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//pre($this->db->last_query());
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+	
+	public function importHuskyTransactions($data) {
+		//pre($data);die;
+		$res = $this->db->insert_batch('transactions', $data);
+		if($res){
+			return TRUE;
+		}else{
+			return FALSE;
+		}
+	}	
+
+	public function exportTransByComp($cid){
+		$startDate = date('Y-m-d h:i:s');
+		$endDate = date('Y-m-d h:i:s', strtotime('-30 days'));
+		$this->db->from('transactions');
+		//$this->db->from('cards');
+		//$this->db->join('transactions', 'cards.card_number = transactions.card_number', 'LEFT');
+		$this->db->join('cards', 'cards.card_number = transactions.card_number');
+		//$this->db->where('transactions.transaction_date BETWEEN "'. $startDate. '" and "'. $endDate.'"');
+		$this->db->where('cards.company_id', $cid);
+        $query = $this->db->get();
+        return $query->result_array();
+	}	
+	
+	public function get_card_transactions($cardNumber, $daterange){
+		$this->db->join('users', 'users.id = cards.company_id', 'LEFT');
+		$this->db->join('transactions', 'cards.card_number = transactions.card_number', 'LEFT');
+		$this->db->from('cards');
+		$oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
+		if(!empty($daterange)){
+					$expDateRange = explode('%20-%20', $daterange);
+					$startDate = $expDateRange[0];
+					$endDate = $expDateRange[1];			
+			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d H:i:s', strtotime($startDate)). '" and "'. date('Y-m-d H:i:s', strtotime($endDate)).'"');
+		}else{
+			$this->db->where('transactions.transaction_date BETWEEN "'. $oldDate. '" and "'. date('Y-m-d H:i:s').'"');			
+		}		
+		$this->db->where('transactions.card_number', $cardNumber);
+		return $this->db->get()->result();
+	}
+	
+	public function get_card_trans_by_cid($cid, $daterange=null, $companyName=null){
+		//$this->db->select('transactions.*, transactions_ca.*, users.*, cards.*');
+		$this->db->select('transactions.*, users.*, cards.* , transactions.id as transactionId');
+		//$this->db->from('cards');
+		$this->db->join('cards', 'cards.card_number = transactions.card_number', 'LEFT');
+		$this->db->join('users', 'users.id = cards.company_id', 'LEFT');
+		//$this->db->join('drivers', 'drivers.id = cards.driver_id', 'LEFT');
+		//$this->db->join('transactions', 'transactions.card_number = cards.card_number', 'LEFT');
+		//$this->db->join('transactions_ca', 'transactions_ca.card_number = cards.card_number', 'LEFT');
+		$this->db->where(array('cards.company_id'=> $cid, 'transactions.invoice_status'=>0));
+		if(!empty($companyName)){
+			$this->db->where(array('transactions.transactionAt'=>$companyName));
+		}
+		if(!empty($daterange)){
+			$expDateRange = explode(' - ', $daterange);
+			$startDate = $expDateRange[0];
+			$endDate = $expDateRange[1];			
+			$this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date('Y-m-d', strtotime($startDate)). '" and "'. date('Y-m-d', strtotime($endDate)).'"');
+		}//$this->db->get()->result();
+		//$this->db->group_by('cards.card_number');	
+		return $this->db->get('transactions')->result();
+		//pre($this->db->last_query());die;
+	}
+	
+	public function get_invoiced_trans_by_cid($cid){
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		//$this->db->select('transactions.*, users.*, cards.*, transaction_invoice.invoice_id, transaction_invoice.invoice_date');
+		$this->db->from('transaction_invoice');
+		//$this->db->join('cards', 'cards.card_number = transactions.card_number');
+		$this->db->join('users', 'users.id = transaction_invoice.company_id');
+		//$this->db->join('transactions', 'transactions.card_number = cards.card_number', 'LEFT');
+		//$this->db->join('transaction_invoice', 'transaction_invoice.company_id = cards.company_id', 'LEFT');
+		$this->db->where(array('transaction_invoice.company_id'=> $cid));
+		//$this->db->group_by('transactions.id');
+		return $this->db->get()->result();
+		
+	}	
+	
+	public function get_cad_card_trans_by_cid($cid){
+		$this->db->select('transactions_ca.*, users.*, cards.*');
+		$this->db->from('cards');
+
+		$this->db->join('users', 'users.id = cards.company_id');
+		$this->db->join('transactions_ca', 'transactions_ca.card_number = cards.card_number', 'LEFT');
+
+		$this->db->where(array('cards.company_id'=> $cid, 'transactions_ca.invoice_status'=>0));
+		
+		return $this->db->get()->result();
+		
+	}	
+	
+	public function get_card_driver($cardNumber){
+		$this->db->select('driver_id');
+		$this->db->where('card_number', $cardNumber);
+		return $this->db->get('cards')->row();
+	}
+
+	public function export_invoice($cardNum){
+		//$this->db->select('invoices.*, users.company_name');
+		//$this->db->join('users', 'users.id = invoices.party_name');
+		$this->db->where('id', $cardNum);
+		$this->db->from('transactions');
+        $query = $this->db->get();
+
+        return $query->result();
+	}
+
+	public function get_max_trans_inv_id(){
+		return $this->db->select_max('id')->get('transaction_invoice')->row();
+	}
+	
+	/*******************************	End Transaction Code	*********************/	
+}

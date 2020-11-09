@@ -1,0 +1,6 @@
+Receipt_Number,Transaction_Date,Method,Vendor,Card_Number,Drivername,Transaction_id,Sitename,Site_id,Province_State,Date,Time,Unit_Number,Item_Type,Quantity,Measure,Price,Tax,Total,Currency
+""""CL98",09/29/2020,""""Credit", Pride Diesel Inc.,""""7083050030565337453","Amanpreet Singh","819163829","ESSO BRADFORD HWY 88","524621",""""ON","2020-09-29","10:19:00","2541",ULSD,489.98,""""L",0.912,51.4 ,446.86,CAD
+""""CL98",09/29/2020,""""Credit", Pride Diesel Inc.,""""7083050030566387457","-","819271582","ESSO DUNVEGAN","519414",""""ON","2020-09-29","15:48:00","",ULSD,673.9,""""L",0.926,71.79 ,624.03,CAD
+""""CL98",09/29/2020,""""Credit", Pride Diesel Inc.,""""7083050030566387457","-","819273872","ESSO DUNVEGAN","519414",""""ON","2020-09-29","15:54:00","",DEFD,44.16,""""L",0.814,4.13 ,35.94,CAD
+""""CL98",09/30/2020,""""Credit", Pride Diesel Inc.,""""7083050030565337453","Amanpreet Singh","819384538","ESSO NIPIGON HWY 11 & 17 NS","524559",""""ON","2020-09-30","02:12:00","2541",ULSD,437.21,""""L",0.976,49.09 ,426.71,CAD
+""""CL98",09/30/2020,""""Credit", Pride Diesel Inc.,""""7083050030565337453","Amanpreet Singh","819384886","ESSO NIPIGON HWY 11 & 17 NS","524559",""""QC","2020-09-30","02:16:00","2541",DEFD,50.44,""""L",0.814,7.4 ,41.05,CAD
