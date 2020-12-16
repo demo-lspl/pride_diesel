@@ -68,10 +68,10 @@
 					<th>Id</th> 
 					<th>Card Number</th>
 					<th>Currency</th>					
-					<th>Gas Station Name</th>
 					<th>State</th>
 					<th>City</th>
 					<th>Transcation ID</th>
+					<th>Quantity</th>
 					<th>Grand Total</th>
 					<th>Created On</th>
                 </tr>
