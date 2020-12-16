@@ -49,7 +49,6 @@ class Soap_client extends MY_controller {
 	
     function import_cards() {
 		//ob_start();
-
 		$this->load->model("card/card_model");
 		
 		$clientToken = $this->soapclient->call('login', array('user'=>$this->username, 'password' => $this->password));
@@ -86,6 +85,7 @@ class Soap_client extends MY_controller {
 			for($i=0; $i<count($cardSummResult['value']);$i++){	
 	
 				if(in_array($cardSummResult['value'][$i]['cardNumber'], $cardids) == FALSE){
+					$data['cardCompany'] = 'EFS';
 					$data['card_number'] = $cardSummResult['value'][$i]['cardNumber'];
 					$data['policy_number'] = $cardSummResult['value'][$i]['policyNumber'];
 					if($cardSummResult['value'][$i]['status'] == 'ACTIVE'){
@@ -94,6 +94,10 @@ class Soap_client extends MY_controller {
 						$data['card_status'] = '0';
 					}else if($cardSummResult['value'][$i]['status'] == 'HOLD'){
 						$data['card_status'] = '2';
+					}
+					$getCompanyId = $this->db->where('efs_policy_id', $cardSummResult['value'][$i]['policyNumber'])->get('users')->row();
+					if(!empty($getCompanyId->id)){
+						$data['company_id'] = $getCompanyId->id;
 					}
 					//$data['unit_number'] = $cardSummResult['value'][$i]['unitNumber'];
 					$data['date_created'] = date('Y-m-d h:i:s');
@@ -104,7 +108,6 @@ class Soap_client extends MY_controller {
 						//echo "Less than one";
 						$this->db->insert('cards', $data);
 					}
-					
 					//echo"Insert Section<br/>";pre($data);
 					//pre($data);
 					unset($data);
@@ -119,7 +122,10 @@ class Soap_client extends MY_controller {
 					}else if($cardSummResult['value'][$i]['status'] == 'HOLD'){
 						$data['card_status'] = '2';
 					}
-					
+					$getCompanyId = $this->db->where('efs_policy_id', $cardSummResult['value'][$i]['policyNumber'])->get('users')->row();
+					if(!empty($getCompanyId->id)){
+						$data['company_id'] = $getCompanyId->id;
+					}					
 					$data['date_modified'] = date('Y-m-d h:i:s');				
 
 					$this->db->set($data);

@@ -1,4 +1,12 @@
 /*	Custom CSS	*/
+.display-none {
+	display: none;
+}
+
+.export-msg {
+	float: right;
+}
+
 .no-padding-right {
 	padding-right: 0 !important;
 }
@@ -99,9 +107,9 @@
 	margin-bottom: 0px;
 }
 
-input[type=checkbox], input[type=radio] {
+/* input[type=checkbox], input[type=radio] {
     margin-left: -20px;	
-}
+} */
 
 @media (max-width: 990px){
 	.mobile-view2, .mobile-view3 {
@@ -583,4 +591,46 @@ input.tag-input {
 
 .company-select {
 	max-width: 170px;
+}
+
+.code-resend-btn {
+	cursor: pointer;
+	color: #007bff!important;
+}
+
+.code-resend-btn:hover {
+	cursor: pointer;
+	color: #0056b3!important;
+}
+
+.file-messages {
+	margin-top: 20px;
+}
+
+.fileicons {
+	padding: 2px;
+}
+
+.select2-selection__rendered li {
+	color: #1e1e1e!important;
+}
+
+.pricing-table tr td input {
+	min-width: 80px;
+}
+
+.pricing-table form {
+	overflow-x: scroll;
+}
+
+/* Chrome, Safari, Edge, Opera */
+.pricing-table input::-webkit-outer-spin-button,
+.pricing-table input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.pricing-table input[type=number] {
+  -moz-appearance: textfield;
 }

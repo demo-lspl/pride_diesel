@@ -10,7 +10,8 @@
 		</button>
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1" style="">
 		  <a class="dropdown-item export-csv" data-cid="<?php echo $cid ?>" href="#">Export CSV</a>
-		  <a class="dropdown-item export-xlsx" data-cid="<?php echo $cid ?>" href="#">Export Excel</a>
+		  <a class="dropdown-item export-xlsx" data-cid="<?php echo $cid ?>" href="#">Export Excel Expert</a>
+		  <a class="dropdown-item export-xlsx-transplus" data-cid="<?php echo $cid ?>" href="#">Export Excel TransPlus</a>
 		  <!--a class="dropdown-item export-fleetmanager" href="http://localhost/pride_diesel/card/exportCards">Export for Fleet Manager</a>
 		  <a class="dropdown-item" href="http://localhost/pride_diesel/card/exportCards">Export Xlsx</a>
 		  <a class="dropdown-item" href="http://localhost/pride_diesel/card/exportCards">Export CSV</a-->
@@ -76,7 +77,7 @@
 			  <?php foreach($transactionData as $transaction): ?>
 			  <tr>
 				<td><?= $ival ?></td>
-				<td><a href="<?php echo base_url().'account/comp_card_transactions/'.$transaction->card_number.'/'.$daterange?>" ><?php echo $transaction->card_number?></a></td>
+				<td><a href="<?php echo base_url().'account/comp_card_transactions/'.$transaction->transactionid?>" ><?php echo $transaction->card_number?></a></td>
 				<td><?= $transaction->name?></td>
 				<td><?php if($transaction->card_status==0){echo 'Inactive';}else if($transaction->card_status==1){echo 'Active';}else{echo 'Hold';}?></td>
 				<td><?= $transaction->transaction_date?></td>

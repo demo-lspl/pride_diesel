@@ -1,0 +1,4 @@
+Receipt_Number,Transaction_Date,Transaction_Time,Method,Vendor,Card_Number,Supplier,City,Province_State,Truck_Number,Trailer_Number,Item_Type,Quantity,Measure,Price,Tax,Total
+"""1036956",11/24/2020,08:20 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX7566",""""KINGSTON HUSKY ",""""JOYCEVILLE     ",""""ON",""""1001      ",,ULSD,243.81,""""L",0.82722 ,23.2,201.68
+"""1036957",11/24/2020,08:24 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX7566",""""KINGSTON HUSKY ",""""JOYCEVILLE     ",""""ON",""""1001      ",,DEFD,51.83,""""L",0.70186 ,4.18,36.36
+"""1036806",11/24/2020,06:24 a,""""Credit", Pride Diesel Inc.,""""556372XXXXXX7566",""""KINGSTON HUSKY ",""""JOYCEVILLE     ",""""ON",""""1001      ",,ULSD,256.48,""""L",0.82722 ,24.4,212.16

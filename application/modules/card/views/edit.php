@@ -39,7 +39,7 @@
 						<!--label for="InputCardLimit">Card Limit</label>
 						<!--input type="text" name="card_limit" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control" id="InputCardLimit" placeholder="Card Limit" value="<?php echo set_value('card_limit', $card->card_limit);?>"-->
 						<!-- Trigger the modal with a button -->
-						<button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal">Add Limit</button>
+						<!--button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal">Add Limit</button-->
 					  </div>
 					  <?php } ?>
 						<?php if(!empty($this->uri->segment(3)) && $userSessDetails->role == 'admin'){ ?>
@@ -117,19 +117,19 @@
 					  </div>
 					  <?php endif; ?>
 
-					  <?php if(!empty($companydrivers) && $userSessDetails->role == 'company'): ?>
+					  <?php if($userSessDetails->role == 'company'): ?>
 					  <div class="form-group">
 						<label for="InputCardLimit">Assign Card to Driver</label>
 
 						<select name="card_assign_driver" class="form-control selectledgergroup" style="width: 100%;">
 							<option value="">-- Select Driver --</option>
-							<?php foreach($companydrivers as $usernames): ?>
+							<?php if(!empty($companydrivers)){ foreach($companydrivers as $usernames): ?>
 								<option <?php if(!empty($card->driver_id) && $card->driver_id == $usernames->id){echo "selected";} ?> value="<?php echo $usernames->id; ?>"><?php echo ucwords($usernames->name); ?></option>
-							<?php endforeach; ?>
+							<?php endforeach; } ?>
 						</select>							
 					  </div>
 					  <?php endif; ?>					  
-					  <?php if(empty($card->cardToken)){ ?>					  
+					  <?php if($card->cardCompany == 'EFS'){ ?>					  
 					  <div class="form-group">
 						<label for="InputCardPIN">Card PIN</label>
 						<input type="text" name="card_pin" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control" id="InputCardPIN" placeholder="Card PIN" value="<?php echo set_value('card_pin', $card->card_pin);?>">
@@ -155,6 +155,21 @@
 						</div>						
 					  </div>					  
 					<?php } ?>	
+					  <?php if($card->cardCompany == 'HUSKY'){ ?>					  
+
+					  <div class="form-group">
+						<label for="InputCardPIN">Unit Number</label>
+						<input type="text" name="unit_number" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control" id="InputUnitNumber" placeholder="Unit Number" value="<?php if(empty($card->unit_number)){echo "ANY_NUMERIC_VALUE";}else{echo set_value('unit_number', $card->unit_number);}?>" <?php if($userSessDetails->role == 'company'){echo "readonly";}?> />
+					  </div>
+					  <div class="form-group">
+						<label for="InputCardPIN">Odometer</label>
+						<input type="text" maxlength="5" name="" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control" id="InputOdometer" placeholder="Odometer" value="ANY_NUMERIC_VALUE" readonly />						
+					  </div>
+					  <div class="form-group">
+						<label for="InputCardPIN">Driver Id</label>
+						<input type="text" name="card_pin" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control" id="InputCardPIN" placeholder="Card PIN" value="<?php if(!empty($card->card_pin)){echo set_value('card_pin', $card->card_pin);}else{echo "CONTACT_ADMIN";}?>" <?php if($userSessDetails->role == 'company'){echo "readonly";}?>>
+					  </div>					  
+					<?php } ?>					
 					<div class="form-group">
 					  <button type="submit" class="btn btn-primary">Submit</button>
 					</div>				  

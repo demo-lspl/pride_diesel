@@ -1,0 +1,11 @@
+Receipt_Number,Transaction_Date,Transaction_Time,Method,Vendor,Card_Number,Supplier,City,Province_State,Truck_Number,Trailer_Number,Item_Type,Quantity,Measure,Price,Tax,Total
+"""1009821",10/27/2020,12:00 a,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2267",""""PRIDE MILTON   ",""""MILTON         ",""""ON",""""167       ",,DEFD,34.06,""""L",0.65798 ,2.57,22.41
+"""1032912",10/27/2020,12:00 a,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2267",""""PRIDE MILTON   ",""""MILTON         ",""""ON",""""167       ",,ULSD,694.16,""""L",0.7923 ,63.27,549.98
+"""1012730",11/12/2020,12:33 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2267",""""WINDSOR HUSKY T",""""WINDSOR        ",""""ON",""""167",,DEFD,33.69,""""L",0.70185 ,2.71,23.64
+"""1012729",11/12/2020,12:31 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2267",""""WINDSOR HUSKY T",""""WINDSOR        ",""""ON",""""167",,ULSD,586.66,""""L",0.81354 ,54.9,477.27
+"""1057184",11/24/2020,01:46 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2267",""""DIXIE RD HUSKY ",""""MISSISSAUGA    ",""""ON",""""167       ",,ULSD,605.38,""""L",0.81632 ,56.85,494.18
+"""1060591",12/03/2020,07:50 a,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2267",""""DIXIE RD HUSKY ",""""MISSISSAUGA    ",""""ON",""""167       ",,ULSD,749.74,""""L",0.81632 ,70.4,612.02
+"""1060598",12/03/2020,07:54 a,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2267",""""DIXIE RD HUSKY ",""""MISSISSAUGA    ",""""ON",""""167       ",,DEFD,57.39,""""L",0.70188 ,4.63,40.28
+"""1036207",11/11/2020,04:46 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2325",""""PRIDE MILTON   ",""""MILTON         ",""""ON",""""9113",,ULSD,296.13,""""L",0.8133 ,27.7,240.84
+"""1036809",11/14/2020,03:12 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2325",""""PRIDE MILTON   ",""""MILTON         ",""""ON",""""9113",,ULSD,356.45,""""L",0.81434 ,33.39,290.27
+"""8750000",11/26/2020,03:19 p,""""Credit", Pride Diesel Inc.,""""556372XXXXXX2325",""""NEWCASTLE C/L  ",""""NEWCASTLE      ",""""ON",""""9113      ",,ULSD,350.3,""""L",0.82008 ,33.04,287.27

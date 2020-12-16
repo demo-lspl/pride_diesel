@@ -48,47 +48,82 @@ $(document).ready(function () {
 			}
 		});
 	});
-	$(document).on('click','.export-xlsx',function(){       
-			/* var first_input = $('#name_email_order_search').val();
-			var date_range = $('#reportrangeorder').val();        
-			var order_status = $('#order_status').val();  */  
+	$(document).on('click','.export-xlsx',function(){	
 			var cid = $(this).data('cid');
-			var acid = $('.select2').val();
+			var cur = $('.currency').val();
+			var acid = $('.companyname').val();
 			var daterange = $('.daterange').val();
+					if (cid === null){
+						var cid = 'undefined';
+					}
+					if (cur === null){
+						var cur = 'undefined';
+					}					
+					if(acid === null || acid == ""){
+						acid = 'undefined';
+					}
+					if (daterange === ""){
+						var daterange = 'undefined';
+					}
+			//console.log(acid);					
 			$.ajax({
-			url: site_url + 'account/exportTransactionByCompany/'+cid+'/'+acid+'/'+daterange,
+			url: site_url + 'account/exportTransactionByCompany/'+cid+'/'+acid+'/'+daterange+'/'+cur,
 			type: 'post',
 			//escape : 'false',
 			//contentType: false,
 			//processData: false,
-			data: {cid:cid, acid:acid, daterange:daterange},
+			beforeSend: function(){$('.export-msg').show();},
+			data: {cid:cid, acid:acid, daterange:daterange, cur:cur},
 			success: function (response) {
-				//alert(response);
-
-				if(response != 'notransaction'){	
-					if($('.select2').val() === ""){
-						acid = 'undefined';
-						cid = 'undefined';
-					}
-					window.open("exportTransactionByCompany/"+ cid +"/" + acid+"/" + daterange, '_blank');
+				//alert(cid);
+			$('.export-msg').hide();
+				if(response != 'notransaction'){					
+					window.open("exportTransactionByCompany/"+ cid +"/" + acid+"/" + daterange+"/" + cur, '_blank');
 				}
 				if(response == 'notransaction'){
 					alert("No transaction available for given dates");
 					//return false;
 				}				
 			}
-		});			
-			/* if(cid == ""){
-				cid = 'undefined';
+		});
+	});
+	$(document).on('click','.export-xlsx-transplus',function(){	
+			var cid = $(this).data('cid');
+			var cur = $('.currency').val();
+			var acid = $('.companyname').val();
+			var daterange = $('.daterange').val();
+					if (cid === null){
+						var cid = 'undefined';
+					}
+					if (cur === null){
+						var cur = 'undefined';
+					}					
+					if(acid === null){
+						acid = 'undefined';
+						//cid = 'undefined';
+					}
+					if (daterange === ""){
+						var daterange = 'undefined';
+					}			
+			$.ajax({
+			url: site_url + 'account/exportTransactionByCompanyTransPlus/'+cid+'/'+acid+'/'+daterange+'/'+cur,
+			type: 'post',
+			//escape : 'false',
+			//contentType: false,
+			//processData: false,
+			beforeSend: function(){/*alert(cur);*/},
+			data: {cid:cid, acid:acid, daterange:daterange, cur:cur},
+			success: function (response) {
+				//alert(cid);
+				if(response != 'notransaction'){					
+					window.open("exportTransactionByCompanyTransPlus/"+ cid +"/" + acid+"/" + daterange+"/" + cur, '_blank');
+				}
+				if(response == 'notransaction'){
+					alert("No transaction available for given dates");
+					//return false;
+				}				
 			}
-			if(acid == ""){
-				acid = 'undefined';
-			}
-			if(daterange == ""){
-				daterange = '';
-			} */
-		
-			
+		});
 	});	
 	$(".export-xlsx1").click(function(e){
 		//e.preventDefault();
@@ -133,6 +168,37 @@ $(document).ready(function () {
 	});	
 });	
 
+	$(document).on('click','.export-single-xlsx',function(){       	
+			var cardnum = $(this).data('cardnum');
+
+			var daterange = $('.daterange').val();
+					if (cardnum === null){
+						var cardnum = 'undefined';
+					}
+					if (daterange === ""){
+						var daterange = 'undefined';
+					}			
+			$.ajax({
+			url: site_url + 'account/exportTransactionBySingleCard/'+cardnum+'/'+daterange,
+			type: 'post',
+			//escape : 'false',
+			//contentType: false,
+			//processData: false,
+			beforeSend: function(){/*alert(cur);*/},
+			data: {cardnum:cardnum, daterange:daterange},
+			success: function (response) {
+				//alert(cid);
+				if(response != 'notransaction'){					
+					window.open(site_url+"account/exportTransactionBySingleCard/"+ cardnum +'/'+ daterange, '_blank');
+				}
+				if(response == 'notransaction'){
+					alert("No transaction available for given dates");
+					//return false;
+				}				
+			}
+		});	
+	});
+
 document.addEventListener('DOMContentLoaded', function() {
    // your code here
    	var totalTrans = $(".tot-trans").val();
@@ -150,4 +216,58 @@ $(document).ready(function() {
       return false;
     }
   });
+  
+
+	
+// Add click event handler to button
+	$( '#transactionFile' ).change( function () {
+		
+    var file_data = $('#transactionFile').prop('files')[0];   
+    var form_data = new FormData();                  
+    form_data.append('file', file_data);
+	//console.log(form_data);
+	//var ith = $('input[type=file]').val();
+	//console.log('clicked');
+		$.ajax({
+			url: site_url + 'account/makeFile/',
+			type: 'post',
+			dataType : 'json',
+			//dataType : 'text',
+			//contentType: 'text/csv',
+			data: form_data,
+			cache: false,
+			contentType: false,
+			processData: false,			
+			success: function (response) {
+				console.log(response.type);
+				//alert(response.result);
+				//console.log(response);
+				//$('#editor').html(  );
+				//$('#editor').load();
+				$('#editor').html( response.result );
+				if(response.errorCount < 1){
+					$('.husky-imp-btn').removeAttr('disabled');
+				}
+				//form_data.reset();
+				//$('input[type=file]').reset();
+			},
+		});
+ 	
+});
+
+
+	// remove data
+	$( '#transactionFile' ).click( function () {
+		$('input[type=file]').val('');
+		$('#editor').html('');	
+	});
+	
+$('select').select2({
+    minimumResultsForSearch: -1,
+    placeholder: function(){
+        $(this).data('placeholder');
+    }
+});
+
+
 });

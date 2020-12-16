@@ -30,7 +30,12 @@
 					//$this->db->join('retail_pricing_ca', 'retail_pricing_ca.id=users.company_type');
 					$this->db->where('users.id', $userSessDetails->id);
 					$get_user_type = $this->db->get('users')->row();
-					$pricingType = $get_user_type->cad_pricing;
+					if(is_object($get_user_type)){
+						$pricingType = $get_user_type->cad_pricing;
+					}else{
+						$pricingType = '';
+					}
+					
 					if(!empty($get_user_type)){
 					?>
 						<table class="table table-bordered">

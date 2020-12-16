@@ -8,14 +8,17 @@
 	</div>
 	<div class="card card-default">
 		<div class="card-header bg-card-header">
-			<h3 class="card-title">Company <?php if(!empty($this->uri->segment(3))){echo "#".$this->uri->segment(3);} ?></h3>
+			<h3 class="card-title">Canada Pricing <?php if(!empty($this->uri->segment(3))){echo "#".$this->uri->segment(3);} ?></h3>
 
 			<div class="card-tools">
 			  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
 			  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
 			</div>
 		</div>
-		<div class="card-body">
+		<?php 
+		$fourthSeg = $this->uri->segment(4);
+		?>
+		<div class="card-body pricing-table">
         <div class="row">
           <div class="col-md-12">
             <div class="card card-primary card-tabs">
@@ -23,31 +26,31 @@
                 <ul class="nav nav-tabs" id="custom-tabs-two-tab" role="tablist">
                   <li class="pt-2 px-3"><h3 class="card-title"></h3></li>					  
                   <li class="nav-item">
-                    <a class="nav-link active" id="custom-tabs-two-messages-tab" data-toggle="pill" href="#custom-tabs-two-messages" role="tab" aria-controls="custom-tabs-two-messages" aria-selected="true">Add on EFS</a>
+                    <a class="nav-link <?php if((empty($fourthSeg)) || (!empty($fourthSeg) && $fourthSeg == 'add-on-efs')){echo "active";}?>" id="custom-tabs-two-messages-tab" data-toggle="pill" href="#add-on-efs" role="tab" aria-controls="add-on-efs" aria-selected="true">Add on EFS</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link <?php //if($this->uri->segment(3) == '#custom-tabs-retail-price'){echo "active";} ?>" id="custom-tabs-view-add-efs" data-toggle="pill" href="#custom-tabs-add-efs" role="tab" aria-controls="custom-tabs-add-efs" aria-selected="false">View Add on EFS</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'view-add-on-efs'){echo "active";} ?>" id="custom-tabs-view-add-efs" data-toggle="pill" href="#view-add-on-efs" role="tab" aria-controls="view-add-on-efs" aria-selected="false">View Add on EFS</a>
                   </li>					  
                   <li class="nav-item">
-                    <a class="nav-link" id="custom-tabs-two-settings-tab" data-toggle="pill" href="#custom-tabs-two-settings" role="tab" aria-controls="custom-tabs-two-settings" aria-selected="false">Fix Price</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'set-fix-price'){echo "active";} ?>" id="custom-tabs-two-settings-tab" data-toggle="pill" href="#set-fix-price" role="tab" aria-controls="set-fix-price" aria-selected="false">Fix Price</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link <?php //if($this->uri->segment(3) == '#custom-tabs-retail-price'){echo "active";} ?>" id="custom-tabs-view-fix-price" data-toggle="pill" href="#custom-tabs-fix-price" role="tab" aria-controls="custom-tabs-fix-price" aria-selected="false">View Fix Price</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'view-fix-price'){echo "active";} ?>" id="custom-tabs-view-fix-price" data-toggle="pill" href="#view-fix-price" role="tab" aria-controls="view-fix-price" aria-selected="false">View Fix Price</a>
                   </li>
 				  <!-- Husky API -->
                   <li class="nav-item">
-                    <a class="nav-link " id="custom-tabs-husky-addon1" data-toggle="pill" href="#custom-tabs-husky-addon" role="tab" aria-controls="custom-tabs-husky-addon" aria-selected="false">Add on Husky</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'set-add-on-husky'){echo "active";} ?>" id="custom-tabs-husky-addon1" data-toggle="pill" href="#set-add-on-husky" role="tab" aria-controls="set-add-on-husky" aria-selected="false">Add on Husky</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link <?php //if($this->uri->segment(3) == '#custom-tabs-retail-price'){echo "active";} ?>" id="custom-tabs-husky-addon-view1" data-toggle="pill" href="#custom-tabs-husky-addon-view" role="tab" aria-controls="custom-tabs-husky-addon-view" aria-selected="false">View Add on Husky</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'view-add-on-husky'){echo "active";} ?>" id="custom-tabs-husky-addon-view1" data-toggle="pill" href="#view-add-on-husky" role="tab" aria-controls="view-add-on-husky" aria-selected="false">View Add on Husky</a>
                   </li>					  
                 </ul>
               </div>
               <div class="card-body">
                 <div class="tab-content" id="custom-tabs-two-tabContent">
 
-<!-------------------------------- According To EFS Wise data --------------------------------------- -->			
-                  <div class="tab-pane fade show active" id="custom-tabs-two-messages" role="tabpanel" aria-labelledby="custom-tabs-two-messages-tab">
+<!-------------------------------- Set Add On EFS price ----------------------------------------->			
+                <div class="tab-pane fade <?php if((empty($fourthSeg)) || (!empty($fourthSeg) && $fourthSeg == 'add-on-efs')){echo "show active";}?>" id="add-on-efs" role="tabpanel" aria-labelledby="custom-tabs-two-messages-tab">
 					<div class="form-messages error">
 						<?php echo validation_errors(); ?>
 						<?php if($this->session->flashdata("success")){?>
@@ -56,7 +59,7 @@
 						</div>
 						<?php } ?>
 					</div>
-					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3) ?>">
+					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3)."/add-on-efs" ?>">
 						<input type="hidden" name="add_on_efs" value="1" />					
 						<table class="table table-bordered">
 							<tr>
@@ -138,9 +141,17 @@
 						  <button type="submit" name="aoe_submit" class="btn btn-primary pricelist-sub-btn">Submit</button>
 						</div>				  
 					  </form> 
-                  </div>
-				<div class="tab-pane fade" id="custom-tabs-add-efs" role="tabpanel" aria-labelledby="custom-tabs-view-add-efs">
-						<form method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3) ?>">
+                </div>
+				<div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'view-add-on-efs'){echo "show active";}?>" id="view-add-on-efs" role="tabpanel" aria-labelledby="custom-tabs-view-add-efs">
+						<?php 
+							$getCreatedDate = $this->db->select('date_created')->where('id', 1)->get('retail_pricing_ca')->row();
+							$dateCreated = null;
+							if(is_object($getCreatedDate) && !empty($getCreatedDate)){
+								$dateCreated = date('Y-m-d', strtotime($getCreatedDate->date_created));
+							}
+						?>
+						<p><strong>Last Updated: </strong><?= $dateCreated ?></p>
+						<form method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3)."/view-add-on-efs" ?>" class="view-form">
 						<input type="hidden" name="aoe_prices_edit" value="1" />
 						<table class="table table-bordered">
 							<tr>
@@ -209,8 +220,8 @@
 						</form>
 						<p class="text-right"><a class="btn btn-info back-top" href="#"><i class="fa fa-arrow-up"></i></a></p>
 				</div>
-				<!------------------ Fix Price Wise data -------- -->				
-                  <div class="tab-pane fade" id="custom-tabs-two-settings" role="tabpanel" aria-labelledby="custom-tabs-two-settings-tab">
+<!--########################## Set Fix Price ################################################-->				
+                <div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'set-fix-price'){echo "active show";}?>" id="set-fix-price" role="tabpanel" aria-labelledby="custom-tabs-two-settings-tab">
 					<div class="form-messages error">
 						<?php echo validation_errors(); ?>
 						<?php if($this->session->flashdata("success")){?>
@@ -219,7 +230,8 @@
 						</div>
 						<?php } ?>
 					</div>
-					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3) ?>">
+					
+					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3)."/set-fix-price" ?>">
 						<input type="hidden" name="fix_price" value="1" />					
 						<table class="table table-bordered">
 							<tr>
@@ -278,9 +290,17 @@
 						  <button type="submit" name="fp_submit" class="btn btn-primary pricelist-sub-btn">Submit</button>
 						</div>				  
 					  </form>  
-                  </div>
-				<div class="tab-pane fade" id="custom-tabs-fix-price" role="tabpanel" aria-labelledby="custom-tabs-view-fix-price">
-						<form method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3) ?>">
+                </div>
+				<div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'view-fix-price'){echo "show active";}?>" id="view-fix-price" role="tabpanel" aria-labelledby="custom-tabs-view-fix-price">
+						<?php 
+							$getCreatedDate = $this->db->select('date_created')->where('id', 1)->get('retail_pricing_ca')->row();
+							$dateCreated = null;
+							if(is_object($getCreatedDate) && !empty($getCreatedDate)){
+								$dateCreated = date('Y-m-d', strtotime($getCreatedDate->date_created));
+							}
+						?>
+						<p><strong>Last Updated: </strong><?= $dateCreated ?></p>
+						<form method="post" action="<?php echo base_url('user/edit_pricelist_ca/').$this->uri->segment(3)."/view-fix-price" ?>" class="view-form">
 						<input type="hidden" name="fp_prices_edit" value="1" />
 						<table class="table table-bordered">
 							<tr>
@@ -348,8 +368,8 @@
 						</form>
 						<p class="text-right"><a class="btn btn-info back-top" href="#"><i class="fa fa-arrow-up"></i></a></p>
 				</div>
-<!--======================== According To Husky Wise data ====================================== -->			
-                  <div class="tab-pane fade show " id="custom-tabs-husky-addon" role="tabpanel" aria-labelledby="custom-tabs-husky-addon1">
+<!--======================== Set price Husky ====================================== -->			
+                <div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'set-add-on-husky'){echo "show active";}?>" id="set-add-on-husky" role="tabpanel" aria-labelledby="custom-tabs-husky-addon1">
 					<div class="form-messages error">
 						<?php echo validation_errors(); ?>
 						<?php if($this->session->flashdata("success")){?>
@@ -358,7 +378,7 @@
 						</div>
 						<?php } ?>
 					</div>
-					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist_husky_ca/').$this->uri->segment(3) ?>">
+					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist_husky_ca/').$this->uri->segment(3)."/set-add-on-husky" ?>">
 						<input type="hidden" name="add_on_husky" value="1" />					
 						<table class="table table-bordered">
 							<tr>
@@ -441,9 +461,17 @@
 						  <button type="submit" name="aoh_submit" class="btn btn-primary pricelist-sub-btn">Submit</button>
 						</div>				  
 					  </form> 
-                  </div>
-				<div class="tab-pane fade" id="custom-tabs-husky-addon-view" role="tabpanel" aria-labelledby="custom-tabs-husky-addon-view1">
-						<form method="post" action="<?php echo base_url('user/edit_pricelist_husky_ca/').$this->uri->segment(3) ?>">
+                </div>
+				<div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'view-add-on-husky'){echo "show active";}?>" id="view-add-on-husky" role="tabpanel" aria-labelledby="custom-tabs-husky-addon-view1">
+						<?php 
+							$getCreatedDate = $this->db->select('date_created')->where('id', 1)->get('retail_pricing_husky_ca')->row();
+							$dateCreated = null;
+							if(is_object($getCreatedDate) && !empty($getCreatedDate)){
+								$dateCreated = date('Y-m-d', strtotime($getCreatedDate->date_created));
+							}
+						?>
+						<p><strong>Last Updated: </strong><?= $dateCreated ?></p>
+						<form method="post" action="<?php echo base_url('user/edit_pricelist_husky_ca/').$this->uri->segment(3)."/view-add-on-husky" ?>" class="view-form">
 						<input type="hidden" name="aoh_prices_edit" value="1" />
 						<table class="table table-bordered">
 							<tr>

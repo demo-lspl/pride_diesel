@@ -29,7 +29,11 @@
 					
 					$this->db->where('users.id', $userSessDetails->id);
 					$get_user_type = $this->db->get('users')->row();
-					$usaPricing = $get_user_type->usa_pricing;
+					if(is_object($get_user_type)){
+						$usaPricing = $get_user_type->usa_pricing;
+					}else{
+						$usaPricing = '';
+					}
 					if(!empty($get_user_type)){
 					?>
 						<table class="table table-bordered">

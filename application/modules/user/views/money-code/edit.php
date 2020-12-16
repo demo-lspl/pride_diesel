@@ -4,7 +4,7 @@
 	<section class="content box">
 		<div class="card card-default">
 			<div class="card-header bg-card-header">
-				<h3 class="card-title">Company <?php if(!empty($this->uri->segment(3))){echo "#".$this->uri->segment(3);} ?></h3>
+				<h3 class="card-title">Money Code <?php if(!empty($this->uri->segment(3))){echo "#".$this->uri->segment(3);} ?></h3>
 
 				<div class="card-tools">
 				  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>

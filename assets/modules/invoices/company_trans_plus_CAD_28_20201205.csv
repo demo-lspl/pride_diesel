@@ -1,0 +1,3 @@
+Receipt_Number,Transaction_Date,Transaction_Time,Method,Vendor,Card_Number,Supplier,City,Province_State,Truck_Number,Trailer_Number,Item_Type,Quantity,Measure,Price,Tax,Total
+"""819069412",09/29/2020,01:18 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""ESSO WINDSOR HWY 401",""""WINDSOR",""""ON",""""1500",,ULSD,198.22,""""L",0.822 ,18.74,162.93
+"""819069871",09/29/2020,01:23 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""ESSO WINDSOR HWY 401",""""WINDSOR",""""QC",,""""1100",ULSR,690,""""L",0.907 ,86.56,625.83

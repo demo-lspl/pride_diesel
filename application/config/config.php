@@ -24,6 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 $config['base_url'] = 'http://localhost/pride_diesel';
+//$config['base_url'] = 'http://192.168.1.6/pride_diesel';
 
 /*
 |--------------------------------------------------------------------------
@@ -521,3 +522,5 @@ $config['rewrite_short_tags'] = FALSE;
 | Array:		array('10.0.1.200', '192.168.5.0/24')
 */
 $config['proxy_ips'] = '';
+
+$config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-,\=';

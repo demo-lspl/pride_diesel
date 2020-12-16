@@ -21,8 +21,19 @@
 							<?php foreach($getuserdata as $usernames): ?>
 								<option <?php if(!empty($_GET['company_name'])){if(str_replace('+', ' ', $_GET['company_name'] == $usernames->company_name)){echo "selected";}} ?> value="<?php echo $usernames->company_name; ?>"><?php echo ucwords($usernames->company_name); ?></option>
 							<?php endforeach; ?>
-						</select>&nbsp;&nbsp;					
+						</select>&nbsp;&nbsp;
+	
 				  </div>
+				  <div class="form-group">
+					<?php $filterOptions = array('invoiced' => 'Invoiced', 'non-invoiced' => 'Non-invoiced'); ?>
+						<select name="invoice_status" class="form-control select2" style="width: 250px">
+							<option value="">-- Filter By --</option>
+							<option value="">All</option>
+							<?php foreach($filterOptions as $key=>$filterOptionsItems): ?>
+								<option <?php if(!empty($_GET['invoice_status'])){if($_GET['invoice_status'] == $key){echo "selected";}} ?> value="<?php echo $key; ?>"><?php echo ucwords($filterOptionsItems); ?></option>
+							<?php endforeach; ?>
+						</select>&nbsp;&nbsp;	
+				  </div>				  
 				  <button type="submit" class="btn btn-default" ><i class="fa fa-search"></i>&nbsp;&nbsp;<?php echo 'Search'; ?></button>
 				</form>			
 			<table id="" class="table table-bordered table-hover">
@@ -32,26 +43,32 @@
 					<th>Company Name</th>
 					<th>Province</th>
 					<th>Email</th>
+					<th>Payment</th>
 					<th>Created On</th>
 					<th>Action</th>				
 				</tr>
 			</thead>
 			<tbody>
-			  <?php if(!empty($allLedger)){ ?>
-			  <?php foreach($allLedger as $ledgervalues): ?>
+			  <?php  if(!empty($allLedger)){  ?>
+			  <?php 
+				foreach($allLedger as $ledgervalues):
+			  ?>
 			  <tr>
 				<td><?= $ledgervalues->id?></td>
 				<td><?= $ledgervalues->company_name?></td>
 				<td><?= $ledgervalues->province?></td>
 				<td><?= $ledgervalues->company_email?></td>
+				<td><?= ucwords($ledgervalues->invoice_schedule) ?></td>
 				<td><?= $ledgervalues->date_created?></td>
 				<td align="center">
-				<a href="<?php echo base_url('account/invoiced/').$ledgervalues->id ?>" class="btn btn-primary" title="View Old Invoices">Invoiced <i class=" fa fa-eye"></i></a>
-				<!--a href="<?php //echo base_url('account/invoice_view/').$ledgervalues->id ?>" class="btn btn-info" title="View Old Invoices">Invoiced <i class=" fa fa-eye"></i></a--> <a href="<?php echo base_url('account/transaction_view_by_cid/').$ledgervalues->id ?>" class="btn btn-warning" title="Transaction">Non-Invoiced <i class=" fa fa-eye"></i></a> <!--a href="<?php echo base_url('account/ledger_edit/').$ledgervalues->id ?>" class="btn btn-default" ><i class=" fa fa-pen"></i></a> <a href="<?php echo base_url('account/delete_ledger/').$ledgervalues->id ?>" onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-danger button-delete" ><i class="fa fa-trash"></i></a--></td>
+					<a href="<?php echo base_url('account/invoiced/').$ledgervalues->id ?>" class="btn btn-primary" title="View Old Invoices" target="_blank">Invoiced <i class=" fa fa-eye"></i></a>
+					<!--a href="<?php //echo base_url('account/invoice_view/').$ledgervalues->id ?>" class="btn btn-info" title="View Old Invoices">Invoiced <i class=" fa fa-eye"></i></a--> <a href="<?php echo base_url('account/transaction_view_by_cid/').$ledgervalues->id ?>" class="btn btn-warning" title="Transaction" target="_blank">Non-Invoiced <i class=" fa fa-eye"></i></a> <!--a href="<?php echo base_url('account/ledger_edit/').$ledgervalues->id ?>" class="btn btn-default" ><i class=" fa fa-pen"></i></a> <a href="<?php echo base_url('account/delete_ledger/').$ledgervalues->id ?>" onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-danger button-delete" ><i class="fa fa-trash"></i></a-->
+				</td>
 			  </tr>
-			  <?php endforeach; ?>
+				<?php 
+				endforeach; ?>
 			  <?php }else{ echo "<tr>
-				<td colspan='4'>No ledger found</td>
+				<td colspan='6'>No record found</td>
 			  </tr>"; }  ?>
 			  </tbody>
 
