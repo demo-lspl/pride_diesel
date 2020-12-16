@@ -6,7 +6,7 @@
   <title>Pride Diesel | Log in</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <link rel="stylesheet" href="<?php echo base_url()?>assets/css/style.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="<?php echo base_url()?>assets/plugins/fontawesome-free/css/all.min.css">
   <!-- Ionicons -->
@@ -32,6 +32,11 @@
 		<?php echo $this->session->flashdata("login_failed")?>
 	</div>
 	<?php } ?>
+	<?php if($this->session->flashdata("success_msg")){?>
+	<div class="alert alert-success">      
+		<?php echo $this->session->flashdata("success_msg")?>
+	</div>
+	<?php } ?>	
       <form action="<?php echo base_url('auth/user_authenticate') ?>" method="post">
         <div class="input-group mb-3">
           <input type="email" class="form-control" name="company_email" placeholder="Email" value="<?php if(!empty(get_cookie('user_email'))){echo get_cookie('company_email');} ?>" autocomplete="off">

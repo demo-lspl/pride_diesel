@@ -67,7 +67,6 @@ class User extends MY_Controller {
 	}	
 	
 	public function edit($id = null){
-		
 		$this->load->model('sales_person/sales_person_model');
 		$this->data['salesPersons'] = $this->sales_person_model->get_sales_executives();			
 		$this->data['companyType'] = $this->user_model->get_c_type();			
@@ -103,8 +102,8 @@ class User extends MY_Controller {
 					exit;
 				}
 			} */
-			//pre($id);die;
-            $data = $this->user_model->array_from_post(array('company_type', 'company_type_ca', 'sales_person', 'company_name', 'moreEmails', 'address', 'city', 'province', 'postal_code','company_email', 'invoice_schedule', 'usa_pricing', 'cad_pricing', 'sms_notification', 'allowMoneyCode', 'company_password', 'role'));
+			
+            $data = $this->user_model->array_from_post(array('company_location', 'company_type', 'company_type_ca', 'company_type_ca_husky', 'sales_person', 'company_name', 'moreEmails', 'address', 'city', 'province', 'postal_code','company_email', 'invoice_schedule', 'usa_pricing', 'cad_pricing', 'cad_pricing_husky', 'sms_notification', 'allowMoneyCode', 'company_password', 'role'));
 			
 			if($data['company_password'] == ''){
 				unset($data['company_password']);
@@ -140,7 +139,7 @@ class User extends MY_Controller {
 				$data['status'] = 0;
 				$data['date_created'] = date('Y-m-d H:i:s');
 			}
-
+			//pre($data);die;
 			$cid = $this->user_model->create_user($data, $id);
 			
 			if($cid){
@@ -151,7 +150,7 @@ class User extends MY_Controller {
 			}
 			
 		}		
-		
+		//pre(validation_errors());die;
 		$this->_render_template('edit', $this->data);
 	}
 	
@@ -361,7 +360,7 @@ class User extends MY_Controller {
 		
 		/* $this->load->library('Pdf');
 		$dataPdf = $this->user_model->get_data_byId('users','id',$id);
-		print_r($dataPdf);die;
+		
 		create_pdf($dataPdf,'modules/user/views/view_user_pdf.php');
 		$this->load->view('sale_orders/view_saleOrder_pdf'); */
 	}
@@ -507,7 +506,7 @@ class User extends MY_Controller {
 		
 		if($this->form_validation->run() == true){
 			if(!empty($_POST['retail_prices'])){
-			/* PriceList table */
+			/* Set Retail Price in pricelist table */
 			$price_descrLength = count($_POST['rp_product_name']);
 				if($price_descrLength >0){
 					$arr = [];
@@ -540,7 +539,7 @@ class User extends MY_Controller {
 					$priceDescr_data = '';
 					$defdPriceDescr_data = '';					
 				}			
-				/* PriceList Edit table */	
+				/* Set Retail Price in pricelist_edit_us table */	
 				$allPrice_descrLength = count($allPricing);
 				if($allPrice_descrLength >0){
 					$arrrp_Price = []; 
@@ -551,15 +550,16 @@ class User extends MY_Controller {
 								if($keypost != 'rp_product_name' && $keypost != 'retail_prices' && $keypost != 'rp_submit' && $keypost != 'rp_product_name'){
 									if(array_key_exists($productArrayFlip[$value->product], $postvalue)){
 									$jsonConvert = floatval($value->retail_price) - floatval($postvalue[$productArrayFlip[$value->product]]);
-									
-									$sub_array[$keypost] = array(number_format($jsonConvert, 4));
+										if(strpos($keypost, 'defd_') === false && $keypost !== 'aoe_defd'){
+											$sub_array_edit[$keypost] = array((STRING)$jsonConvert);
+										}
 									}
 								}
 							}
-							$sub_array['state'] = array($value->state);							
-							$sub_array['gas_station'] = array(trim($value->station_id));							
+							$sub_array_edit['state'] = array($value->state);							
+							$sub_array_edit['gas_station'] = array(trim($value->station_id));							
 						}
-						$arrrp_Price[$value->id] = (array($value->product => array($sub_array)));	
+						$arrrp_Price[$value->id] = (array($value->product => array($sub_array_edit)));	
 						}
 					$editedPriceDescr_data = json_encode($arrrp_Price);
 				}else{
@@ -567,7 +567,7 @@ class User extends MY_Controller {
 				}
 			}
 			
-			/* Retail PriceList Edit table */
+			/* Set Retail Price in pricelist_edit_us table */
 			if(!empty($_POST['retail_prices_edit'])){			
 			$retail_prices_edit_Length = count($_POST['retail_prices_edit_product']);//pre($retail_prices_edit_Length);
 				if($retail_prices_edit_Length >0){
@@ -593,7 +593,7 @@ class User extends MY_Controller {
 			}
 			if(!empty($_POST['retail_cost_percent_prices'])){
 			
-			/* Retail Cost PriceList Edit table */	
+			/* Retail Cost Pricelist table */	
 			$retail_prices_edit_Length = count($_POST['rcpp_product_name']);
 				if($retail_prices_edit_Length >0){
 					$arr = [];
@@ -632,7 +632,7 @@ class User extends MY_Controller {
 											$amtAfterDec =  floatval($value->retail_price) - $calcPercent;
 											//$jsonConvert = floatval($value->retail_price) - floatval($amtAfterDec);
 										//pre($amtAfterDec);
-											$sub_array[$keypost] = array(number_format($amtAfterDec, 4));
+											$sub_array[$keypost] = array((string)$amtAfterDec);
 										}
 									}
 								}$sub_array['state'] = array($value->state);							
@@ -644,7 +644,7 @@ class User extends MY_Controller {
 				}else{
 					$editedRetailPriceDescr_data = '';
 				}
-			} //die;
+			} 
 
 			/* Retail+Cost %age PriceList Edit table */
 			if(!empty($_POST['retail_cost_percent_prices_edit'])){			
@@ -671,7 +671,7 @@ class User extends MY_Controller {
 				}
 			}			
 
-			/* Add on EFS data */
+			/* Add on EFS pricelist table */
 			if(!empty($_POST['add_on_efs'])){	
 			$price_descrLength = count($_POST['aoe_product_name']);
 				if($price_descrLength >0){
@@ -709,7 +709,7 @@ class User extends MY_Controller {
 									/* $jsonConvert = floatval($value->retail_price) - floatval($postvalue[$productArrayFlip[$value->product]]); */
 									$jsonConvert = floatval($value->pride_price) + floatval($postvalue[$productArrayFlip[$value->product]]);
 									
-									$sub_array[$keypost] = array(number_format($jsonConvert, 4));
+									$sub_array[$keypost] = array((string)$jsonConvert);
 									}
 								}
 							}$sub_array['state'] = array($value->state);							
@@ -747,7 +747,7 @@ class User extends MY_Controller {
 					$editedAEOPriceDescr_data = '';
 				}
 			}			
-			/* Fix Price data */
+			/* Set Fix Price in pricelist table */
 			if(!empty($_POST['fix_price'])){	
 			$price_descrLength = count($_POST['fp_product_name']);
 				if($price_descrLength >0){
@@ -784,7 +784,7 @@ class User extends MY_Controller {
 									if(array_key_exists($productArrayFlip[$value->product], $postvalue)){
 									$jsonConvert = floatval($postvalue[$productArrayFlip[$value->product]]);
 									
-									$sub_array[$keypost] = array(number_format($jsonConvert, 4));
+									$sub_array[$keypost] = array((string)$jsonConvert);
 									}
 								}
 							}$sub_array['state'] = array($value->state);							
@@ -796,7 +796,8 @@ class User extends MY_Controller {
 				}else{
 					$saveFPDescr_data = '';
 				}				
-			}			
+			}
+		
 			/* Add On EFS PriceList Edit table */
 			if(!empty($_POST['fp_prices_edit'])){			
 			$retail_prices_edit_Length = count($_POST['fp_prices_edit_product']);//pre($retail_prices_edit_Length);
@@ -823,7 +824,6 @@ class User extends MY_Controller {
 			}			
 			
 			//JSON encoded data of description of products rows
-			//$data['efs_price'] = $efsPrice_data;
 			if(!empty($_POST['retail_prices'])){
 				$data['retail_price'] = $priceDescr_data;
 				$data1['defd_price'] = $defdPriceDescr_data;				
@@ -849,7 +849,7 @@ class User extends MY_Controller {
 			if(!empty($_POST['retail_cost_percent_prices_edit'])){
 				$data1['retail_cost_percent'] = $editedCostpercentPriceDescr_data;
 			}			
-			//pre($editedAEOPriceDescr_data);die;
+			
 			if(!empty($_POST['aoe_prices_edit'])){
 				$data1['add_on_efs'] = $editedAEOPriceDescr_data;
 			}			
@@ -867,13 +867,111 @@ class User extends MY_Controller {
 				$data1['date_modified'] = date('Y-m-d h:i:s');
 				$data1['date_created'] = date('Y-m-d h:i:s');				
 			}
-			/* pre($data);
-			die; */
+
 			$this->user_model->save_pricelist_edit($data1, $id);
 			$id = $this->user_model->save_pricelist($data, $id);
+			
+			#################### Email Pricing to Associated Companies ####################
+			$getAllUsers = $this->user_model->get_users();
+
+			$srno = 1; $csvdata = ''; 
+			$productName = 'ULSD';
+			$cnt = 0;
+			/* $emailList = array('amandeep@lastingerp.com', 'pooja@lastingerp.com', 'jagdish@lastingerp.com', 'dharamveersingh@lastingerp.com', 'rohit@lastingerp.com', 'vipin@lastingerp.com'); */
+			$emailList = array('jagdish@lastingerp.com');
+			foreach($getAllUsers as $getAllUsersItems){
+				if($getAllUsersItems->role == 'company'){
+				$companyEmail = $getAllUsersItems->company_email;
+				$companyTypeId = $getAllUsersItems->company_type;
+				$getCompanyType = $this->db->where('id', $companyTypeId)->get('company_types')->row();
+				if(is_object($getCompanyType) && !empty($getCompanyType)){
+					$type = lcfirst($getCompanyType->company_type);
+				}else{
+					$type = 'bronze';
+				}
+
+				$cadPricingEFS = $getAllUsersItems->usa_pricing;
+
+				$combinePricingType = array('usa_pricing' =>$cadPricingEFS);
+
+				$shootEmail = 0;	
+				if(in_array($companyEmail,$emailList) && $shootEmail === 1){
+				
+						
+				foreach($combinePricingType as $key=>$combinePricingTypeItems){
+					
+					if(!empty($combinePricingTypeItems) && $combinePricingTypeItems != 'no'){
+						$pricingCompany = null;
+
+						if($key == 'usa_pricing' && !empty($_POST['retail_prices'])){
+							$getUpdatedPricing = $this->user_model->get_efs_edited_pricing_us();
+							$pricingCompany = 'rp-EFS-US';
+						}else if($key == 'usa_pricing' && !empty($_POST['retail_cost_percent_prices'])){
+							$getUpdatedPricing = $this->user_model->get_efs_edited_pricing_us();
+							$pricingCompany = 'rcpp-EFS-US';
+						}else if($key == 'usa_pricing' && !empty($_POST['add_on_efs'])){
+							$getUpdatedPricing = $this->user_model->get_efs_edited_pricing_us();
+							$pricingCompany = 'aoe-EFS-US';							
+						}else if($key == 'usa_pricing' && !empty($_POST['fix_price'])){
+							$getUpdatedPricing = $this->user_model->get_efs_edited_pricing_us();
+							$pricingCompany = 'fp-EFS-US';								
+						}
+						$filename = 'todays-pricing-'.$pricingCompany.'.csv'; //format .xlsx , .csv
+						$fd = fopen (FCPATH."assets/modules/invoices/".$filename, "w");
+
+						if($getUpdatedPricing->$combinePricingTypeItems){
+							
+							$decodePrices = json_decode($getUpdatedPricing->$combinePricingTypeItems);
+
+							foreach($decodePrices as $key =>$decodePricesRows){
+								$getPrice = $decodePricesRows->$productName[0]->$type[0];
+								$getGasStation = $decodePricesRows->$productName[0]->gas_station[0];
+								$getState = $decodePricesRows->$productName[0]->state[0];
+								$csvdata .= $srno.','.$getGasStation.','.$getState.',ULSD,'.$getPrice.','.date('Y-m-d') ."\n";
+								$srno++;	
+							}									
+						}
+
+						$csvheader = "Sr No.,Gas Station Id,State,Product,Price,Date\n";
+						
+						$fileContent = $csvheader.$csvdata;
+						fputs($fd, $fileContent);
+						fclose($fd);
+						//ob_end_clean();
+
+						$csvFilePath = FCPATH ."assets/modules/invoices/".$filename;
+						$ca_subject = "Today's Pricing ".$pricingCompany;
+						$ca_body = 'Check attachment';
+					
+						$this->load->library('email');
+						$result = $this->email
+										->from('info@pridediesel.com', 'From Pride Diesel')
+										->to($companyEmail)
+										->subject($ca_subject)
+										->message($ca_body)
+										->attach($csvFilePath)
+										->send();
+						$this->email->clear($csvFilePath);				
+						//ob_get_clean();
+					if($result) {
+						//echo "Send";
+						unlink($csvFilePath); //for delete generated pdf file. 
+					}else{
+						//echo $this->email->print_debugger();
+					}						
+					}
+					$cnt++;
+					}
+				}				
+			}
+			}
+			$activeTab = null;
+			if (!empty($this->uri->segment(4))) {
+				$activeTab = $this->uri->segment(4);
+			}			
 			if($id){
 				$this->session->set_flashdata('success', 'Changes Saved');
-				redirect(base_url('user/edit_pricelist/').$id, 'refresh');
+				redirect(base_url('user/edit_pricelist/').$id."/$activeTab", 'refresh');
 			}
 		}
 		
@@ -881,7 +979,7 @@ class User extends MY_Controller {
 		$this->_render_template('pricelist/edit', $this->data);		
 	}
 	
-	public function edit_pricelist_ca($id = NULL){
+	public function edit_pricelist_ca($id = NULL, $tab=null){
 		$this->settings['title'] = 'Edit Price List';
 		$this->breadcrumb->mainctrl("user");
 		$this->breadcrumb->add('Edit Price List', base_url() . 'user/edit_pricelist');
@@ -924,7 +1022,6 @@ class User extends MY_Controller {
 													
 						}
 						
-
 						$arr[$m] = (array($_POST['aoe_product_name'][$m] => array($sub_array)));
 						//$arr2[$m] = (array('DEFD' => array($defd_array)));
 						$m++;				
@@ -936,15 +1033,7 @@ class User extends MY_Controller {
 						$arr2[$getCompanyType] = $_POST['defd_'.$getCompanyType];	
 						
 						
-					}//pre($getdefdPrice);
-						//pre($_POST);
-						/* if($_POST['aoe_defd'] != 'aoe_product_name' && $key != 'aoe_defd' && $key != 'defd_price' && $key != 'add_on_efs' && $key != 'aoe_submit'){
-									if($_POST['aoe_defd'] == 'DEFD'){
-										
-										$defd_array['defd_'.$key] = array($_POST['aoe_product_name'][$m]);
-									}
-				} */									
-					
+					}
 					$priceDescr_data = json_encode($arr);
 					$defdPriceDescr_data = json_encode(array('DEFD'=>$arr2));
 				}else{
@@ -963,25 +1052,26 @@ class User extends MY_Controller {
 								if($keypost != 'aoe_product_name' && $keypost != 'add_on_efs' && $keypost != 'aoe_submit' ){
 									if(array_key_exists($productArrayFlip[$value->product], $postvalue)){
 									$jsonConvert = floatval($value->pride_price) - floatval($postvalue[$productArrayFlip[$value->product]]);
-									
-									$sub_array[$keypost] = array(number_format($jsonConvert, 4));
+									//pre($keypost);
+										if(strpos($keypost, 'defd_') === false && $keypost !== 'aoe_defd'){
+											$sub_array_edited[$keypost] = array((STRING)$jsonConvert);
+										}
 									}
 									/* if(array_key_exists('2', $postvalue)){
 										$sub_array['defd_'.$keypost] = array($postvalue[2]);
 									} */
 								}
-							}$sub_array['state'] = array($value->state);							
-							$sub_array['gas_station'] = array(str_replace(' ', '-', trim($value->gas_station)));							
+							}$sub_array_edited['state'] = array($value->state);							
+							$sub_array_edited['gas_station'] = array(str_replace(' ', '-', trim($value->gas_station)));							
 						}
-						$arrrp_Price[$value->id] = (array($value->product => array($sub_array)));	
+						$arrrp_Price[$value->id] = (array($value->product => array($sub_array_edited)));	
 						}
 					$saveAOEDescr_data = json_encode($arrrp_Price);
 				}else{
 					$saveAOEDescr_data = '';
 				}				
 			}
-				
-				//die;			
+		
 			
 			/* Add On EFS PriceList Edit table */
 			if(!empty($_POST['aoe_prices_edit'])){			
@@ -1007,7 +1097,7 @@ class User extends MY_Controller {
 					$editedAEOPriceDescr_data = '';
 				}
 			}			
-			/* Fix Price data */
+			/* Fix Price data pricelist_ca table */
 			if(!empty($_POST['fix_price'])){	
 			$price_descrLength = count($_POST['fp_product_name']);
 				if($price_descrLength >0){
@@ -1043,8 +1133,9 @@ class User extends MY_Controller {
 								if($keypost != 'fp_product_name' && $keypost != 'fix_price' && $keypost != 'fp_submit' ){
 									if(array_key_exists($productArrayFlip[$value->product], $postvalue)){
 									$jsonConvert = floatval($postvalue[$productArrayFlip[$value->product]]);
-									
-									$sub_array[$keypost] = array(number_format($jsonConvert, 4));
+									if(strpos($keypost, 'defd_') === false){
+										$sub_array[$keypost] = array((STRING)$jsonConvert);
+										}
 									}
 								}
 							}$sub_array['state'] = array($value->state);							
@@ -1056,8 +1147,9 @@ class User extends MY_Controller {
 				}else{
 					$saveFPDescr_data = '';
 				}				
-			}			
-			/* Add On EFS PriceList Edit table */
+			}
+			
+			/* Fix Price pricelist_edit_ca table */
 			if(!empty($_POST['fp_prices_edit'])){			
 			$retail_prices_edit_Length = count($_POST['fp_prices_edit_product']);
 				if($retail_prices_edit_Length >0){
@@ -1110,37 +1202,129 @@ class User extends MY_Controller {
 				$data1['date_modified'] = date('Y-m-d h:i:s');
 				$data1['date_created'] = date('Y-m-d h:i:s');				
 			}
-			/* pre($data1);
-			die; */
+
 			$this->user_model->save_CApricelist_edit($data1, $id);
 			
 			$id = $this->user_model->save_ca_pricelist($data, $id);
+			#################### Email Pricing to Associated Companies ####################
+			$getAllUsers = $this->user_model->get_users();
+
+			$srno = 1; $csvdata = '';
+			//$setPricingType = 'add_on_husky'; 
+			$productName = 'ULSD';
+			$cnt = 0;
+			/* $emailList = array('amandeep@lastingerp.com', 'pooja@lastingerp.com', 'jagdish@lastingerp.com', 'dharamveersingh@lastingerp.com', 'rohit@lastingerp.com', 'vipin@lastingerp.com'); */
+			$emailList = array('jagdish@lastingerp.com');
+			foreach($getAllUsers as $getAllUsersItems){
+				if($getAllUsersItems->role == 'company'){
+				$companyEmail = $getAllUsersItems->company_email;
+				$companyTypeId = $getAllUsersItems->company_type_ca;
+				$getCompanyType = $this->db->where('id', $companyTypeId)->get('company_types')->row();
+				if(is_object($getCompanyType) && !empty($getCompanyType)){
+					$type = lcfirst($getCompanyType->company_type);
+				}else{
+					$type = 'bronze';
+				}
+				//if(!empty($_POST['add_on_efs'])){
+					$cadPricingEFS = $getAllUsersItems->cad_pricing;
+				//}
+				$combinePricingType = array('cad_pricing' =>$cadPricingEFS);
+				
+				//pre(count($combinePricingType));
+				//for($cnt=0; $cnt<count($combinePricingType); $cnt++){
+				$shootEmail = 0;	
+				if(in_array($companyEmail,$emailList) && $shootEmail === 1){
+				
+						
+				foreach($combinePricingType as $key=>$combinePricingTypeItems){
+					
+					if(!empty($combinePricingTypeItems) && $combinePricingTypeItems != 'no'){
+						$pricingCompany = null;
+
+						if($key == 'cad_pricing' && !empty($_POST['add_on_efs'])){
+							//pre("AddOnEfs");
+							$getUpdatedPricing = $this->user_model->get_efs_edited_pricing_ca();
+							$pricingCompany = 'ao-EFS-CA';
+						}else  if($key == 'cad_pricing' && !empty($_POST['fix_price'])){
+							//pre("FixPrice");
+							$getUpdatedPricing = $this->user_model->get_efs_edited_pricing_ca();
+							$pricingCompany = 'fp-EFS-CA';
+						}
+						//$pricingCompany = 'HUSKY';
+						$filename = 'todays-pricing-'.$pricingCompany.'.csv'; //format .xlsx , .csv
+						$fd = fopen (FCPATH."assets/modules/invoices/".$filename, "w");
+						//echo $companyEmail.": ".$combinePricingTypeItems[$cnt]."<br>";
+						//echo $companyEmail."<br>";
+						if($getUpdatedPricing->$combinePricingTypeItems){
+							
+							$decodePrices = json_decode($getUpdatedPricing->$combinePricingTypeItems);
+							//pre($decodePrices);
+							foreach($decodePrices as $key =>$decodePricesRows){
+								$getPrice = $decodePricesRows->$productName[0]->$type[0];
+								$getGasStation = $decodePricesRows->$productName[0]->gas_station[0];
+								$getState = $decodePricesRows->$productName[0]->state[0];
+								$csvdata .= $srno.','.$getGasStation.','.$getState.',ULSD,'.$getPrice.','.date('Y-m-d') ."\n";
+								$srno++;	
+							}									
+						}
+						//pre($csvdata);die;
+						$csvheader = "Sr No.,Gas Station Id,State,Product,Price,Date\n";
+						
+						$fileContent = $csvheader.$csvdata;
+						fputs($fd, $fileContent);
+						fclose($fd);
+						//ob_end_clean();
+
+						$csvFilePath = FCPATH ."assets/modules/invoices/".$filename;
+						$ca_subject = "Today's Pricing ".$pricingCompany;
+						$ca_body = 'Check attachment';
+						//pre($ca_subject.$ca_body);
+						//die;						
+						$this->load->library('email');
+						$result = $this->email
+										->from('info@pridediesel.com', 'From Pride Diesel')
+										->to($companyEmail)
+										->subject($ca_subject)
+										->message($ca_body)
+										->attach($csvFilePath)
+										->send();
+						//pre($this->email->print_debugger());
+						$this->email->clear($csvFilePath);				
+						//ob_get_clean();
+					if($result) {
+						//echo "Send";
+						unlink($csvFilePath); //for delete generated pdf file. 
+					}else{
+						//echo $this->email->print_debugger();
+					}						
+					}
+					$cnt++;
+					}
+				}				
+			}
+			}
+			$activeTab = null;
+			if (!empty($this->uri->segment(4))) {
+				$activeTab = $this->uri->segment(4);
+			}
+			
 			if($id){
 				$this->session->set_flashdata('success', 'Changes Saved');
-				redirect(base_url('user/edit_pricelist_ca/').$id, 'refresh');
+				redirect(base_url('user/edit_pricelist_ca/').$id."/".$activeTab, 'refresh');
 			}
 		}
 		
-
 		$this->_render_template('pricelist/edit-cad', $this->data);		
 	}
 	
 	###Husky Pricelist Edit
-	public function edit_pricelist_husky_ca($id = NULL){
+	public function edit_pricelist_husky_ca($id = NULL, $tab=null){
 		$this->settings['title'] = 'Edit Price List';
 		$this->breadcrumb->mainctrl("user");
 		$this->breadcrumb->add('Edit Price List', base_url() . 'user/edit_pricelist');
 		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
 		
 		$this->data['companyTypeResult'] = $this->user_model->get_c_type();
-		/* $this->data['usProducts'] = $this->user_model->get_dailypricelist_pro();		
-		$this->data['dailyPriceList'] = $this->user_model->get_dailypricelist_ca();		
-		$this->data['dailyEditPriceList'] = $this->user_model->get_dailyEditpricelist_CA(); */		
-		/* if($id){
-			$this->data['pricelist'] = $this->user_model->get_CApricelist_by_id($id);
-		}else{
-			$this->data['pricelist'] = $this->user_model->get_pricelist_new();
-		} */
 		
 		$id == NULL || $this->data['pricelist'] = $this->user_model->get_husky_CApricelist_by_id($id);
 		
@@ -1152,7 +1336,7 @@ class User extends MY_Controller {
 		if($this->form_validation->run() == true){
 			/* Add on Husky data */
 			if(!empty($_POST['add_on_husky'])){	
-			$price_descrLength = count($_POST['aoh_product_name']);
+				$price_descrLength = count($_POST['aoh_product_name']);
 				if($price_descrLength >0){
 					$arr = [];
 					$arr2 = [];
@@ -1162,22 +1346,17 @@ class User extends MY_Controller {
 					while($m < $price_descrLength) {	
 						foreach($_POST as $key=>$value){ 
 							if($key != 'aoh_product_name' && $key != 'aoh_defd' && $key != 'defd_price' && $key != 'add_on_husky' && $key != 'aoh_submit'){
-								$sub_array[$key] = array($value[$m]);								
-							}
-													
+								//if(strpos($key, 'defd_') === false){
+									$sub_array[$key] = array($value[$m]);
+								//}								
+							}							
 						}
-
 						$arr[$m] = (array($_POST['aoh_product_name'][$m] => array($sub_array)));
-						//$arr2[$m] = (array('DEFD' => array($defd_array)));
 						$m++;				
 					}
 					foreach($this->data['companyTypeResult'] as $companyTypeRows){
-						
 						$getCompanyType = strtolower($companyTypeRows->company_type);
-						
 						$arr2[$getCompanyType] = $_POST['defd_'.$getCompanyType];	
-						
-						
 					}
 					$priceDescr_data = json_encode($arr);
 					$defdPriceDescr_data = json_encode(array('DEFD'=>$arr2));
@@ -1186,8 +1365,8 @@ class User extends MY_Controller {
 					$defdPriceDescr_data = '';
 				}
 				
-			/* Save data in pricelist_edit_ca table */	
-			$allPrice_descrLength = count($allPricing);
+				/* Save data in pricelist_ca_husky table */	
+				$allPrice_descrLength = count($allPricing);
 				if($allPrice_descrLength >0){
 					$arrrp_Price = []; 
 						foreach($allPricing as $key=>$value){ 
@@ -1196,9 +1375,13 @@ class User extends MY_Controller {
 							foreach($_POST as $keypost=>$postvalue){
 								if($keypost != 'aoh_product_name' && $keypost != 'add_on_husky' && $keypost != 'aoh_submit' ){
 									if(array_key_exists($productArrayFlip[$value->product], $postvalue)){
-									$jsonConvert = floatval($value->pride_price) + floatval($postvalue[$productArrayFlip[$value->product]]);
-									
-									$sub_array[$keypost] = array(number_format($jsonConvert, 4));
+										$doTotal = floatval($value->pride_price) + floatval($postvalue[$productArrayFlip[$value->product]]);
+									$jsonConvert = $doTotal;
+									//pre($keypost);
+									if(strpos($keypost, 'defd_') === false && $keypost !== 'aoh_defd'){
+										//$sub_array[$keypost] = array($jsonConvert, 4);
+										$sub_array[$keypost] = array((STRING)$jsonConvert);
+									}
 									}
 								}
 							}$sub_array['state'] = array($value->state);							
@@ -1211,8 +1394,9 @@ class User extends MY_Controller {
 					$saveAOEDescr_data = '';
 				}				
 			}
-			
-			/* Add On EFS PriceList Edit table */
+			//pre($saveAOEDescr_data);
+			//die;
+			/* pricelist_edit_ca_husky table */
 			if(!empty($_POST['aoh_prices_edit'])){			
 			$retail_prices_edit_Length = count($_POST['aoh_prices_edit_product']);
 				if($retail_prices_edit_Length >0){
@@ -1221,10 +1405,13 @@ class User extends MY_Controller {
 					while($m < $retail_prices_edit_Length) {
 						foreach($_POST as $key=>$value){ 
 							if($key != 'aoh_prices_edit' && $key != 'aoh_prices_edit_product' && $key != 'aoh_prices_edit_id' && $key != 'aeh_submit' && $key != 'aoh_prices_edit_gas_station' && $key != 'aoh_prices_edit_state'){
-								$sub_array[$key] = array($value[$m]);
+								//pre($value[$m]);
+								//if(strpos($key, 'defd_') == false){
+									$sub_array[$key] = array($value[$m]);
+								//}
 							}
 							$sub_array['state'] = array($_POST['aoh_prices_edit_state'][$m]);							
-							$sub_array['gas_station'] = array(trim($_POST['aoh_prices_edit_gas_station'][$m]));							
+							$sub_array['gas_station'] = array(trim($_POST['aoh_prices_edit_gas_station'][$m]));
 						}
 						$arrayID = array_values(array_unique($_POST['aoh_prices_edit_id']));
 
@@ -1236,7 +1423,7 @@ class User extends MY_Controller {
 					$editedAEOPriceDescr_data = '';
 				}
 			}
-			
+
 			//JSON encoded data of description of products rows
 			if(!empty($_POST['add_on_husky'])){
 				$data['add_on_husky'] = $priceDescr_data;
@@ -1257,13 +1444,113 @@ class User extends MY_Controller {
 				$data1['date_modified'] = date('Y-m-d h:i:s');
 				$data1['date_created'] = date('Y-m-d h:i:s');				
 			}
-			//pre($data1);die;
+			###### Save Data in pricelist_edit_ca_husky table ########
 			$this->user_model->save_CApricelist_edit_husky($data1, $id);
 			
+			###### Save Data in pricelist_ca_husky table ########
 			$id = $this->user_model->save_ca_pricelist_husky($data, $id);
+			
+			#################### Email Pricing to Associated Companies ####################
+			$getAllUsers = $this->user_model->get_users();
+			
+			
+			//ob_start();
+			//$filename = 'todays-pricing-'.time().'.csv'; //format .xlsx , .csv
+
+			//ob_start();
+
+			$srno = 1; $csvdata = '';
+			//$setPricingType = 'add_on_husky'; 
+			$productName = 'ULSD';
+			$cnt = 0;
+			/* $emailList = array('amandeep@lastingerp.com', 'pooja@lastingerp.com', 'jagdish@lastingerp.com', 'dharamveersingh@lastingerp.com', 'rohit@lastingerp.com', 'vipin@lastingerp.com'); */
+			$emailList = array('jagdish@lastingerp.com');
+			foreach($getAllUsers as $getAllUsersItems){
+				if($getAllUsersItems->role == 'company'){
+				$companyEmail = $getAllUsersItems->company_email;
+				$companyTypeId = $getAllUsersItems->company_type_ca_husky;
+				$getCompanyType = $this->db->where('id', $companyTypeId)->get('company_types')->row();
+				if(is_object($getCompanyType) && !empty($getCompanyType)){
+					$type = $getCompanyType->company_type;
+				}else{
+					$type = 'bronze';
+				}
+				$cadPricingHusky = $getAllUsersItems->cad_pricing_husky;
+				$combinePricingType = array('cad_pricing_husky' =>$cadPricingHusky);
+				//pre($companyEmail);
+				//pre(count($combinePricingType));
+				//for($cnt=0; $cnt<count($combinePricingType); $cnt++){
+				$shootEmail = 0;	
+				if(in_array($companyEmail,$emailList) && $shootEmail === 1){
+				
+						
+				foreach($combinePricingType as $key=>$combinePricingTypeItems){
+					
+					if(!empty($combinePricingTypeItems) && $combinePricingTypeItems != 'no'){
+						$pricingCompany = null;
+
+						$getUpdatedPricing = $this->user_model->get_husky_edited_pricing_ca();
+						$pricingCompany = 'HUSKY';
+						$filename = 'todays-pricing-'.$pricingCompany.'.csv'; //format .xlsx , .csv
+						$fd = fopen (FCPATH."assets/modules/invoices/".$filename, "w");
+						//echo $companyEmail.": ".$combinePricingTypeItems[$cnt]."<br>";
+						//echo $companyEmail."<br>";
+						if($getUpdatedPricing->$combinePricingTypeItems){
+							
+							$decodePrices = json_decode($getUpdatedPricing->$combinePricingTypeItems);
+							//pre($decodePrices);
+							foreach($decodePrices as $key =>$decodePricesRows){
+								$getPrice = $decodePricesRows->$productName[0]->$type[0];
+								$getGasStation = $decodePricesRows->$productName[0]->gas_station[0];
+								$getState = $decodePricesRows->$productName[0]->state[0];
+								$csvdata .= $srno.','.$getGasStation.','.$getState.',ULSD,'.$getPrice.','.date('Y-m-d') ."\n";
+								$srno++;	
+							}									
+						}
+					//pre($csvdata);die;
+						$csvheader = "Sr No.,Gas Station Id,State,Product,Price,Date\n";
+						
+						$fileContent = $csvheader.$csvdata;
+						fputs($fd, $fileContent);
+						fclose($fd);
+						//ob_end_clean();
+
+						$csvFilePath = FCPATH ."assets/modules/invoices/".$filename;
+						$ca_subject = "Today's Pricing ".$pricingCompany;
+						$ca_body = 'Check attachment';
+						//pre($ca_subject.$ca_body);
+						//die;						
+						$this->load->library('email');
+						$result = $this->email
+										->from('info@pridediesel.com', 'From Pride Diesel')
+										->to($companyEmail)
+										->subject($ca_subject)
+										->message($ca_body)
+										->attach($csvFilePath)
+										->send();
+						//pre($this->email->print_debugger());
+						$this->email->clear($csvFilePath);				
+						//ob_get_clean();
+					if($result) {
+						//echo "Send";
+						unlink($csvFilePath); //for delete generated pdf file. 
+					}else{
+						//echo $this->email->print_debugger();
+					}						
+					}
+					$cnt++;
+					}
+				}				
+			}
+			}	
+			$activeTab = null;
+			if (!empty($this->uri->segment(4))) {
+				$activeTab = $this->uri->segment(4);
+			}
+			
 			if($id){
 				$this->session->set_flashdata('success', 'Changes Saved');
-				redirect(base_url('user/edit_pricelist_ca/').$id, 'refresh');
+				redirect(base_url('user/edit_pricelist_ca/').$id."/".$activeTab, 'refresh');
 			}
 		}
 		
@@ -1325,9 +1612,25 @@ class User extends MY_Controller {
 		$this->data['dailyPriceList'] = $this->user_model->get_dailypricelist_ca();
 
 		$this->_render_template('company/view-ca', $this->data);			
+	}
+
+	/* View Husky Pricelist by Company */
+	public function company_husky_pricelist_view(){
+		$this->settings['title'] = 'Price List Canada Husky';
+		$this->breadcrumb->mainctrl("user");
+		$this->breadcrumb->add('Price List Canada Husky', base_url() . 'user/company_husky_pricelist_view');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+		
+		$this->data['companyTypeResult'] = $this->user_model->get_c_type();
+		$this->data['products'] = $this->user_model->get_prodcuts();
+		$this->data['pricelist'] = $this->user_model->get_CAcom_pricelist_by_id(1);
+		$this->data['dailyPriceList'] = $this->user_model->get_husky_dailypricelist_ca();
+
+		$this->_render_template('company/view-husky-ca', $this->data);			
 	}	
 	
 	public function import_pricelist(){
+		ini_set('memory_limit', -1);
 		$this->settings['title'] = 'Import Price List USA';
 		$this->breadcrumb->mainctrl("user");
 		$this->breadcrumb->add('Import Price List USA', base_url() . 'user/import_pricelist');
@@ -1404,7 +1707,7 @@ class User extends MY_Controller {
 							$insertdata[$i]['date_created'] = date('Y-m-d h:i:s');	
 							$insertdata[$i]['date_modified'] = date('Y-m-d h:i:s');
 						}					
-					}//die;					
+					}				
                     /* $allDataInSheet = $objPHPExcel->getActiveSheet()->toArray(true, true, true, true, true);
                     $flag = true;
                     $i=7;
@@ -1423,7 +1726,7 @@ class User extends MY_Controller {
                       $insertdata[$i]['date'] = $value['J'];
                      
 					$i++;
-                    } */ //pre($insertdata);die;              
+                    } */               
                     $result = $this->user_model->importTApriceList($insertdata);   
                     if($result){
                       //echo "Imported successfully";
@@ -1454,6 +1757,7 @@ class User extends MY_Controller {
 	}
 
 	public function import_pricelist_ca(){
+		ini_set('memory_limit', -1);
 		$this->settings['title'] = 'Import Price List Canada';
 		$this->breadcrumb->mainctrl("user");
 		$this->breadcrumb->add('Import Price List Canada', base_url() . 'user/import_pricelist_ca');
@@ -1559,6 +1863,7 @@ class User extends MY_Controller {
 	}	
 	
 	public function import_pricelist_ca_husky(){
+		ini_set('memory_limit', -1);
 		$this->settings['title'] = 'Import Price List Canada';
 		$this->breadcrumb->mainctrl("user");
 		$this->breadcrumb->add('Import Price List Canada', base_url() . 'user/import_pricelist_ca');
@@ -1624,16 +1929,19 @@ class User extends MY_Controller {
 								$makeDateFormat = str_replace('/', '-', $allDataInSheet[$i]['L']);
 								$insertdata[$i]['date'] = date('Y-m-d', strtotime($makeDateFormat));	
 								$insertdata[$i]['date_created'] = date('Y-m-d h:i:s');	
-								$insertdata[$i]['date_modified'] = date('Y-m-d h:i:s');
+								$insertdata[$i]['date_modified'] = date('Y-m-d h:i:s');								
+								
+								//$result = $this->user_model->importHuskyCApriceList($insertdata);
 							}
 						}					
 					}
-					//die;
+					
 					if(count($insertdata) < 1){
 						$this->session->set_flashdata('error', 'Product Name "DIESEL 2 ULSD (LED)" not found');
 						redirect(base_url().'user/import_pricelist_ca_husky', 'refresh');
 						exit;			
-					}	
+					}
+					
                     $result = $this->user_model->importHuskyCApriceList($insertdata);   
                     if($result){
                       //echo "Imported successfully";
@@ -1950,7 +2258,7 @@ class User extends MY_Controller {
 			$data['date_created'] = date('Y-m-d H:i:s');
 			$data['date_modified'] = date('Y-m-d H:i:s');
 			
-			//pre($data);die;
+			
 			$id = $this->user_model->issueMoneyCode($data, $userSessDetails->id);
 			
 			if($id){
@@ -2018,7 +2326,7 @@ class User extends MY_Controller {
 		//$this->load->model('user/user_model');
 		$this->settings['title'] = 'Money Code Issued';
 		$this->breadcrumb->mainctrl("user");
-		$this->breadcrumb->add('Money Code Issued', base_url() . 'user/money_code_issued');
+		$this->breadcrumb->add('Money Code Issued', base_url() . 'user/money_codes');
 		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
 		
 		$this->data['getuserdata'] = $this->user_model->get_users();
@@ -2030,7 +2338,7 @@ class User extends MY_Controller {
 		$this->load->library('pagination');
 		$this->data['getCards'] = $this->user_model->get_money_codes($where);
         // pagination
-        $config['base_url'] = site_url('user/money_code_issued');
+        $config['base_url'] = site_url('user/money_codes');
         $config['uri_segment'] = 3;
         $config['total_rows'] = count($this->data['getCards']);
         $config['per_page'] = 10;
@@ -2219,7 +2527,7 @@ class User extends MY_Controller {
 		$image = FCPATH.'assets/images/pride-diesel-logo.png';
 		//$image = $obj_pdf->Image('assets/images/pride-diesel-logo.png', 50, 50, 100, '', '', '', '', false, 300);
 		//echo '<img src="'.preg_replace('/\\\\/', '/', $image).'">';
-		//pre($image);die;
+		
 		$content = '';
 		$content .= '<h1 style="text-align: center;">Money Code Invoice</h1>';
 			$content .= '<style>
@@ -2331,10 +2639,10 @@ class User extends MY_Controller {
 		$content .= '</table>';
 		$obj_pdf->writeHTML($content);
 		$data = array('invoiceId'=>$invoiceID, 'companyId'=>$cid, 'date_created'=>date('Y-m-d H:i:s'), 'date_modified'=>date('Y-m-d H:i:s'));
-		//pre($data);die;
+		
 		$this->db->insert('money_codes_invoices', $data);
-		ob_end_clean();
-		//$obj_pdf->Output('sample.pdf', 'I');die;
+		
+		//$obj_pdf->Output('sample.pdf', 'I');
 		$obj_pdf->Output(FCPATH . 'assets/modules/invoices/money_code_trans_'.$invoiceID."_".date('Y-m-d')."_".$cid.'.pdf', 'F');
 
 		//Send generated invoice to company and then delete pdf
@@ -2357,6 +2665,7 @@ class User extends MY_Controller {
 			//echo "Send";
 			//unlink($pdfFilePath); //for delete generated pdf file. 
 		}
+		ob_get_clean();
 		$this->session->set_flashdata('success', 'Generated and Sent');
 		redirect(base_url('user/moneyCodeInvoice'), 'refresh');
 	}
@@ -2384,14 +2693,14 @@ class User extends MY_Controller {
 		foreach($getInvoiceData as $invoiceData){
 			$invoiceData = $invoiceData;
 		}
-		//pre($invoiceData);die;
+		
 		
 		$obj_pdf->AddPage();
 		$imagenew = FCPATH ."assets/images/logo.png";
-		//var_dump($image);die;
+		
 		//$image = $obj_pdf->Image('assets/images/pride-diesel-logo.png', 50, 50, 100, '', '', '', '', false, 300);
 		//echo '<img src="'.preg_replace('/\\\\/', '/', $image).'">';
-		//pre($image);die;
+		
 		$content = '';
 		$content .= '<h1 style="text-align: center;">Money Code Invoice</h1>';
 			$content .= '<style>
@@ -2505,7 +2814,7 @@ class User extends MY_Controller {
 		//$obj_pdf->lastPage();
 		ob_end_clean();
 		//ob_end_flush(); 
-		$obj_pdf->Output('moneycodeinvoice.pdf', 'I');//die;		
+		$obj_pdf->Output('moneycodeinvoice.pdf', 'I');		
 	}
 		
 }

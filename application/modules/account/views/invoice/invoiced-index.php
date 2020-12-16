@@ -40,11 +40,11 @@
 				<td><?= $invoicevalues->invoice_id?></td>				
 				<td><?= $invoicevalues->date_created?></td>				
 
-				<td align="center"><a href="<?php echo base_url('account/invoice_view/').$invoicevalues->id ?>" class="btn btn-warning" ><i class=" fa fa-eye"></i></a> </td>
+				<td align="center"><a href="<?php echo base_url('account/invoice_view/').$invoicevalues->id. ?>" class="btn btn-warning" ><i class=" fa fa-eye"></i></a> </td>
 			  </tr>
 			  <?php endforeach; ?>
 			  <?php }else{ echo "<tr>
-				<td colspan='4'>No invoice found</td>
+				<td colspan='5'>No record found</td>
 			  </tr>"; }  ?>
 			  </tbody>
 

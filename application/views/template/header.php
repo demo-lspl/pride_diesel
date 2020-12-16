@@ -6,7 +6,8 @@
 	<title>Pride Diesel</title>
 	<!-- Tell the browser to be responsive to screen width -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=9" />
 	<?php foreach($css as $styles){ ?>
 		<link rel="stylesheet" href="<?php echo base_url() . $styles; ?>" type="text/css" /><?php
 	} ?>
@@ -197,14 +198,14 @@
 			</a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="<?php echo base_url('user/money_code_issued/')?>" class="nav-link <?php if($this->uri->segment(2) == 'money_code_issued'){echo 'active';} ?>">
+                <a href="<?php echo base_url('user/money_code_issued/')?>" class="nav-link <?php if($this->uri->segment(2) == 'money_code_issued' || $this->uri->segment(1) == 'user' && $this->uri->segment(2) == 'money_code_issue' && empty($this->uri->segment(4))){echo 'active';} ?>">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Generate Money Code</p>
                 </a>
               </li>
 
               <li class="nav-item">
-                <a href="<?php echo base_url('user/money_codes/')?>" class="nav-link <?php if($this->uri->segment(2) == 'money_codes' || $this->uri->segment(1) == 'user' && $this->uri->segment(2) == 'money_code_issue'){echo 'active';} ?>">
+                <a href="<?php echo base_url('user/money_codes/')?>" class="nav-link <?php if($this->uri->segment(2) == 'money_codes' || $this->uri->segment(1) == 'user' && $this->uri->segment(2) == 'money_code_issue' && !empty($this->uri->segment(4))){echo 'active';} ?>">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Old Money Codes</p>
                 </a>
@@ -277,7 +278,7 @@
           </li>		  
 		  
 		  <!--	Accounts Menu Start	-->
-		  <li class="nav-item has-treeview <?php if($this->uri->segment(1) == 'account'){echo 'menu-open';} ?>">
+		  <li class="nav-item has-treeview <?php if($this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'ledgers' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'invoice' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'tax' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'transactions'){echo 'menu-open';} ?>">
             <a href="#" class="nav-link">
               <i class="nav-icon far fa fa-paper-plane"></i>
               <p>
@@ -360,7 +361,7 @@
            
           </li>
 		  <?php
-			$getUserPricing = $this->db->select('usa_pricing, cad_pricing, allowMoneyCode')->where('id', $userSessDetails->id)->get('users')->row();
+			$getUserPricing = $this->db->select('usa_pricing, cad_pricing, cad_pricing_husky, allowMoneyCode')->where('id', $userSessDetails->id)->get('users')->row();
 			if($getUserPricing->allowMoneyCode == 1){	
 		  ?>
 		  <li class="nav-item has-treeview <?php if($this->uri->segment(1) == 'user' && $this->uri->segment(2) == 'issueCode' || $this->uri->segment(1) == 'user' && $this->uri->segment(2) == 'issuedCodes'){echo 'menu-open';} ?>">
@@ -401,7 +402,7 @@
             </a>
            
           </li>	
-			<?php } if($getUserPricing->usa_pricing != 'no'){?>	
+		<?php } if($getUserPricing->usa_pricing != 'no'){?>	
 		  <li class="nav-item has-treeview">
             <a href="<?php echo base_url('user/company_pricelist_view/')?>" class="nav-link <?php if($this->uri->segment(1) == 'user' && $this->uri->segment(2) == 'company_pricelist_view'){echo 'active';} ?>">
               <i class="nav-icon fas fa fa-list"></i>
@@ -411,7 +412,18 @@
             </a>
            
           </li>
-			<?php } ?>
+		<?php } ?>
+		<?php  if($getUserPricing->cad_pricing_husky == 'add_on_husky'){?>	
+		  <li class="nav-item has-treeview">
+            <a href="<?php echo base_url('user/company_husky_pricelist_view/')?>" class="nav-link <?php if($this->uri->segment(1) == 'user' && $this->uri->segment(2) == 'company_husky_pricelist_view'){echo 'active';} ?>">
+              <i class="nav-icon fas fa fa-list"></i>
+              <p>
+                Price List Husky
+              </p>
+            </a>
+           
+          </li>
+		<?php } ?>		
           <li class="nav-item has-treeview">
             <a href="<?php echo base_url('account/company_transactions')?>" class="nav-link <?php if($this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'company_transactions'){echo 'active';} ?>">
               <i class="nav-icon fas fa fa-file-excel"></i>
@@ -440,6 +452,39 @@
            
           </li>			  
 		  <?php }?>
+		  <?php if($userSessDetails->role == 'admin'){ ?>
+		  <li class="nav-item has-treeview <?php if($this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'cad_rebate_calc' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'usa_rebate_calc' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'husky_rebate'){echo 'menu-open';} ?>">
+			<a href="#" class="nav-link ">
+			  <i class="nav-icon fas fa fa-wallet"></i>
+			  <p>Reporting
+			  <i class="fas fa-angle-left right"></i>
+			  </p>
+			  
+			</a>
+            <ul class="nav nav-treeview">
+
+              <li class="nav-item">
+                <a href="<?php echo base_url('account/cad_rebate_calc/')?>" class="nav-link <?php if($this->uri->segment(2) == 'cad_rebate_calc'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>CAD Rebate EFS</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?php echo base_url('account/usa_rebate_calc')?>" class="nav-link <?php if($this->uri->segment(2) == 'usa_rebate_calc'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>USA Rebate EFS</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?php echo base_url('account/husky_rebate')?>" class="nav-link <?php if($this->uri->segment(2) == 'husky_rebate'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Husky Rebate</p>
+                </a>
+              </li>			  
+		  
+			</ul>		   
+		  </li>	
+<?php } ?>		  
         </ul>
       </nav>
       <!-- /.sidebar-menu -->

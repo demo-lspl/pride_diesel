@@ -111,6 +111,10 @@ class Card extends MY_Controller {
 
 			!empty($this->input->post('card_assign'))?$data['company_id'] = $this->input->post('card_assign'):	$data['company_id'] = 0;
 			!empty($this->input->post('card_assign_driver'))?$data['driver_id'] = $this->input->post('card_assign_driver'):	$data['driver_id'] = NULL;
+			$prevStatus = $this->data['card']->card_status;
+			//pre($this->input->post('card_status'));
+			if($prevStatus !== $this->input->post('card_status')){
+				//pre($this->input->post('card_status'));die;
 			/* Update card status Husky */
 			if($this->input->post('card_status') == '1' || $this->input->post('card_status') == '3' || $this->input->post('card_status') == '4' && !empty($this->input->post('cardToken'))){
 			if($this->input->post('card_status') == '1'){$cardStatusHusky = 'A';}else if($this->input->post('card_status') == '3'){$cardStatusHusky = 'B';}else if($this->input->post('card_status') == '4'){$cardStatusHusky = 'C';}				
@@ -294,6 +298,8 @@ class Card extends MY_Controller {
 			
 			}
 			}
+			}
+			//die;
 			if($id){
 				if($companySession->role == 'company'){
 					unset($data['company_id']);
@@ -544,11 +550,84 @@ class Card extends MY_Controller {
 			$object_writer = new PHPExcel_Writer_Excel2007($objPHPExcel);
 			       // header('Content-Type: application/vnd.ms-excel');
 			      
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
- header("Content-Disposition: attachment;filename=".$fileName.".xlsx");
+				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				header("Content-Disposition: attachment;filename=".$fileName.".xlsx");
 		   
-			         ob_end_clean();
+			        ob_end_clean();
 			        $object_writer->save('php://output');		
+	}
+
+	public function exportCardsByCompany($cid=null){
+		$this->load->library('excel');
+			$this->db->select('cards.*, drivers.name as driver_name');
+			$this->db->join('drivers', 'drivers.id = cards.driver_id', 'LEFT');
+			if(!empty($cid) && $cid != 'undefined'){
+				$this->db->where(array('cards.company_id'=> $cid));
+			}			
+
+			$getCards = $this->db->get('cards')->result();	
+			if(count($getCards) < 1){	
+				echo "nocards";
+				exit();
+			}
+		
+		$objPHPExcel = new PHPExcel();
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        // set Header
+        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Card Number');
+        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Status');
+        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Driver Name');
+        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Unit Number');
+
+        // set Row
+        $rowCount = 2;
+        foreach ($getCards as $element) {
+						switch($element->card_status){
+							case 0:
+							$status = 'Inactive';
+							break;
+							case 1:
+							$status = 'Active';
+							break;
+							case 2:
+							$status = 'Hold';
+							break;
+							case 3:
+							$status = 'Blocked';
+							break;
+							case 4:
+							$status = 'Clear';
+							break;
+							case 5:
+							$status = 'Fraud';
+							break;
+							case 6:
+							$status = 'Lost';
+							break;
+							case 7:
+							$status = 'Stolen';
+							break;
+							case 8:
+							$status = 'Permanent Blocked';
+							break;							
+						}			
+            $objPHPExcel->getActiveSheet()->setCellValueExplicit('A' . $rowCount, $element->card_number, PHPExcel_Cell_DataType::TYPE_STRING);
+            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $rowCount, $status);
+            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $rowCount, $element->driver_name);
+            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $rowCount, $element->unit_number);
+
+            $rowCount++;
+        }
+		//die;
+       $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel); 
+
+			$object_writer = new PHPExcel_Writer_Excel2007($objPHPExcel);//pre($object_writer);die;
+			       header('Content-Type: application/vnd.ms-excel');				
+			       header("Content-Disposition: attachment;filename=cards_".date('Ymd').".xlsx");
+			         ob_end_clean();
+			        $object_writer->save('php://output');
+		exit;					
 	}	
 		
 }

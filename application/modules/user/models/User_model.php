@@ -10,11 +10,11 @@ class User_model extends MY_Model {
 	}
 	
 	public $rules = array(
-					//'company_type' => array('field'=>'company_type', 'label'=>'US Account Type', 'rules'=>'required'), 
+					'company_location' => array('field'=>'company_location', 'label'=>'Company Location', 'rules'=>'required'), 
 					//'company_type_ca' => array('field'=>'company_type_ca', 'label'=>'CA Account Type', 'rules'=>'required'), 
 					'company_name' => array('field'=>'company_name', 'label'=>'Company Name', 'rules'=>'required|trim'), 
 					'address' => array('field'=>'address', 'label'=>'Address', 'rules'=>'required|trim'),
-					'company_email' => array('field'=>'company_email', 'label'=>'Email Address', 'rules'=>'required|trim|valid_email'),
+					'company_email' => array('field'=>'company_email', 'label'=>'Email Address', 'rules'=>'required|trim|is_unique[users.company_email]'),
 					'company_password' => array('field'=>'company_password', 'label'=>'Password', 'rules'=>'trim|matches[confirm_company_password]'),
 					'confirm_company_password' => array('field'=>'confirm_company_password', 'label'=>'Confirm Password', 'rules'=>'trim'));
 					
@@ -39,8 +39,10 @@ class User_model extends MY_Model {
 	
 	public function get_new(){
 		$company = new stdClass();
+		$company->company_location 		= '';
 		$company->company_type 		= '';
 		$company->company_type_ca 	= '';
+		$company->company_type_ca_husky = '';
 		$company->sales_person 		= 0;
 		$company->company_name 		= '';
 		$company->customer_id 		= '';
@@ -56,6 +58,7 @@ class User_model extends MY_Model {
 		$company->invoice_schedule 	= '';
 		$company->usa_pricing 		= 'retail_price';
 		$company->cad_pricing 		= 'add_on_efs';
+		$company->cad_pricing_husky = 'add_on_husky';
 		$company->sms_notification 	= 0;
 		$company->allowMoneyCode 	= 0;
 		$company->role 				= 'company';
@@ -175,7 +178,7 @@ class User_model extends MY_Model {
     }	
 	
 	public function create_user($data, $id=null){
-		//print_r($data);die;
+		
 		if($id){
 			$this->db->set($data);
 			$this->db->where('id', $id);
@@ -188,7 +191,7 @@ class User_model extends MY_Model {
 	}
 	
 	public function update_user($data = array(), $id){
-		//print_r($data);die;
+		
 		/* if(!empty($data['user_pass'])){
 			$this->db->set(array('first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'user_email' => $data['user_email'], 'user_pass' => $data['user_pass']));
 		}else{
@@ -258,12 +261,13 @@ class User_model extends MY_Model {
 	}
 
 	public function importHuskyCApriceList($data) {;
+		//$res = $this->db->insert('retail_pricing_husky_ca',$data);
 		$res = $this->db->insert_batch('retail_pricing_husky_ca',$data);
-		 if($res){
-		 return TRUE;
-		 }else{
-		 return FALSE;
-		 }
+		if($res){
+		return TRUE;
+		}else{
+		return FALSE;
+		}
 	}	
 
 	public function get_data_byId($table ,$field, $id) {
@@ -494,6 +498,17 @@ class User_model extends MY_Model {
 			 }
 
 	}
+	public function get_efs_edited_pricing_us(){
+		return $this->db->where('id', 1)->get('pricelist_edit_us')->row();
+	}
+
+	public function get_efs_edited_pricing_ca(){
+		return $this->db->where('id', 1)->get('pricelist_edit_ca')->row();
+	}	
+	
+	public function get_husky_edited_pricing_ca(){
+		return $this->db->where('id', 1)->get('pricelist_edit_ca_husky')->row();
+	}
 
 	/* Product */
 	public function get_products(){
@@ -638,7 +653,7 @@ class User_model extends MY_Model {
 		}*/
 		$this->db->order_by('money_codes_invoices.id','DESC'); 
 		$getPendingInvoices = $this->db->get('money_codes_invoices')->result();
-		//pre($this->db->last_query());die;
+		
 		return $getPendingInvoices;
 	}
 

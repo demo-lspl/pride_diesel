@@ -1,8 +1,36 @@
 <!-- Main Container -->
 <div class="">
-
+<?php
+$getCardNumber = $this->db->select('card_number')->where('id', $this->uri->segment(3))->get('transactions')->row();
+?>
 	<section class="content box">
-	<div class="addnew-user"><a href="<?php echo base_url('account/company_transactions') ?>" class="btn btn-info"><i class="fa fa-arrow-left"></i> Back</a></div>
+	<div class="addnew-user">
+		<a href="<?php echo base_url('account/company_transactions') ?>" class="btn btn-info"><i class="fa fa-arrow-left"></i> Back</a>
+	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+		<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
+		<div class="btn-group" role="group">
+			<button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			  <i class="fa fa-download"></i> Export
+			</button>
+			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1" style="">
+			  <!--a class="dropdown-item export-csv" data-cid="<?php //echo $cid ?>" href="#">Export CSV</a-->
+			  <a class="dropdown-item export-single-xlsx" data-cardnum="<?php echo $getCardNumber->card_number ?>" href="#">Export Excel</a>
+			  <!--a class="dropdown-item export-xlsx-transplus" data-cid="<?php //echo $cid ?>" href="#">Export Excel TransPlus</a-->
+			</div>
+		</div>
+		
+	</div>		
+	</div>
+				<script type="text/javascript">
+					$('.daterange').daterangepicker({
+						locale: {
+							format: 'YYYY-MM-DD',
+
+						},
+							/* "startDate": '<?php echo $startDate; ?>',
+							"endDate": '<?php echo $endDate; ?>' */		
+					});
+				</script>	
 	<div class="card card-default">
 			<div class="card-header bg-card-header">
 				<h3 class="card-title">Card <?php if(!empty($this->uri->segment(3))){echo "#".$this->uri->segment(3);} ?></h3>
@@ -24,9 +52,12 @@
 							<div class="item form-group add-ro">
 							<div class="col-md-12 input_descr_wrap label-box mobile-view2 for-label">
 								<div class="col-md-2 col-xs-12 item form-group">
+									<label class="col-md-12 col-sm-12 col-xs-12" for="driverName">Card Number</label>
+								</div>							
+								<div class="col-md-1 col-xs-12 item form-group">
 									<label class="col-md-12 col-sm-12 col-xs-12" for="driverName">Driver Name</label>
 								</div>
-								<div class="col-md-2 col-xs-12 item form-group">
+								<div class="col-md-1 col-xs-12 item form-group">
 									<label class="col-md-12 col-sm-12 col-xs-12" for="province">City/Province</label>
 								</div>								
 								<div class="col-md-1 col-xs-12 item form-group">
@@ -49,15 +80,6 @@
 								</div>								
 							</div>
 							<?php 
-								$userSessDetails = $this->session->userdata('userdata');
-								$this->db->join('company_types', 'company_types.id=users.company_type');
-								$this->db->where('users.id', $userSessDetails->id);
-								$get_user_type = $this->db->get('users')->row();
-								$companyType = strtolower($get_user_type->company_type);
-								$pricingTypeUS = $get_user_type->usa_pricing;
-								$pricingTypeCA = $get_user_type->cad_pricing;
-								
-								
 								if(!empty($cardDetails)){
 									foreach($cardDetails as $card){
 									$decCategory = json_decode($card->category);
@@ -100,10 +122,14 @@
 								?>
 									<div class="col-md-12 input_descr_wrap middle-box mobile-view mailing-box for-border">
 									<div class="col-md-2 col-sm-12 col-xs-12 form-group">
+                                        <label class="col-md-12 col-sm-12 col-xs-12" for="tax">Card Number</label>
+										<div class="field-val-div"><?= $card->card_number ?></div>
+									</div>									
+									<div class="col-md-1 col-sm-12 col-xs-12 form-group">
                                         <label class="col-md-12 col-sm-12 col-xs-12" for="tax">Driver Name</label>
 										<div class="field-val-div"><?= !empty($dResult->name)?$dResult->name:'&nbsp;' ?></div>
 									</div>
-									<div class="col-md-2 col-sm-12 col-xs-12 form-group">	
+									<div class="col-md-1 col-sm-12 col-xs-12 form-group">	
 									   <label class="col-md-12 col-sm-12 col-xs-12" for="province">City/Province</label>														
 										<div class="field-val-div"><?= $card->gas_station_city .', '.$card->gas_station_state?></div>
 											

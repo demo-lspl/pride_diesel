@@ -27,7 +27,7 @@
 					<th>Company Address</th>					
 					<th>Invoice ID</th>
 					<th>Currency</th>
-					<th>Grand Amount</th>
+					<th>Total Amount</th>
 					<th>Created On</th>				
 					<th>Action</th>				
 				</tr>

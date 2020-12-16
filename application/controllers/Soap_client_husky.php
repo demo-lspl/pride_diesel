@@ -108,12 +108,14 @@ class Soap_client_husky extends MY_controller {
 		//foreach($parser->records->card as $cardRows){
 		for($i=0; $i<count($parser->records->card);$i++){	
 			if(in_array($parser->records->card[$i]->cardToken, $cardids) == FALSE){
+					
 					$cardNum = $parser->records->card[$i]->cardNumber;
 					$cardToken = $parser->records->card[$i]->cardToken;
 					$cardStatus = $parser->records->card[$i]->cardStatus;
 					$policyNumber = $parser->records->card[$i]->customerId;
 
 						$data = array(
+								'cardCompany' => 'HUSKY',
 								'card_number'=>(string)$cardNum,
 								'cardToken'=>(string)$cardToken,
 								'policy_number'=>(string)$policyNumber,
@@ -146,9 +148,50 @@ class Soap_client_husky extends MY_controller {
 				}								
 				/*Insert Husky cards data in cards table*/
 				$this->db->insert('cards', $data);
-			}/* else{
-				//echo "No New card available to import";
-			} */
+			}else{
+					$cardNum = $parser->records->card[$i]->cardNumber;
+					$cardToken = $parser->records->card[$i]->cardToken;
+					$cardStatus = $parser->records->card[$i]->cardStatus;
+					$policyNumber = $parser->records->card[$i]->customerId;
+
+						$data = array(
+								'cardCompany' => 'HUSKY',
+								'card_number'=>(string)$cardNum,
+								'cardToken'=>(string)$cardToken,
+								'policy_number'=>(string)$policyNumber,
+								'date_created' => date('Y-m-d h:i:s'),
+								'date_modified' => date('Y-m-d h:i:s')
+										
+								);
+				$data['card_status'] = '';				
+				if((string)$cardStatus == 'A'){
+					/*Active*/
+					$data['card_status'] .= '1';
+				}else if((string)$cardStatus == 'B'){
+					/*Blocked*/
+					$data['card_status'] .= '3';
+				}else if((string)$cardStatus == 'C'){
+					/*Clear*/
+					$data['card_status'] .= '4';
+				}else if((string)$cardStatus == 'F'){
+					/*Fraud*/
+					$data['card_status'] .= '5';
+				}else if((string)$cardStatus == 'L'){
+					/*Lost*/
+					$data['card_status'] .= '6';
+				}else if((string)$cardStatus == 'S'){
+					/*Stolen*/
+					$data['card_status'] .= '7';
+				}else if((string)$cardStatus == 'X'){
+					/*Permanent Blocked*/
+					$data['card_status'] .= '8';
+				}								
+				/*Insert Husky cards data in cards table*/
+				//$this->db->insert('cards', $data);
+					$this->db->set($data);
+					$this->db->where('card_number', $cardNum);
+					$this->db->update('cards');				
+			}
 				
 		}
 		$this->session->set_flashdata('success_msg', 'Import Complete');

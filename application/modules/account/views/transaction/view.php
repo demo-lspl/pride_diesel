@@ -81,7 +81,7 @@
 				   <div class="col-md-12 col-sm-12 col-xs-12 form-group">
 						<label for="material">Invoice Id :</label>
 						<div class="col-md-7 col-sm-7 col-xs-6 form-group">
-							<div><input type="text" name="invoice_id" value="<?php echo ($maxInvId->id == 0)?'CL1':"CL".$maxInvId->id;// set_value('invoice_date', $cardDetail->invoice_date) ?>" class="form-control" required /></div>
+							<div><input type="text" name="invoice_id" value="<?php echo ($maxInvId->id == 0)?'CL1':"CL".$maxInvId->id;// set_value('invoice_date', $cardDetail->invoice_date) ?>" class="form-control" required readonly /></div>
 						</div>
 					</div>				
 				   <div class="col-md-12 col-sm-12 col-xs-12 form-group">
@@ -103,7 +103,7 @@
 						<div class="panel-body goods_descr_wrapper">			
 							<div class="item form-group add-ro">
 							<div class="col-md-12 input_descr_wrap label-box mobile-view2 for-label">
-								<div class="col-md-2 col-xs-12 item form-group">
+								<div class="col-md-1 col-xs-12 item form-group">
 									<label class="col-md-12 col-sm-12 col-xs-12" for="cardNumber">Card Number</label>
 								</div>								
 								<div class="col-md-1 col-xs-12 item form-group">
@@ -117,6 +117,9 @@
 								</div>								
 								<div class="col-md-1 col-xs-12 item form-group">
 									<label class="col-md-12 col-sm-12 col-xs-12" for="quantity">Quantity</label>
+								</div>
+								<div class="col-md-1 col-xs-12 item form-group">
+									<label class="col-md-12 col-sm-12 col-xs-12" for="quantity">Retail Price</label>
 								</div>									
 								<div class="col-md-1 col-xs-12 item form-group">
 									<label class="col-md-12 col-sm-12 col-xs-12" for="price">Price </label>
@@ -138,14 +141,8 @@
 								$decodeCardCat = json_decode($card->category);
 								$multi_trans = 0;		
 								foreach($decodeCardCat as $cat_vals){
-									$cat_values = $cat_vals;								
-								$companyTypeResult = $this->db->where('id', $card->company_type)->get('company_types')->row();
-								$typeOfCompany = strtolower($companyTypeResult->company_type);
-
-								$getRetailPrice = $this->db->where(array('product'=> $cat_values))->get('retail_pricing')->row();
-								if(!empty($getRetailPrice->retail_price)){
-									$retailPriceVals = $getRetailPrice->retail_price;
-								}
+									//pre($card);
+									$cat_values = $cat_vals;
 
 								$finalProductPrice = 0;								
 								$this->db->select('users.fix_cost_data, users.usa_pricing, users.cad_pricing');
@@ -155,8 +152,10 @@
 								$getFixPriceStatus = $this->db->get()->row();
 								
 								$decodeUnitPrice = json_decode($card->pride_price);
+								$decodeUPrice = json_decode($card->unit_price);
 								
 								$prideDieselPrice = $decodeUnitPrice[$multi_trans];
+								$efsPrice = $decodeUPrice[$multi_trans];
 								
 								$decodeQuantity = json_decode($card->quantity);
 								
@@ -267,7 +266,7 @@
 								?>								
 								<?php $cResult = $this->db->where('id', $card->company_id)->get('users')->row();?>
 									<div class="col-md-12 input_descr_wrap middle-box mobile-view mailing-box for-border">
-									<div class="col-md-2 col-sm-12 col-xs-12 form-group">
+									<div class="col-md-1 col-sm-12 col-xs-12 form-group">
                                         <label class="col-md-12 col-sm-12 col-xs-12" for="cardNumber">Card Number</label>
 										<div class="field-val-div"><?= $card->card_number ?></div>
 										<input type="hidden" class="" name="card_number[]" value="<?= $card->card_number?>" />
@@ -284,17 +283,21 @@
 											
 									</div>
 									<div class="col-md-1 col-sm-12 col-xs-12 form-group">	
-									   <label class="col-md-12 col-sm-12 col-xs-12" for="province">Province</label>														
+									   <label class="col-md-12 col-sm-12 col-xs-12" for="province">Province</label>
 										<div class="field-val-div"><?= $card->gas_station_state?></div>
 											
 									</div>									
 									<div class="col-md-1 col-sm-12 col-xs-12 form-group">	
-									   <label class="col-md-12 col-sm-12 col-xs-12" for="quantity">Quantity</label>														
+									   <label class="col-md-12 col-sm-12 col-xs-12" for="quantity">Quantity</label>
 										<div class="field-val-div"><?= $qty_values?></div>
 											
+									</div>
+									<div class="col-md-1 col-sm-12 col-xs-12 form-group">	 
+									  <label class="col-md-12 col-sm-12 col-xs-12" for="price">Retail Price </label>
+										<div class="field-val-div"><?php echo $efsPrice?></div>														
 									</div>									
 									<div class="col-md-1 col-sm-12 col-xs-12 form-group">	 
-									  <label class="col-md-12 col-sm-12 col-xs-12" for="price">Price </label>														
+									  <label class="col-md-12 col-sm-12 col-xs-12" for="price">Price </label>
 										<div class="field-val-div"><input class="pprice" style="width: 100%;" type="text" name="" data-transid="<?= $card->transactionId ?>" data-rownum="<?= $multi_trans ?>" value="<?php echo $prideDieselPrice?>" /></div>														
 									</div>														
 									<div class="col-md-1 col-sm-12 col-xs-12 form-group">	 
@@ -345,7 +348,7 @@
 			<div class="clearfix"></div>
 			<br />
 			<?php //print_r($fetchInvoiceData = $this->account_model->export_invoice_pdf('3')) ?>
-			<p class="text-center"><input class="btn btn-info" name="submit" type="submit" value="Generate Invoice" /></p>
+			<p class="text-center"><input class="btn btn-info" name="submit" type="submit" value="Generate Invoice" onclick="return confirm('Are you sure you want to generate invoice?');" /></p>
 			<!--p class="text-center"><a href="<?php echo base_url('account/generate_trans_invoice/').$this->uri->segment(3)?>" class="btn btn-info" target="_blank">Generate PDF</a></p-->
 			</form>
 			<?php }else{echo "<p class='alert alert-info'>No Invoice Pending</p>";}?>

@@ -48,6 +48,7 @@
                     <th>Amount</th>
                     <th>Reason/notes</th>
                     <th>Currency</th>
+                    <th>Status</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -58,6 +59,9 @@
                     <td><?= $getCardsRows->amount?></td>
                     <td><?= $getCardsRows->notes?></td>
                     <td><?= $getCardsRows->currency?></td>
+					<td align="">
+					<?= ($getCardsRows->invoice_status == 0)?"Non-Invoiced":"Invoiced";?>
+					</td>
                   </tr>
 				  <?php endforeach;}else{ ?>
 				<tr>

@@ -25,7 +25,20 @@
 
 				<!-- form start -->
 				<form role="form" method="post" action="<?php echo base_url('agents/edit/').$this->uri->segment(3) ?>" onkeydown="return event.key != 'Enter';">
-					<div class="">					  
+					<div class="">
+					  <div class="form-group">
+						<label for="InputCompanyName"></label>
+						<select class="form-control" name="role">
+							<option value="">-- Assign Role --</option>
+							<?php
+								$roles = ['admin'=>'Admin', 'accounts'=>'Accounts', 'sales'=>'Sales Person'];
+								foreach($roles as $key=>$rolesItems){
+									echo "<option value='{$key}'>{$rolesItems}</option>";
+								}
+							?>
+						</select>
+						<div class="error-single"><?php echo form_error('company_name'); ?></div>
+					  </div>					
 					  <div class="form-group">
 						<label for="InputCompanyName">Name</label>
 						<input type="text" name="company_name" class="form-control" id="InputCompanyName" placeholder="Name" value="<?php echo set_value('company_name', $company->company_name)?>">
@@ -61,7 +74,6 @@
 						<label for="InputMatchPassword">Confirm Password</label>
 						<input type="password" name="confirm_company_password" class="form-control" id="InputMatchPassword" placeholder="Confirm Password">
 					  </div>
-						<input type="hidden" name="role" value="admin" />
 
 					<div class="form-group">
 					  <button type="submit" class="btn btn-primary">Submit</button>

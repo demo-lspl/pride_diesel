@@ -61,7 +61,7 @@
                     <th>Card #</th>
                     <th>Card Number</th>
                     <th>Company Name</th>
-                    <th>Card Limit</th>
+                    <th>Card Status</th>
                     <th>Action</th>
                   </tr>
                   </thead>
@@ -72,8 +72,39 @@
                     <td><?= $cardvalues->id?></td>
                     <td><?= $cardvalues->card_number?></td>
                     <td><?= $cardvalues->company_name?></td>
-                    <td><?= $cardvalues->card_limit?></td>
-                    <td align="center"><a href="<?php echo base_url('card/edit/').$cardvalues->id ?>" class="btn btn-default" ><i class=" fa fa-pen"></i></a> <a href="<?php echo base_url('card/delete/').$cardvalues->id ?>" onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-danger button-delete" ><i class="fa fa-trash"></i></a></td>
+					<?php 
+						switch($cardvalues->card_status){
+							case 0:
+							$status = 'Inactive';
+							break;
+							case 1:
+							$status = 'Active';
+							break;
+							case 2:
+							$status = 'Hold';
+							break;
+							case 3:
+							$status = 'Blocked';
+							break;
+							case 4:
+							$status = 'Clear';
+							break;
+							case 5:
+							$status = 'Fraud';
+							break;
+							case 6:
+							$status = 'Lost';
+							break;
+							case 7:
+							$status = 'Stolen';
+							break;
+							case 8:
+							$status = 'Permanent Blocked';
+							break;							
+						}
+					?>
+                    <td><?= $status?></td>
+                    <td align="center"><a href="<?php echo base_url('card/edit/').$cardvalues->id ?>" class="btn btn-default" ><i class=" fa fa-pen"></i></a> <!--a href="<?php echo base_url('card/delete/').$cardvalues->id ?>" onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-danger button-delete" ><i class="fa fa-trash"></i></a--></td>
                   </tr>
 				  <?php endforeach; ?>
 				  <?php }else{ echo "<tr>

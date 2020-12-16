@@ -45,9 +45,10 @@
                   <tr>
                     <th>Card #</th>
                     <th>Company Name</th>
+					<th>Amount</th>
                     <th>Reason/notes</th>
                     <th>Currency</th>
-                    <th>Action</th>
+                    <th>Status</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -55,10 +56,12 @@
                   <tr>
                     <td><?= $getCardsRows->id?></td>
                     <td><?= $getCardsRows->issuedTo?></td>
+					<td><?= $getCardsRows->amount?></td>
                     <td><?= $getCardsRows->notes?></td>
                     <td><?= $getCardsRows->currency?></td>
-                    <td align="center">
-					<a href="<?php echo base_url('user/money_code_issue/').$getCardsRows->companyId.'/'.$getCardsRows->id ?>" class="btn btn-default" ><i class=" fa fa-pen"></i></a> <a href="<?php echo base_url('user/delete_money_code/').$getCardsRows->companyId.'/'.$getCardsRows->id ?>" onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-danger button-delete" ><i class="fa fa-trash"></i></a>
+                    <td align="">
+					<?= ($getCardsRows->invoice_status == 0)?"Non-Invoiced":"Invoiced";?>
+					<!--a href="<?php echo base_url('user/money_code_issue/').$getCardsRows->companyId.'/'.$getCardsRows->id ?>" class="btn btn-default" ><i class=" fa fa-pen"></i></a> <a href="<?php echo base_url('user/delete_money_code/').$getCardsRows->companyId.'/'.$getCardsRows->id ?>" onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-danger button-delete" ><i class="fa fa-trash"></i></a-->
 					</td>
                   </tr>
 				  <?php endforeach; ?>	

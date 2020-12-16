@@ -1,0 +1,278 @@
+<!-- Main Container -->
+
+<div class="">
+
+
+
+	<section class="content box">
+
+	<!--div class="addnew-user"><a href="<?php //echo base_url('soap_client/get_transaction_summ') ?>" class="btn btn-success"><i class="fa fa-plus"></i> Import Transaction</a></div-->
+
+	<div class="card card-default">
+
+			<div class="card-header bg-card-header">
+
+				<h3 class="card-title">Transactions</h3>
+
+
+
+				<div class="card-tools">
+
+				  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+
+				  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+
+				</div>
+
+			</div>
+
+			<div class="card-body">
+
+				<form class="search form-inline" action="<?php echo base_url().'account/cad_rebate_calc'; ?>" method="get" autocomplete="off">
+
+				  <div class="form-group">
+
+					
+					<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
+
+				  </div>
+
+				  <button type="submit" class="btn btn-default" ><i class="fa fa-search"></i>&nbsp;&nbsp;<?php echo 'Search'; ?></button>
+					<a href="<?php echo base_url(); ?>account/cad_rebate_calc">
+						<input type="button" name="submitSearchReset" class="btn btn-primary" value="Reset"></a>
+				</form>
+
+				<?php 
+				
+				
+
+				$startDate = date('Y-m-d');
+
+				$endDate = date('Y-m-d');
+
+				$daterange = null;
+
+				if(!empty($_GET['date_range'])){
+
+					$daterange = $_GET['date_range'];
+
+					$expDateRange = explode(' - ', $_GET['date_range']);
+
+					$startDate = $expDateRange[0];
+
+					$endDate = $expDateRange[1];
+
+					
+
+				}?>
+
+				<script type="text/javascript">
+
+					$('.daterange').daterangepicker({
+
+						autoUpdateInput: false,
+
+						locale: {
+
+							format: 'YYYY-MM-DD',
+
+							cancelLabel: 'Clear'
+
+
+
+						},
+
+							"startDate": '<?php echo $startDate; ?>',
+
+							"endDate": '<?php echo $endDate; ?>'		
+
+					});
+
+					$('.daterange').on('apply.daterangepicker', function (ev, picker) {
+
+						$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+
+					});
+
+
+
+					$('.daterange').on('cancel.daterangepicker', function (ev, picker) {
+
+						$(this).val('');
+
+					});
+
+				</script>				
+
+			<table id="" class="table table-bordered table-hover">
+
+			<thead>
+
+				<tr>
+
+					<th>#</th> 
+
+					<th>Transaction Date</th>
+					<th>Card Number</th>
+					<th>Transaction ID</th>
+					<th>Transaction Time</th>				
+					<th>Location Name</th>				
+					<th>Location City</th>				
+					<th>Location State/<br/>Province</th>				
+					<th>Category</th>				
+					<th>Amount</th>				
+					<th>Qty</th>				
+					<th>Rebate</th>				
+
+				</tr>
+
+			</thead>
+
+			<tbody>
+
+			  <?php if(!empty($cad_rebate)){ 
+			  $amt_total = $Qty_total = $Rebte_total = 0;
+
+			   foreach($cad_rebate as $transaction): 
+			  
+			       
+					$Timechk = date('h:m', strtotime($transaction->transdate));
+					$datechk =date("Y-m-d", strtotime($transaction->transdate));
+					
+					$cate = json_decode($transaction->category);
+					$qtty = json_decode($transaction->quantity);
+					$amountt = json_decode($transaction->amount);
+					$more_transc = 0;
+					foreach($cate as $cate_val):
+						$cate_name = $cate[$more_transc];
+						$quantitty = $qtty[$more_transc];
+						$AMT = $amountt[$more_transc];
+						$rebate = $quantitty*0.068;
+						
+						
+						
+			       $defd_Amt; $defd_Qty; 
+		        if($cate_name == 'DEFD'){
+					@$defd_Amt += $AMT;
+					@$defd_Qty += $quantitty;
+				}
+						
+						
+						
+						
+						
+						
+				?>
+
+			<tr>
+				<td><?= $transaction->tid?></td>
+				<td><?php echo $datechk;   ?></td>
+				<td><?php echo substr($transaction->card_number, -4);   ?></td>
+				<td><?php echo $transaction->transaction_id;   ?></td>
+				<td><?php echo $Timechk;   ?></td>
+				<td><?php echo $transaction->gas_station_name;   ?></td>
+				<td><?php echo $transaction->gas_station_city;   ?></td>
+				<td><?php echo $transaction->gas_station_state;   ?></td>
+				<td><?php echo $cate_name;   ?></td>
+				<td><?php echo $AMT;   ?></td>
+				<td><?php echo $quantitty;   ?></td>
+				<td><?php echo number_format($rebate, 2);   ?></td>
+				
+			</tr>
+			<?php 
+			  $amt_total +=$AMT;
+			  $Qty_total +=$quantitty;
+			  $Rebte_total +=$rebate;
+			
+			
+			?>
+			
+			  <?php endforeach; ?>
+			  <?php endforeach; ?>
+
+			 
+			  <tr>
+			  <td colspan="9" align="right"><b>Total Fuel Qty and Cost</b></td>
+			  <td><?php echo number_format($amt_total,2); ?></td>
+			  <td><?php echo number_format($Qty_total,2); ?></td>
+			  <td><?php echo number_format($Rebte_total,2); ?></td>
+			  </tr>
+			  <tr><td colspan="11"><td/></tr>
+			  <tr><td colspan="11"><td/></tr>
+			  <tr><td colspan="11"><td/></tr>
+			  <tr><td colspan="11"><td/></tr>
+			  <tr>
+				<td colspan="9" align="right"><b>Total Diesel</b></td>
+				<td><?php
+					$ttl_amtt =  $amt_total - @$defd_Amt; 
+					echo number_format($ttl_amtt ,2);
+				?></td>
+				<td><?php 
+					$ttl_qty =  $Qty_total - @$defd_Qty; 
+					echo number_format($ttl_qty ,2);
+					?>
+				</td>
+				<td></td>
+			  </tr>
+			  <tr>
+				<td colspan="9" align="right"><b>Total Def</b></td>
+				<td><?php echo number_format(@$defd_Amt,2); ?></td>
+				<td><?php echo number_format(@$defd_Qty,2); ?></td>
+				<td></td>
+			  </tr>
+			  <tr>
+				<td colspan="9" align="right"><b>Total Fuel Qty and Cost(A)</b></td>
+				<td><?php echo number_format($amt_total,2); ?></td>
+				<td><?php echo number_format($Qty_total,2); ?></td>
+				<td></td>
+			  </tr>
+			  <tr>
+				<td colspan="9" align="right"><b>Rebate(B)</b></td>
+				<td><?php echo number_format($Rebte_total,2); ?></td>
+				<td></td>
+				<td></td>
+			  </tr>
+			  <tr>
+				<td colspan="9" align="right"><b>Actual Cost of Fuel (C)</b></td>
+				<td><?php 
+				       $Actl_cost = $amt_total - $Rebte_total;
+						echo number_format($Actl_cost,2); 
+					?></td>
+				<td></td>
+				<td></td>
+			  </tr> 
+			  
+			  <?php } 
+			   else{ echo "<tr><td colspan='12'>No Records Found</td></tr>"; }?>
+
+			  </tbody>
+
+			</table>
+
+				<div class="row">
+
+					<div class="col-md-5 col-sm-12">
+
+					
+
+					</div>
+
+					<div class="col-md-7 col-sm-12">
+
+						<div class="pagination-container">
+
+						<?php //echo $pagination ?>
+
+						</div>				
+
+					</div>				
+
+				</div>			
+
+			</div>
+
+			</div>
+
+	</section>
+
+</div>	

@@ -108,7 +108,7 @@ class Agents extends MY_Controller {
 			}else{
 				$data['date_modified'] = date('Y-m-d H:i:s');
 			}
-
+			//pre($data);die;
 			$cid = $this->agents_model->create_user($data, $id);
 			
 			if($cid){

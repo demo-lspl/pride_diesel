@@ -7,14 +7,17 @@
 	</div>
 	<div class="card card-default">
 		<div class="card-header bg-card-header">
-			<h3 class="card-title">Company <?php if(!empty($this->uri->segment(3))){echo "#".$this->uri->segment(3);} ?></h3>
+			<h3 class="card-title">US Pricing <?php if(!empty($this->uri->segment(3))){echo "#".$this->uri->segment(3);} ?></h3>
 
 			<div class="card-tools">
 			  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
 			  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
 			</div>
 		</div>
-		<div class="card-body">
+		<?php 
+		$fourthSeg = $this->uri->segment(4);
+		?>		
+		<div class="card-body pricing-table">
         <div class="row">
           <div class="col-md-12">
             <div class="card card-primary card-tabs">
@@ -22,35 +25,35 @@
                 <ul class="nav nav-tabs" id="custom-tabs-two-tab" role="tablist">
                   <li class="pt-2 px-3"><h3 class="card-title"></h3></li>
                   <li class="nav-item">
-                    <a class="nav-link active" id="custom-tabs-two-home-tab" data-toggle="pill" href="#custom-tabs-two-home" role="tab" aria-controls="custom-tabs-two-home" aria-selected="true">Retail</a>
+                    <a class="nav-link <?php if((empty($fourthSeg)) || (!empty($fourthSeg) && $fourthSeg == 'set-retail-price')){echo "active";}?>" id="custom-tabs-two-home-tab" data-toggle="pill" href="#set-retail-price" role="tab" aria-controls="set-retail-price" aria-selected="true">Retail</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link <?php //if($this->uri->segment(4) == '#custom-tabs-retail-price'){echo "active";} ?>" id="custom-tabs-view-retail-price" data-toggle="pill" href="#custom-tabs-retail-price" role="tab" aria-controls="custom-tabs-retail-price" aria-selected="false">View Retail Price</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'view-retail-price'){echo "active";} ?>" id="custom-tabs-view-retail-price" data-toggle="pill" href="#view-retail-price" role="tab" aria-controls="view-retail-price" aria-selected="false">View Retail Price</a>
                   </li>				  
                   <li class="nav-item">
-                    <a class="nav-link " id="custom-tabs-two-profile-tab" data-toggle="pill" href="#custom-tabs-two-profile" role="tab" aria-controls="custom-tabs-two-profile" aria-selected="false">Retail+Cost %age</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'set-retail-by-percent'){echo "active";} ?>" id="custom-tabs-two-profile-tab" data-toggle="pill" href="#set-retail-by-percent" role="tab" aria-controls="set-retail-by-percent" aria-selected="false">Retail+Cost %age</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link <?php //if($this->uri->segment(3) == '#custom-tabs-retail-price'){echo "active";} ?>" id="custom-tabs-view-retail-cost" data-toggle="pill" href="#custom-tabs-retail-cost" role="tab" aria-controls="custom-tabs-retail-price" aria-selected="false">View Retail+Cost %age</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'view-retail-by-percent'){echo "active";} ?>" id="custom-tabs-view-retail-cost" data-toggle="pill" href="#view-retail-by-percent" role="tab" aria-controls="view-retail-by-percent" aria-selected="false">View Retail+Cost %age</a>
                   </li>					  
                   <li class="nav-item">
-                    <a class="nav-link" id="custom-tabs-two-messages-tab" data-toggle="pill" href="#custom-tabs-two-messages" role="tab" aria-controls="custom-tabs-two-messages" aria-selected="false">Add on EFS</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'set-add-on-efs'){echo "active";} ?>" id="custom-tabs-two-messages-tab" data-toggle="pill" href="#set-add-on-efs" role="tab" aria-controls="set-add-on-efs" aria-selected="false">Add on EFS</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link <?php //if($this->uri->segment(3) == '#custom-tabs-retail-price'){echo "active";} ?>" id="custom-tabs-view-add-efs" data-toggle="pill" href="#custom-tabs-add-efs" role="tab" aria-controls="custom-tabs-add-efs" aria-selected="false">View Add on EFS</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'view-add-on-efs'){echo "active";} ?>" id="custom-tabs-view-add-efs" data-toggle="pill" href="#view-add-on-efs" role="tab" aria-controls="view-add-on-efs" aria-selected="false">View Add on EFS</a>
                   </li>					  
                   <li class="nav-item">
-                    <a class="nav-link" id="custom-tabs-two-settings-tab" data-toggle="pill" href="#custom-tabs-two-settings" role="tab" aria-controls="custom-tabs-two-settings" aria-selected="false">Fix Price</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'set-fix-price'){echo "active";} ?>" id="custom-tabs-two-settings-tab" data-toggle="pill" href="#set-fix-price" role="tab" aria-controls="set-fix-price" aria-selected="false">Fix Price</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link <?php //if($this->uri->segment(3) == '#custom-tabs-retail-price'){echo "active";} ?>" id="custom-tabs-view-fix-price" data-toggle="pill" href="#custom-tabs-fix-price" role="tab" aria-controls="custom-tabs-fix-price" aria-selected="false">View Fix Price</a>
+                    <a class="nav-link <?php if(!empty($fourthSeg) && $fourthSeg == 'view-fix-price'){echo "active";} ?>" id="custom-tabs-view-fix-price" data-toggle="pill" href="#view-fix-price" role="tab" aria-controls="view-fix-price" aria-selected="false">View Fix Price</a>
                   </li>					  
                 </ul>
               </div>
               <div class="card-body">
                 <div class="tab-content" id="custom-tabs-two-tabContent">
 <!-------------------------------- Retail Price Wise data --------------------------------------- -->				
-                  <div class="tab-pane fade show active" id="custom-tabs-two-home" role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
+                  <div class="tab-pane fade <?php if((empty($fourthSeg)) || (!empty($fourthSeg) && $fourthSeg == 'set-retail-price')){echo "show active";}?>" id="set-retail-price" role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
 					<div class="form-messages error">
 						<?php echo validation_errors(); ?>
 						<?php if($this->session->flashdata("success")){?>
@@ -59,7 +62,7 @@
 						</div>
 						<?php } ?>
 					</div>
-					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/set-retail-price" ?>">
 						<input type="hidden" name="retail_prices" value="1" />
 						<table class="table table-bordered">
 							<tr>
@@ -143,8 +146,16 @@
 						</div>				  
 					  </form>
                   </div>
-				<div class="tab-pane fade" id="custom-tabs-retail-price" role="tabpanel" aria-labelledby="custom-tabs-view-retail-price">
-						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+				<div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'view-retail-price'){echo "show active";}?>" id="view-retail-price" role="tabpanel" aria-labelledby="custom-tabs-view-retail-price">
+						<?php 
+							$getCreatedDate = $this->db->select('date')->where('id', 1)->get('retail_pricing')->row();
+							$dateCreated = null;
+							if(is_object($getCreatedDate) && !empty($getCreatedDate)){
+								$dateCreated = date('Y-m-d', strtotime($getCreatedDate->date));
+							}
+						?>
+						<p><strong>Last Updated: </strong><?= $dateCreated ?></p>				
+						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/view-retail-price" ?>">
 						<input type="hidden" name="retail_prices_edit" value="1" />
 						<table class="table table-bordered">
 							<tr>
@@ -217,7 +228,7 @@
 						<p class="text-right"><a class="btn btn-info back-top" href="#"><i class="fa fa-arrow-up"></i></a></p>
 				</div>
 <!--------------------------------- Retail + Cost Percentage Wise data ---------------- -------------------->
-                  <div class="tab-pane fade" id="custom-tabs-two-profile" role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
+                  <div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'set-retail-by-percent'){echo "show active";}?>" id="set-retail-by-percent" role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
 					<div class="form-messages error">
 						<?php echo validation_errors(); ?>
 						<?php if($this->session->flashdata("success")){?>
@@ -226,7 +237,7 @@
 						</div>
 						<?php } ?>
 					</div>
-					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/set-retail-by-percent" ?>">
 						<input type="hidden" name="retail_cost_percent_prices" value="1" />
 						<table class="table table-bordered">
 							<tr>
@@ -287,8 +298,16 @@
 						</div>				  
 					  </form>
                   </div>
-				<div class="tab-pane fade" id="custom-tabs-retail-cost" role="tabpanel" aria-labelledby="custom-tabs-view-retail-cost">
-						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+				<div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'view-retail-by-percent'){echo "show active";}?>" id="view-retail-by-percent" role="tabpanel" aria-labelledby="custom-tabs-view-retail-cost">
+						<?php 
+							$getCreatedDate = $this->db->select('date')->where('id', 1)->get('retail_pricing')->row();
+							$dateCreated = null;
+							if(is_object($getCreatedDate) && !empty($getCreatedDate)){
+								$dateCreated = date('Y-m-d', strtotime($getCreatedDate->date));
+							}
+						?>
+						<p><strong>Last Updated: </strong><?= $dateCreated ?></p>			
+						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/view-retail-by-percent" ?>">
 						<input type="hidden" name="retail_cost_percent_prices_edit" value="1" />
 						<table class="table table-bordered">
 							<tr>
@@ -360,7 +379,7 @@
 						<p class="text-right"><a class="btn btn-info back-top" href="#"><i class="fa fa-arrow-up"></i></a></p>
 				</div>
 <!-------------------------------- According To EFS Wise data --------------------------------------- -->			
-                  <div class="tab-pane fade" id="custom-tabs-two-messages" role="tabpanel" aria-labelledby="custom-tabs-two-messages-tab">
+                  <div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'set-add-on-efs'){echo "show active";}?>" id="set-add-on-efs" role="tabpanel" aria-labelledby="custom-tabs-two-messages-tab">
 					<div class="form-messages error">
 						<?php echo validation_errors(); ?>
 						<?php if($this->session->flashdata("success")){?>
@@ -369,7 +388,7 @@
 						</div>
 						<?php } ?>
 					</div>
-					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/set-add-on-efs" ?>">
 						<input type="hidden" name="add_on_efs" value="1" />					
 						<table class="table table-bordered">
 							<tr>
@@ -428,8 +447,16 @@
 						</div>				  
 					  </form> 
                   </div>
-				<div class="tab-pane fade" id="custom-tabs-add-efs" role="tabpanel" aria-labelledby="custom-tabs-view-add-efs">
-						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+				<div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'view-add-on-efs'){echo "show active";}?>" id="view-add-on-efs" role="tabpanel" aria-labelledby="custom-tabs-view-add-efs">
+						<?php 
+							$getCreatedDate = $this->db->select('date')->where('id', 1)->get('retail_pricing')->row();
+							$dateCreated = null;
+							if(is_object($getCreatedDate) && !empty($getCreatedDate)){
+								$dateCreated = date('Y-m-d', strtotime($getCreatedDate->date));
+							}
+						?>
+						<p><strong>Last Updated: </strong><?= $dateCreated ?></p>			
+						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/view-add-on-efs" ?>">
 						<input type="hidden" name="aoe_prices_edit" value="1" />
 						<table class="table table-bordered">
 							<tr>
@@ -498,7 +525,7 @@
 						<p class="text-right"><a class="btn btn-info back-top" href="#"><i class="fa fa-arrow-up"></i></a></p>
 				</div>
 				<!------------------ Fix Price Wise data -------- -->				
-                  <div class="tab-pane fade" id="custom-tabs-two-settings" role="tabpanel" aria-labelledby="custom-tabs-two-settings-tab">
+                  <div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'set-fix-price'){echo "show active";}?>" id="set-fix-price" role="tabpanel" aria-labelledby="custom-tabs-two-settings-tab">
 					<div class="form-messages error">
 						<?php echo validation_errors(); ?>
 						<?php if($this->session->flashdata("success")){?>
@@ -507,7 +534,7 @@
 						</div>
 						<?php } ?>
 					</div>
-					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+					<form role="form" method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/set-fix-price" ?>">
 						<input type="hidden" name="fix_price" value="1" />					
 						<table class="table table-bordered">
 							<tr>
@@ -566,8 +593,16 @@
 						</div>				  
 					  </form>  
                   </div>
-				<div class="tab-pane fade" id="custom-tabs-fix-price" role="tabpanel" aria-labelledby="custom-tabs-view-fix-price">
-						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3) ?>">
+				<div class="tab-pane fade <?php if(!empty($fourthSeg) && $fourthSeg === 'view-fix-price'){echo "show active";}?>" id="view-fix-price" role="tabpanel" aria-labelledby="custom-tabs-view-fix-price">
+						<?php 
+							$getCreatedDate = $this->db->select('date')->where('id', 1)->get('retail_pricing')->row();
+							$dateCreated = null;
+							if(is_object($getCreatedDate) && !empty($getCreatedDate)){
+								$dateCreated = date('Y-m-d', strtotime($getCreatedDate->date));
+							}
+						?>
+						<p><strong>Last Updated: </strong><?= $dateCreated ?></p>	
+						<form method="post" action="<?php echo base_url('user/edit_pricelist/').$this->uri->segment(3)."/view-fix-price" ?>">
 						<input type="hidden" name="fp_prices_edit" value="1" />
 						<table class="table table-bordered">
 							<tr>

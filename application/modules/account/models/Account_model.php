@@ -70,26 +70,34 @@ class Account_model extends MY_Model {
 	}	
 	
 	public function get_ledgers($where = null){
-		
-		//$this->db->select('ledger.*, users.company_name');
+		$this->db->select('users.*, transactions.invoice_status');
+		$this->db->join('cards', 'cards.company_id = users.id', 'INNER');		
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number', 'INNER');
+		$this->db->where('users.role', 'company');
 		if(!empty($where)){
-			$this->db->like('company_name', $where);
+			$this->db->like($where);
 		}
-		$this->db->order_by('id', 'DESC');	
+		$this->db->order_by('users.id', 'ASC');	
 		//$this->db->join('users', 'users.id=ledger.name');
+		$this->db->group_by('cards.company_id');
+		//$this->db->order_by('users.id','ASC');
 		return $this->db->get('users')->result();
 	}
 	
     public function get_pagination($limit, $offset, $where = null)
     {
 		$offset = ($offset-1) * $limit;
-		//$this->db->select('ledger.*, users.company_name');	
+		$this->db->select('users.*, transactions.invoice_status, transactions.id as transid');
+		$this->db->join('cards', 'cards.company_id = users.id', 'INNER');		
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number', 'INNER');
+		$this->db->where('users.role', 'company');	
 		if(!empty($where)){
-			$this->db->like('company_name', $where);
+			$this->db->like($where);
 		}
 		//$this->db->join('users', 'users.id=ledger.name');
         $this->db->limit($limit, $offset);
-		$this->db->order_by('id','DESC');
+		$this->db->group_by('cards.company_id');
+		$this->db->order_by('users.id ASC, transactions.id DESC');
         $query = $this->db->get('users');
         
         if(!is_object($query))
@@ -180,15 +188,15 @@ class Account_model extends MY_Model {
         return array();
     }	
 
-	public function get_trans_invoices($where = null){
+	public function get_trans_invoices($where = array()){
 		$this->db->select('transaction_invoice.*, users.company_name');
 		$this->db->from('transaction_invoice', 'users', 'drivers');
 		$this->db->join('users', 'users.id=transaction_invoice.company_id');
 		//$this->db->where('transaction_invoice.status', 0);
 		if(!empty($where)){
-			$this->db->like('invoice_id', $where);
+			$this->db->like($where);
 		}		
-
+//pre($where);die;
 		return $this->db->get()->result();
 	}
 	
@@ -200,7 +208,8 @@ class Account_model extends MY_Model {
 		$this->db->join('users', 'users.id=transaction_invoice.company_id');
 		//$this->db->where('transaction_invoice.status', 0);	
 		if(!empty($where)){
-			$this->db->like('invoice_id', $where);
+			//$this->db->like('invoice_id', $where);
+			$this->db->like($where);
 		}
         $this->db->limit($limit, $offset);
 		$this->db->order_by('id','DESC');
@@ -449,9 +458,9 @@ class Account_model extends MY_Model {
 	/*******************************	End Tax Code	*********************/	
 	/*******************************	Start Transaction Code	*********************/
 	public function get_transactions($where = null, $where2=null){
-		$this->db->select('transactions.id as tid, cards.card_number, drivers.name, cards.card_status, MAX(transactions.transaction_date) as transdate, transactions.transaction_id');
-		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');
-		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		$this->db->select('transactions.*, cards.card_status, cards.driver_id, cards.company_id');
+		//$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');
+		$this->db->join('cards', 'cards.card_number = transactions.card_number');
 		if(!empty($where)){
 			$this->db->like('cards.card_number', $where);
 		}
@@ -464,28 +473,39 @@ class Account_model extends MY_Model {
 		//$this->db->where('cards.company_id', $cid);
 		$this->db->group_by('transactions.card_number');	
 		$this->db->order_by('transactions.id', 'DESC');	
-		return $this->db->get('cards')->result();
+		return $this->db->get('transactions')->result();
+		/* if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			$start_date=$where2[0];
+			$end_date=$where2[1];
+
+			$this->db->where('transaction_date >= "'. date('Y-m-d', strtotime($start_date)). '" and transaction_date <= "'. date('Y-m-d', strtotime($end_date)).'"');
+		}		
+		return $this->db->count_all_results('transactions'); */
 	}
 	
     public function get_pagination_transactions($limit, $offset, $where = null, $where2)
     {
 		$offset = ($offset-1) * $limit;	
-		$this->db->select('transactions.id as tid, cards.id, cards.card_number, drivers.name, cards.card_status, MAX(transactions.transaction_date) as transdate');
-		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');	
-		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		$this->db->select('transactions.*, cards.card_status, cards.driver_id, cards.company_id');
+		//$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');	
+		$this->db->join('cards', 'cards.card_number = transactions.card_number');
 		if(!empty($where)){
 			$this->db->like('cards.card_number', $where);
 		}
 		if(!empty($where2)){
 			$start_date=$where2[0];
 			$end_date=$where2[1];
-			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+			/* $this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"'); */
+			$this->db->where('transaction_date >= "'. date('Y-m-d', strtotime($start_date)). '" and transaction_date <= "'. date('Y-m-d', strtotime($end_date)).'"');
 		}		
 		//$this->db->where('cards.company_id', $cid);
-		$this->db->group_by('transactions.card_number');
+		//$this->db->group_by('transactions.card_number');
         $this->db->limit($limit, $offset);
 		$this->db->order_by('transactions.id','DESC');
-        $query = $this->db->get('cards');
+        $query = $this->db->get('transactions');
         
         if(!is_object($query))
         {
@@ -496,7 +516,7 @@ class Account_model extends MY_Model {
         if ($query->num_rows() > 0)
             return $query->result();
             
-        return array();
+        //return array();
     }
 
 	public function getLastTransaction(){
@@ -533,7 +553,7 @@ class Account_model extends MY_Model {
 	}		
 	
 	public function get_comp_transactions($where = null, $where2=null, $cid){
-		$this->db->select('cards.card_number, drivers.name, cards.card_status, transactions.transaction_date');
+		$this->db->select('cards.card_number, drivers.name, cards.card_status, transactions.transaction_date, transactions.id as transactionid');
 		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');
 		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
 		if(!empty($where)){
@@ -546,14 +566,14 @@ class Account_model extends MY_Model {
 			$this->db->where('transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
 		}		
 		$this->db->where('cards.company_id', $cid);
-		$this->db->group_by('transactions.card_number');	
+		//$this->db->group_by('transactions.card_number');	
 		return $this->db->get('cards')->result();
 	}	
 	
     public function get_comp_pagination_transactions($limit, $offset, $where = null, $where2=null, $cid)
     {
 		$offset = ($offset-1) * $limit;
-		$this->db->select('cards.card_number, drivers.name, cards.card_status, transactions.transaction_date');
+		$this->db->select('cards.card_number, drivers.name, cards.card_status, transactions.transaction_date, transactions.id as transactionid');
 		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');	
 		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
 		if(!empty($where)){
@@ -565,7 +585,7 @@ class Account_model extends MY_Model {
 			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
 		}		
 		$this->db->where('cards.company_id', $cid);
-		$this->db->group_by('transactions.card_number');
+		//$this->db->group_by('transactions.card_number');
         $this->db->limit($limit, $offset);
 		$this->db->order_by('transactions.id','DESC');
         $query = $this->db->get('cards');
@@ -605,11 +625,11 @@ class Account_model extends MY_Model {
         return $query->result_array();
 	}	
 	
-	public function get_card_transactions($cardNumber, $daterange){
+	public function get_card_transactions($transid){
 		$this->db->join('users', 'users.id = cards.company_id', 'LEFT');
 		$this->db->join('transactions', 'cards.card_number = transactions.card_number', 'LEFT');
 		$this->db->from('cards');
-		$oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
+		/* $oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
 		if(!empty($daterange)){
 					$expDateRange = explode('%20-%20', $daterange);
 					$startDate = $expDateRange[0];
@@ -617,8 +637,8 @@ class Account_model extends MY_Model {
 			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d H:i:s', strtotime($startDate)). '" and "'. date('Y-m-d H:i:s', strtotime($endDate)).'"');
 		}else{
 			$this->db->where('transactions.transaction_date BETWEEN "'. $oldDate. '" and "'. date('Y-m-d H:i:s').'"');			
-		}		
-		$this->db->where('transactions.card_number', $cardNumber);
+		} */		
+		$this->db->where('transactions.id', $transid);
 		return $this->db->get()->result();
 	}
 	
@@ -693,5 +713,445 @@ class Account_model extends MY_Model {
 		return $this->db->select_max('id')->get('transaction_invoice')->row();
 	}
 	
-	/*******************************	End Transaction Code	*********************/	
+	/*******************************	End Transaction Code	*********************/
+
+	
+	/*************************** Get CAD Transaction Details ****************************/
+	public function get_cad_rebate_transactions($limit, $offset, $where = null, $where2){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transactions.id as tid,transactions.transaction_id ,transactions.amount ,transactions.gas_station_state,transactions.gas_station_city,transactions.gas_station_name,transactions.unit_price,transactions.quantity,transactions.category,cards.id, cards.card_number, drivers.name, cards.card_status, MAX(transactions.transaction_date) as transdate');
+		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');	
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			// $start_date = $where2[0];
+			// $end_date = $where2[1];
+			
+			
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transactions.transaction_date >='" . $start_date . "' AND  transactions.transaction_date <='" . $end_date. "'");
+			
+		}		
+		//$this->db->where('cards.company_id', $cid);
+		$this->db->where('transactions.billing_currency', 'CAD');
+		$this->db->group_by('transactions.card_number');
+        //$this->db->limit($limit, $offset);
+        $this->db->limit(10);
+		$this->db->order_by('transactions.id','DESC');
+        $query = $this->db->get('cards');
+        
+        if(!is_object($query))
+        {
+            //echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+	public function get_rebate_transactions($where = null, $where2=null){
+		$this->db->select('transactions.id as tid, cards.card_number, drivers.name, cards.card_status, MAX(transactions.transaction_date) as transdate, transactions.transaction_id');
+		$this->db->join('drivers', 'drivers.id = cards.driver_id', 'left');
+		$this->db->join('transactions', 'transactions.card_number = cards.card_number');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transactions.transaction_date >='" . $start_date . "' AND  transactions.transaction_date <='" . $end_date. "'");
+		}		
+		//$this->db->where('cards.company_id', $cid);
+		$this->db->group_by('transactions.card_number');	
+		$this->db->order_by('transactions.id', 'DESC');	
+		$this->db->limit(10);
+		return $this->db->get('cards')->result();
+	}
+	public function get_trans_invoices_rebate($where = null, $where2){
+		$this->db->select('transaction_invoice.*, users.company_name');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'EFS');
+		//$this->db->limit(10);
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+		}		
+
+		return $this->db->get()->result();
+	}
+	
+	public function get_pagination_trans_invoice_rebate($limit, $offset, $where = null, $where2){
+		
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'EFS');
+       $this->db->limit($limit, $offset);
+	   // $this->db->limit(10);
+		//$this->db->order_by('id','DESC');
+		
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	
+	
+	public function get_pagination_trans_invoice_rebate_calculation($limit, $offset,$where = null, $where2){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'EFS');
+        $this->db->limit($limit, $offset);
+		//$this->db->order_by('id','DESC');
+		//$this->db->limit(10);
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	/*************************** Get CAD Transaction Details ****************************/
+	/*************************** Get CAD Per Transaction Details ****************************/
+	public function get_trans_invoices_rebatePer($where = null, $where2,$invoice_id){
+		$this->db->select('transaction_invoice.*, users.company_name');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'EFS');
+		$this->db->where('transaction_invoice.id', $invoice_id);
+		//$this->db->limit(10);
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+		}		
+
+		return $this->db->get()->result();
+	}
+	
+	public function get_pagination_trans_invoice_rebatePer($limit, $offset, $where = null, $where2,$invoice_id){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'EFS');
+		$this->db->where('transaction_invoice.id', $invoice_id);
+        //$this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+		//$this->db->limit(10);
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	
+	
+	public function get_pagination_trans_invoice_rebate_calculationPer($where = null, $where2,$invoice_id){
+		
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'EFS');
+		$this->db->where('transaction_invoice.id', $invoice_id);
+        //$this->db->limit($limit, $offset);
+		$this->db->order_by('id','DESC');
+		$this->db->limit(10);
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+	
+	
+	/*************************** Get CAD Per Transaction Details ****************************/
+	/*************************** Get USA Transaction Details ****************************/
+	public function get_trans_invoices_rebate_USA($where = null, $where2,$invoice_id){
+		$this->db->select('transaction_invoice.*, users.company_name');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		$this->db->where('transaction_invoice.billingCurrency', 'USD');
+		 //$this->db->where('transaction_invoice.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		// $this->db->limit(10);
+		 if($invoice_id != 0){
+		 $this->db->where('transaction_invoice.id', $invoice_id);
+		}
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+		}		
+
+		return $this->db->get()->result();
+	}
+	
+	public function get_pagination_trans_invoice_rebate_USA($limit, $offset, $where = null, $where2,$invoice_id){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'USD');
+		// $this->db->where('transaction_invoice.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		//$this->db->limit(10);
+		 if($invoice_id != 0){
+			$this->db->where('transaction_invoice.id', $invoice_id);
+		}else{
+			$this->db->limit($limit, $offset);
+			$this->db->order_by('id','DESC');
+		}	
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	
+	
+	public function get_pagination_trans_invoice_rebate_calculation_USA($limit, $offset, $where = null, $where2,$invoice_id){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'USD');
+		 //$this->db->where('transaction_invoice.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+        //$this->db->limit($limit, $offset);
+		//$this->db->limit(10);
+		if($invoice_id != 0){
+		 $this->db->where('transaction_invoice.id', $invoice_id);
+		}else{
+			$this->db->limit($limit, $offset); 
+			$this->db->order_by('id','DESC');
+		}
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+	
+	/*************************** Get USA Transaction Details ****************************/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*************************** Get CAD HUSKY Transaction Details ****************************/
+	public function get_trans_invoices_rebate_husky($where = null, $where2,$invoice_id){
+		
+		$this->db->select('transaction_invoice.*, users.company_name');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'HUSKY');
+		if($invoice_id != 0){
+		 $this->db->where('transaction_invoice.id', $invoice_id);
+		}
+		// $this->db->where('transaction_invoice.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		//$this->db->limit(10);
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+		}		
+
+		return $this->db->get()->result();
+	}
+	
+	public function get_pagination_trans_invoice_rebate_husky($limit, $offset, $where = null, $where2,$invoice_id){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'HUSKY');
+		if($invoice_id != 0){
+		 $this->db->where('transaction_invoice.id', $invoice_id);
+		}else{
+		// $this->db->where('transaction_invoice.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+			$this->db->limit($limit, $offset);
+			// $this->db->limit(10);
+			$this->db->order_by('id','DESC');
+		}
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }	
+	
+	
+	public function get_pagination_trans_invoice_rebate_calculation_husky($limit, $offset,$where = null, $where2,$invoice_id){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('transaction_invoice.*, users.company_name, users.address');
+		$this->db->from('transaction_invoice', 'users', 'drivers');
+		$this->db->join('users', 'users.id=transaction_invoice.company_id');
+		//$this->db->where('transaction_invoice.status', 0);	
+		if(!empty($where2)){
+			
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+			
+		}		
+		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
+		$this->db->where('transaction_invoice.billingOn', 'HUSKY');
+		if($invoice_id != 0){
+		 $this->db->where('transaction_invoice.id', $invoice_id);
+		}else{
+		// $this->db->where('transaction_invoice.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+			$this->db->limit($limit, $offset);
+		}
+		// $this->db->limit(10);
+		$this->db->order_by('id','DESC');
+        $query = $this->db->get();
+        
+        if(!is_object($query))
+        {
+            echo $this->db->last_query();
+            exit();
+        }
+		//echo $this->db->last_query();
+		
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+	/*************************** Get CAD HUSKY Transaction Details ****************************/
+	
+	
 }

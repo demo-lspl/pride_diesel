@@ -20,6 +20,7 @@ class Account extends MY_Controller {
 		//$this->scripts['js'][] = 'assets/plugins/jquery/jquery.min.js';	
 		$this->load->model('account_model');
 		$this->load->helper('misc_helper');
+		$this->load->helper('functions_helper');
 		$this->load->helper('url');
 		$this->load->library('form_validation');
 		$this->load->library('efs_api');
@@ -38,9 +39,17 @@ class Account extends MY_Controller {
 		$this->load->library('pagination');
 		$this->data['getuserdata'] = $this->user_model->get_users();
 		//Get all data of company
-		$where = '';
+		$where = [];
 		if(!empty($_GET['company_name'])){
-			$where = $_GET['company_name'];
+			$where = array('users.company_name' => $_GET['company_name']);
+		}
+		if(!empty($_GET['invoice_status'])){
+			if($_GET['invoice_status'] == 'invoiced'){
+				$where = array('transactions.invoice_status' => 1);
+			}
+			if($_GET['invoice_status'] == 'non-invoiced'){
+				$where = array('transactions.invoice_status' => 0);
+			}	
 		}		
 		$this->data['allLedger'] = $this->account_model->get_ledgers($where);
         // pagination
@@ -140,9 +149,12 @@ class Account extends MY_Controller {
 		$this->load->library('pagination');
 
 		//Get all data of company
-		$where = '';
+		$where = array();
 		if(!empty($_GET['search'])){
-			$where = $_GET['search'];
+			$where = array('transaction_invoice.id' => $_GET['search']);
+		}
+		if(!empty($_GET['transactions_from'])){
+			$where = array('transaction_invoice.billingOn' => $_GET['transactions_from']);
 		}		
 		
 		$this->data['allInvoices'] = $this->account_model->get_trans_invoices($where);
@@ -182,9 +194,14 @@ class Account extends MY_Controller {
 		$this->_render_template('invoice/invoice-index', $this->data);		
 	}
 	
-	public function update_invoice_status($invoiceid){
+	public function update_invoice_status($invoiceid, $pagenum=null){
 		$this->account_model->set_invoice_paid_status($invoiceid);
-		redirect(base_url('account/invoice'), 'refresh');
+		if(!empty($pagenum)){
+			redirect(base_url('account/invoice/'.$pagenum), 'refresh');
+		}else{
+			redirect(base_url('account/invoice'), 'refresh');
+		}
+		
 		//$this->_render_template('invoice/invoice-index', $this->data);
 	}
 	
@@ -612,6 +629,7 @@ class Account extends MY_Controller {
         $config['base_url'] = site_url('account/transactions');
         $config['uri_segment'] = 3;
         $config['total_rows'] = count($this->data['transactionData']);
+        //$config['total_rows'] = $this->account_model->get_transactions($where, $where2);
         $config['per_page'] = 10;
         $config['full_tag_open'] = '<ul class="pagination custom-pagination">';
         $config['full_tag_close'] = '</ul>';
@@ -645,10 +663,13 @@ class Account extends MY_Controller {
 	}
 	
 	public function import_transactions_husky(){
+		ob_start();
+		
 		$this->settings['title'] = 'Import Transactions Husky';
 		$this->breadcrumb->mainctrl("user");
 		$this->breadcrumb->add('Import Transactions Husky', base_url() . 'user/import_transactions_husky');
 		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+		
 		if(isset($_POST['import'])){	
 		   if(!empty($_FILES['import_transactions_husky']['name'])!=''){
 			    
@@ -686,33 +707,61 @@ class Account extends MY_Controller {
 					
 					$allDataInSheet = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
 					$arrayCount = count($allDataInSheet);  // Here get total count of row in that Excel sheet
-					$this->db->truncate('retail_pricing');
+					$getPricing = $this->db->get('retail_pricing_husky_ca')->result();
+					if(empty($getPricing) && !is_object($getPricing)){
+						$this->session->set_flashdata('error', 'Please import pricing before import transactions.');
+						redirect(base_url().'account/import_transactions_husky', 'refresh');
+					}
+					//$this->db->truncate('retail_pricing_husky_ca');
+					
 					$insertdata = null;
 					for($i=2;$i<=$arrayCount;$i++)
 					{   
 						
 						if(!empty($allDataInSheet[$i]["A"])){
-							$transIdExists = $this->db->where('transaction_id', $allDataInSheet[$i]["B"])->get('transactions')->result();
+							$makeDateFormat = str_replace('/', '-', date('Y-m-d', strtotime($allDataInSheet[$i]["C"])));
+							/* $transIdExists = $this->db->where('transaction_id', $allDataInSheet[$i]["B"])->get('transactions')->result(); */							
+							$transIdExists = $this->db->where(['transaction_id'=> (int)$allDataInSheet[$i]["B"], 'transaction_date' => date('Y-m-d H:i:s',strtotime($makeDateFormat." ".$allDataInSheet[$i]["P"]))])->get('transactions')->result();
 							#pre(count($transIdExists));die;
 							if(count($transIdExists)>0){
 								continue;
 							}
+							
 							/* Get Company Type and Company Pricing Type */
 							$cardNumOutput = $allDataInSheet[$i]["A"];
-							$this->db->select('company_types.company_type, users.cad_pricing, cards.card_number');
+							
+							$this->db->select('company_types.company_type, users.cad_pricing_husky, cards.card_number');
 							$this->db->join('cards', 'cards.company_id = users.id', 'LEFT');
-							$this->db->join('company_types', 'company_types.id = users.company_type', 'LEFT');
-							$this->db->where('cards.card_number', $allDataInSheet[$i]["A"]);
+							$this->db->join('company_types', 'company_types.id = users.company_type_ca_husky', 'LEFT');
+							$this->db->where("cards.card_number LIKE '%$cardNumOutput%'");
+							$this->db->where("cards.cardCompany", "HUSKY");
 							$getCompanyType = $this->db->get('users')->row();
 							
-							$getCardNum = $this->db->where("card_number LIKE '%$cardNumOutput%'")->where("cardToken !=", "")->get('cards')->row();
-							$cardPrefix = substr($getCardNum->card_number, 0, -4);
-							
-							$setPricingType = 'add_on_husky';
-							if(!empty($getCompanyType)){
-								$setCACompanyType = strtolower($getCompanyType->company_type);
+							$getCardNum = $this->db->where("card_number LIKE '%$cardNumOutput%'")->where("cards.cardCompany", "HUSKY")->get('cards')->row();
+							//pre($this->db->last_query());die;
+							if(!is_object($getCardNum)){
+								echo '<script language="javascript">';
+								//echo "<script language='javascript'>alert(Card Number {$cardNumOutput} Doesn't exists in portal. Re-import file.);</script>";
+								echo "alert('Card Number {$cardNumOutput} Does not exists in portal. Please Re-import file.')";
+								echo '</script>';
+								//echo "{$cardNumOutput}";
+								//die;
+								redirect(base_url().'account/import_transactions_husky', 'refresh');
 							}
-							$setCACompanyType = 'bronze';
+							$cardPrefix = substr($getCardNum->card_number, 0, -4);
+							if(is_object($getCompanyType) && !empty($getCompanyType->cad_pricing_husky)){
+								$setPricingType = $getCompanyType->cad_pricing_husky;
+							}else{
+								$setPricingType = 'add_on_husky';
+							}
+							
+							
+							if(is_object($getCompanyType) && !empty($getCompanyType->company_type)){
+								$setCACompanyType = strtolower($getCompanyType->company_type);
+							}else{
+								$setCACompanyType = 'bronze';
+							}
+							#pre($setCACompanyType);die;
 							
 										$productName = null;
 										if(trim($allDataInSheet[$i]["G"]) == 'DIESEL'){
@@ -721,6 +770,7 @@ class Account extends MY_Controller {
 										if(trim($allDataInSheet[$i]["G"]) == 'BULK DEF'){
 											$productName = 'DEFD';
 										}
+										
 										$exactCompanyPrice = null;
 											$getPricingCA = $this->db->get('pricelist_edit_ca_husky')->row();
 											if($getPricingCA->$setPricingType){
@@ -728,7 +778,6 @@ class Account extends MY_Controller {
 												foreach($decodePrices as $decodePricesRows){
 													
 													if(array_key_exists($productName, $decodePricesRows)){
-														
 													$gasStationState = trim($decodePricesRows->$productName[0]->state[0]);
 															if($gasStationState == $allDataInSheet[$i]["R"] && $decodePricesRows->$productName[0]->gas_station[0] == $allDataInSheet[$i]["O"]){
 																	$exactCompanyPrice = $decodePricesRows->$productName[0]->$setCACompanyType[0];
@@ -748,7 +797,9 @@ class Account extends MY_Controller {
 													}
 												}									
 											}				
-										
+										if(trim($allDataInSheet[$i]["G"]) == 'SCALE' || trim($allDataInSheet[$i]["G"]) == 'NOTAVAIL'){
+											$exactCompanyPrice = $allDataInSheet[$i]["N"];
+										}										
 										$insertdata[$i]['transactionAt'] = 'HUSKY';
 										$insertdata[$i]['billing_currency'] = 'CAD';
 										$insertdata[$i]['card_number'] = $cardPrefix.$allDataInSheet[$i]["A"];
@@ -766,6 +817,9 @@ class Account extends MY_Controller {
 										if(trim($allDataInSheet[$i]["G"]) == 'BULK DEF'){
 											$productNameHusky = 'DEFD';
 										}
+										if(trim($allDataInSheet[$i]["G"]) == 'SCALE' || trim($allDataInSheet[$i]["G"]) == 'NOTAVAIL'){
+											$productNameHusky = 'SCALE';
+										}										
 										$insertdata[$i]['category'] = json_encode(array($productNameHusky));
 										$insertdata[$i]['group_category'] = json_encode(array($productNameHusky));
 										$insertdata[$i]['unit_price'] = json_encode(array("".$allDataInSheet[$i]["L"].""));
@@ -775,9 +829,9 @@ class Account extends MY_Controller {
 										$insertdata[$i]['gas_station_name'] = $allDataInSheet[$i]["F"];
 										$insertdata[$i]['gas_station_city'] = $allDataInSheet[$i]["Q"];
 										$insertdata[$i]['gas_station_state'] = $allDataInSheet[$i]["R"];
-										$makeDateFormat = str_replace('/', '-', date('Y-m-d', strtotime($allDataInSheet[$i]["C"])));
+
 										$insertdata[$i]['transaction_date'] = date('Y-m-d H:i:s',strtotime($makeDateFormat." ".$allDataInSheet[$i]["P"]));
-										$insertdata[$i]['transaction_id'] = $allDataInSheet[$i]["B"];
+										$insertdata[$i]['transaction_id'] = (int)$allDataInSheet[$i]["B"];
 										$insertdata[$i]['transaction_type'] = 1;
 										$insertdata[$i]['invoice_status'] = 0;
 																	
@@ -786,10 +840,12 @@ class Account extends MY_Controller {
 										$insertdata[$i]['date_modified'] = date('Y-m-d h:i:s');
 						}					
 					}
-					//pre($insertdata);die;
+					/* echo "Work";
+					pre($insertdata);
+					die; */
 					$result = null;
 					if(!empty($insertdata)){
-                    $result = $this->account_model->importHuskyTransactions($insertdata);
+						$result = $this->account_model->importHuskyTransactions($insertdata);
 					}	
                     if($result){
                       //echo "Imported successfully";
@@ -815,8 +871,100 @@ class Account extends MY_Controller {
 			echo"<script>alert('Please Select the File to Upload')</script>";		
 		}
 	}
-		$this->_render_template('transaction/import-price-husky', $this->data);		
-	}	
+		ob_get_clean ();
+		$this->_render_template('transaction/import-trans-husky', $this->data);		
+	}
+
+	public function makeFile(){
+		//$file = $_FILES['ith']['tmp_name'];
+		//$catalog = simplexml_load_file($file);
+		//$data = fopen("c:\\folder\\testing.txt", "r");
+		//move_uploaded_file($_FILES['file']['tmp_name'], 'uploads/' . $_FILES['file']['name']);
+		//$this->load->library('upload');
+		
+ 		
+		//$config['allowed_types'] = "xlsx|xls|csv";
+		//$this->upload->initialize($config);
+		$fileExt = pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION);
+		if($fileExt == 'csv'){
+		$myfile = fopen($_FILES['file']['tmp_name'], "r");
+		
+		//pre($myfile);die;		
+		$content = '';
+		$content .= '<table border="1" class="border-collapse" width="100%">
+		<tr>
+		<th>Status</th>
+		<th>Card Number</th>
+		<th>Transaction Id</th>
+		<th>Date</th>
+		<th>Product Name</th>
+		<th>Reason</th>
+		</tr>';
+		$delmtdDataNewLine = str_getcsv(stream_get_contents($myfile), "\n");
+		//while(!feof($myfile)) {
+		  //$content .= "<tr><td>".fgets($myfile) . "</td></tr>";
+		  //echo fgets($myfile) . "<br>";
+		//}
+		$problemInCards = $noProblemInCards = 0; 
+		for($i=0; $i<count($delmtdDataNewLine); $i++){
+			$RowOutput = str_getcsv($delmtdDataNewLine[$i], ","); //parse the items in rows
+				if($i == 0){
+					$cardNumKey = array_search('CARD_NUMBER', $RowOutput); // $key = 0;
+					$transactionKey = array_search('REFERENCE', $RowOutput);   // $key = 1;
+					$transactionDateKey = array_search('TRANSACTION_DATE', $RowOutput);   // $key = 2;
+					$productNameKey = array_search('PRODUCT_DESCRIPTION', $RowOutput);   // $key = 6;
+
+					continue;
+				}
+				$cardNumOutput = $RowOutput[$cardNumKey];
+			$getCardNum = $this->db->where("card_number LIKE '%$cardNumOutput%'")->where("cards.cardCompany", "HUSKY")->get('cards')->row();
+			if(strlen($RowOutput[$cardNumKey]) < 4){
+				$cardNumOutput = 0 .$RowOutput[$cardNumKey];
+			}
+			$reason = ''; $symbol = '';
+			if(!is_object($getCardNum)){
+				$symbol = 'cancel';
+				$reason = "Card Doesn't exist";
+				$problemInCards++;
+			}else if($getCardNum->company_id == 0){
+				$symbol = 'cancel';
+				$reason = 'Card Not Assigned to Company';
+				$problemInCards++;				
+			}else{
+				$symbol = 'check';
+				$reason = 'Ok';
+				$noProblemInCards++;
+			}
+			/* else if(strlen($RowOutput[$cardNumKey]) < 4){
+				$symbol = 'cancel';
+				$reason = 'Invalid Card Number';
+				$problemInCards++;
+			} */		
+			$content .= '<tr><td><img class="fileicons" src="'.base_url("assets/images/$symbol.png").'" width="30" /></td>';
+			//print_r($RowOutput);
+			$content .= "<td>".$cardNumOutput."</td>";
+			$content .= "<td>".$RowOutput[$transactionKey]."</td>";
+			$content .= "<td>".$RowOutput[$transactionDateKey]."</td>";
+			$content .= "<td>".$RowOutput[$productNameKey]."</td>";
+			$content .= "<td>".$reason."</td>";
+			$content .= "<tr>";
+		}
+		
+		fclose($myfile);
+		$totalTransactions = count($delmtdDataNewLine) - 1;
+		$content .= "</table>";
+		$content .= '<div class="file-messages"><h3>Transaction count: '.$totalTransactions .'</h3><h3 class="text-success">Good to go: '.$noProblemInCards.' </h3><h3 class="text-danger">Issues in transactions: '.$problemInCards.'</h3></div>';
+		//pre($_FILES['file']['tmp_name']);
+
+		$jsonEncodeVar = array('result' => $content, 'errorCount' => $problemInCards);
+		echo json_encode($jsonEncodeVar);
+		}else{
+			$content = 'You can import your Transaction EXCEL in (.csv) format only.';
+			$jsonEncodeVar = array('result' => $content, 'errorCount' => 1);
+			echo json_encode($jsonEncodeVar);			
+		}
+		
+	}
 	
 	public function company_transactions(){
 		$this->settings['title'] = 'All Transactions';
@@ -977,7 +1125,7 @@ class Account extends MY_Controller {
 ob_get_clean();			
 	}	
 
-	public function exportTransactionByCompany($cid=null, $acid=null, $daterange=null){
+	public function exportTransactionByCompany($cid=null, $acid=null, $daterange=null, $cur=null){
 		$this->load->model('user/user_model');
 		//File Name
 		//$fileName = 'transactions-data-'.time().'.xlsx'; //format should be .xlsx , .csv
@@ -995,26 +1143,50 @@ ob_get_clean();
 			if(!empty($cid) && $cid != 'undefined'){
 				$this->db->where(array('cards.company_id'=> $cid));
 			}			
-			if(!empty($acid) && $acid != 'undefined'){
-				$this->db->where(array('cards.company_id'=> $acid));
+			if(!empty($cur) && $cur != 'undefined'){
+				$this->db->where(array('transactions.billing_currency'=> $cur));
 			}
-			if(!empty($daterange)){
+		
+			if(!empty($acid) && $acid != 'undefined'){
+				
+				//$this->db->where(array('cards.company_id'=> $acid));
+				//$names = array('35', '32');
+				//$expl = explode(',',$acid);
+				$makeArray = [];
+				$exp = explode(',', $acid);
+				for($i=0; $i<count($exp); $i++){
+					$makeArray[] = $exp[$i];
+				}
+				//$strsls = stripslashes($makeArray);
+				//pre($makeArray);die;
+				//$imp = implode("','", $exp);
+				//$str = implode(',', array_map(function($val){return sprintf("'%s'", $val);}, $acid));
+				$this->db->where_in('cards.company_id', $makeArray);
+			}
+			//die;
+				//$names = array('35', '32');
+				//$this->db->where_in('cards.company_id', $names);			
+			//$this->db->where(array('cards.company_id'=> $acid));
+			if(!empty($daterange) && $daterange != 'undefined'){
 				//$expDateRange = explode('%20-%20', $daterange);
 				$expDateRange = explode('%20-%20', $daterange);
 				$startDate = $expDateRange[0];
 				$endDate = $expDateRange[1];			
-				$this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date('Y-m-d H:i:s', strtotime($startDate)). '" and "'. date('Y-m-d H:i:s', strtotime($endDate)).'"');
+				/* $this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date('Y-m-d H:i:s', strtotime($startDate)). '" and "'. date('Y-m-d H:i:s', strtotime($endDate)).'"'); */
+				$this->db->where("DATE(transactions.transaction_date) >='" . date('Y-m-d H:i:s', strtotime($startDate)) . "' AND transactions.transaction_date <='" . date('Y-m-d H:i:s', strtotime($endDate)). "'");
 			}else{
-				$this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date("Y-m-d H:i:s", $preDate). '" and "'. date('Y-m-d H:i:s').'"');				
+				/* $this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date("Y-m-d H:i:s", $preDate). '" and "'. date('Y-m-d H:i:s').'"'); */
+				$this->db->where("DATE(transactions.transaction_date) >='" . date('Y-m-d H:i:s',$preDate) . "' AND transactions.transaction_date <='" . date('Y-m-d H:i:s'). "'");	
 			}
 			$CAcardCount = $this->db->get('transactions')->result();
+			//pre($this->db->last_query());die;
 			//pre(is_object($CAcardCount));die;
 			//if(count($CAcardCount) < 1){	
-			/*if(!is_object($CAcardCount)){	
+			if(count($CAcardCount) < 1){	
 				echo "notransaction";
 				exit();
-			}*/
-			//pre(count($CAcardCount));die;			
+			}
+						
 			//pre($CAcardCount);die;
 			/* if(count($CAcardCount) > 0){
 				//pre(count($CAcardCount));die;
@@ -1110,6 +1282,303 @@ header("Content-Type: application/download"); */
 			        $object_writer->save('php://output');
 exit;					
 	}
+	
+	public function exportTransactionByCompanyTransPlus($cid=null, $acid=null, $daterange=null, $cur=null){
+		$this->load->model('user/user_model');
+		//File Name
+		//$fileName = 'transactions-data-'.time().'.xlsx'; //format should be .xlsx , .csv
+		//pre($acid);die;
+		$this->load->library('excel');
+		//$empInfo = $this->account_model->exportTransByComp($cid);
+		($cid != 'undefined' || !empty($cid))?$cid = $cid:$cid = "";
+		($acid != 'undefined' || !empty($acid))?$acid = $acid:$acid = "";
+		//$cid = 28;
+		//$daterange = $daterange;
+		$preDate = strtotime("-30 day", strtotime(date('Y-m-d H:i:s')));
+			$this->db->select('transactions.*');
+			$this->db->join('cards', 'cards.card_number = transactions.card_number', 'LEFT');
+			//$this->db->join('users', 'users.id = cards.company_id');
+			if(!empty($cid) && $cid != 'undefined'){
+				$this->db->where(array('cards.company_id'=> $cid));
+			}			
+			if(!empty($cur) && $cur != 'undefined'){
+				$this->db->where(array('transactions.billing_currency'=> $cur));
+			}			
+			if(!empty($acid) && $acid != 'undefined'){
+				$this->db->where(array('cards.company_id'=> $acid));
+			}
+			if(!empty($daterange) && $daterange != 'undefined'){
+				//$expDateRange = explode('%20-%20', $daterange);
+				$expDateRange = explode('%20-%20', $daterange);
+				$startDate = $expDateRange[0];
+				$endDate = $expDateRange[1];			
+				$this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date('Y-m-d H:i:s', strtotime($startDate)). '" and "'. date('Y-m-d H:i:s', strtotime($endDate)).'"');
+			}else{
+				$this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date("Y-m-d H:i:s", $preDate). '" and "'. date('Y-m-d H:i:s').'"');				
+			}
+			$CAcardCount = $this->db->get('transactions')->result();
+			//pre(is_object($CAcardCount));die;
+			//if(count($CAcardCount) < 1){	
+			if(count($CAcardCount) < 1){	
+				echo "notransaction";
+				exit();
+			}
+			//pre($this->db->last_query());die;			
+			//pre($CAcardCount);die;
+			/* if(count($CAcardCount) > 0){
+				//pre(count($CAcardCount));die;
+				//echo "<script>alert(No transaction available for export.);</script>";
+				//continue;
+			}else{ */
+
+			
+		//$dailyPriceList = $this->user_model->get_dailypricelist();
+		
+		$objPHPExcel = new PHPExcel();
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        // set Header
+        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Receipt_Number');
+        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Transaction_Date');
+        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Transaction_Time');
+        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Method');
+        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Vendor');
+        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Card_Number');
+        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Supplier');
+        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'City');
+        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Province_State');
+        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Truck_Number');
+        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Trailer_Number');
+        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Item_Type');
+        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Quantity');
+        $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Measure');
+        $objPHPExcel->getActiveSheet()->SetCellValue('O1', 'Price');
+        $objPHPExcel->getActiveSheet()->SetCellValue('P1', 'Tax');
+        $objPHPExcel->getActiveSheet()->SetCellValue('Q1', 'Total');
+
+        // set Row
+        $rowCount = 2;
+        foreach ($CAcardCount as $element) {
+			$decUnit_price = json_decode($element->unit_price);
+			$decPride_price = json_decode($element->pride_price);
+			$productNameJsonDecode = json_decode($element->category);
+			$productQuantityJsonDecode = json_decode($element->quantity);
+
+			$totalTaxAmount = 0;
+			for($cnt=0; $cnt<count($productNameJsonDecode); $cnt++){
+			$amoutQtyTotal = $decPride_price[$cnt] * $productQuantityJsonDecode[$cnt];
+			$grandTotal = floor($amoutQtyTotal*100)/100;				
+			if($element->billing_currency == 'CAD'){
+				$getTaxRate = $this->db->select('tax_type, tax_rate')->where('state', $element->gas_station_state)->get('tax')->result();
+				$finalGST=0;$finalPST=0;$finalQST=0;
+				foreach($getTaxRate as $taxTypeRows){
+					if($taxTypeRows->tax_type == 'gst'){
+						$gstRate = str_replace('%', '', $taxTypeRows->tax_rate);
+						$finalGST = $grandTotal * $gstRate / 100;
+					}
+					if($taxTypeRows->tax_type == 'pst'){
+						$pstRate = str_replace('%', '', $taxTypeRows->tax_rate);
+						$finalPST = $grandTotal * $pstRate / 100;
+					}
+					if($taxTypeRows->tax_type == 'qst'){
+						$qstRate = str_replace('%', '', $taxTypeRows->tax_rate);
+						$finalQST = $grandTotal * $qstRate / 100;
+					}				
+					$totalTaxAmount = number_format($finalGST + $finalPST + $finalQST, 2);
+				}				
+			}
+			if($element->billing_currency == 'USD'){
+				$UOM = 'G';
+			}else{
+				$UOM = 'L';
+			}
+					$truckNumber = null; $trailerNumber = null;
+					if($productNameJsonDecode[$cnt] == 'ULSD'){
+						$itemCode = 1;
+						if(!empty($element->unit_number)){
+							$truckNumber = '"'.trim($element->unit_number).'"';
+						}
+					}
+					if($productNameJsonDecode[$cnt] == 'ULSR'){
+						$itemCode = 2;
+						if(!empty($element->unit_number)){
+							$trailerNumber = '"'.trim($element->unit_number).'"';
+						}
+					}
+					if($productNameJsonDecode[$cnt] == 'DEFD'){
+						$itemCode = 3;
+						if(!empty($element->unit_number)){
+							$truckNumber = '"'.trim($element->unit_number).'"';
+						}
+					}	         
+					if(strpos(date("G:i a", strtotime($element->transaction_date)), 'pm') !== false){
+						$transtime = date("h:i", strtotime($element->transaction_date))." PM";
+					}else{
+						$transtime = date("h:i", strtotime($element->transaction_date))." AM";
+					}
+					
+            $objPHPExcel->getActiveSheet()->SetCellValue('A' . $rowCount, $element->transaction_id);
+            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $rowCount, date('m/d/Y', strtotime($element->transaction_date)));
+            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $rowCount, $transtime);
+            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $rowCount, '"Credit"');
+            $objPHPExcel->getActiveSheet()->SetCellValue('E' . $rowCount, "Pride Diesel Inc."); 
+            $objPHPExcel->getActiveSheet()->setCellValueExplicit('F' . $rowCount, '"'.$element->card_number.'"', PHPExcel_Cell_DataType::TYPE_STRING);			
+            $objPHPExcel->getActiveSheet()->SetCellValue('G' . $rowCount, '"'.trim($element->gas_station_name).'"');
+            $objPHPExcel->getActiveSheet()->SetCellValue('H' . $rowCount, '"'.trim($element->gas_station_city).'"');
+            $objPHPExcel->getActiveSheet()->SetCellValue('I' . $rowCount, '"'.trim($element->gas_station_state).'"');
+            $objPHPExcel->getActiveSheet()->SetCellValue('J' . $rowCount, $truckNumber);
+            $objPHPExcel->getActiveSheet()->SetCellValue('K' . $rowCount, $trailerNumber);
+            $objPHPExcel->getActiveSheet()->SetCellValue('L' . $rowCount, $productNameJsonDecode[$cnt]);
+            $objPHPExcel->getActiveSheet()->SetCellValue('M' . $rowCount, $productQuantityJsonDecode[$cnt]);
+            $objPHPExcel->getActiveSheet()->SetCellValue('N' . $rowCount, '"'.$UOM.'"');
+            $objPHPExcel->getActiveSheet()->SetCellValue('O' . $rowCount, $decPride_price[$cnt]);
+            $objPHPExcel->getActiveSheet()->SetCellValue('P' . $rowCount, $totalTaxAmount);
+            $objPHPExcel->getActiveSheet()->SetCellValue('Q' . $rowCount, $grandTotal);
+
+            $rowCount++;
+			}
+        }
+		//die;
+       $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel); 
+
+			$object_writer = new PHPExcel_Writer_Excel2007($objPHPExcel);//pre($object_writer);die;
+			        header('Content-Type: application/vnd.ms-excel');
+/* header("Pragma: public");
+header("Expires: 0");
+header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+header("Content-Type: application/force-download");
+header("Content-Type: application/octet-stream");
+header("Content-Type: application/download"); */					
+			       header("Content-Disposition: attachment;filename=Transactions_".date('Ymd').".xlsx");
+			         ob_end_clean();
+			        $object_writer->save('php://output');
+exit;					
+	}	
+	
+	public function exportTransactionBySingleCard($cardNum=null, $daterange = null){
+		$this->load->model('user/user_model');
+		$this->load->library('excel');
+
+		$preDate = strtotime("-30 day", strtotime(date('Y-m-d H:i:s')));
+			$this->db->select('transactions.*');
+			$this->db->join('cards', 'cards.card_number = transactions.card_number', 'LEFT');
+			//$this->db->join('users', 'users.id = cards.company_id');
+			if(!empty($cardNum)){
+				$this->db->where(array('cards.card_number'=> $cardNum));
+			}			
+
+			if(!empty($daterange) && $daterange != 'undefined'){
+				//$expDateRange = explode('%20-%20', $daterange);
+				$expDateRange = explode('%20-%20', $daterange);
+				$startDate = $expDateRange[0];
+				$endDate = $expDateRange[1];			
+				$this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date('Y-m-d H:i:s', strtotime($startDate)). '" and "'. date('Y-m-d H:i:s', strtotime($endDate)).'"');
+			}else{
+				$this->db->where('DATE(transactions.transaction_date) BETWEEN "'. date("Y-m-d H:i:s", $preDate). '" and "'. date('Y-m-d H:i:s').'"');				
+			}
+			$CAcardCount = $this->db->get('transactions')->result();
+			//pre($CAcardCount);die;
+			//if(count($CAcardCount) < 1){	
+			if(count($CAcardCount) < 1){	
+				echo "notransaction";
+				exit();
+			}
+			//pre($this->db->last_query());die;			
+			//pre($CAcardCount);die;
+			/* if(count($CAcardCount) > 0){
+				//pre(count($CAcardCount));die;
+				//echo "<script>alert(No transaction available for export.);</script>";
+				//continue;
+			}else{ */
+
+			
+		//$dailyPriceList = $this->user_model->get_dailypricelist();
+		
+		$objPHPExcel = new PHPExcel();
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        // set Header
+        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Billing Currency');
+        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Card Number');
+        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Unit Number');
+        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Invoice');
+        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Amount');
+        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Category');
+        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Unit Price');
+        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Quantity');
+        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'GST/PST/QST');
+        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Gas Station Name');
+        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Gas Station City');
+        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Gas Station State');
+        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Transaction Date');
+        //$objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Date Created');
+
+        // set Row
+        $rowCount = 2;
+        foreach ($CAcardCount as $element) {
+			$decUnit_price = json_decode($element->unit_price);
+			$decPride_price = json_decode($element->pride_price);
+			$productNameJsonDecode = json_decode($element->category);
+			$productQuantityJsonDecode = json_decode($element->quantity);
+
+			$totalTaxAmount = 0;
+			for($cnt=0; $cnt<count($productNameJsonDecode); $cnt++){
+			$amoutQtyTotal = $decPride_price[$cnt] * $productQuantityJsonDecode[$cnt];
+			$grandTotal = floor($amoutQtyTotal*100)/100;				
+			if($element->billing_currency == 'CAD'){
+				$getTaxRate = $this->db->select('tax_type, tax_rate')->where('state', $element->gas_station_state)->get('tax')->result();
+				$finalGST=0;$finalPST=0;$finalQST=0;
+				foreach($getTaxRate as $taxTypeRows){
+					if($taxTypeRows->tax_type == 'gst'){
+						$gstRate = str_replace('%', '', $taxTypeRows->tax_rate);
+						$finalGST = $grandTotal * $gstRate / 100;
+					}
+					if($taxTypeRows->tax_type == 'pst'){
+						$pstRate = str_replace('%', '', $taxTypeRows->tax_rate);
+						$finalPST = $grandTotal * $pstRate / 100;
+					}
+					if($taxTypeRows->tax_type == 'qst'){
+						$qstRate = str_replace('%', '', $taxTypeRows->tax_rate);
+						$finalQST = $grandTotal * $qstRate / 100;
+					}				
+					$totalTaxAmount = number_format($finalGST + $finalPST + $finalQST, 2);
+				}				
+			}
+	
+            $objPHPExcel->getActiveSheet()->SetCellValue('A' . $rowCount, $element->billing_currency);
+            $objPHPExcel->getActiveSheet()->setCellValueExplicit('B' . $rowCount, $element->card_number, PHPExcel_Cell_DataType::TYPE_STRING);
+            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $rowCount, $element->unit_number);
+            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $rowCount, $element->invoice);
+            $objPHPExcel->getActiveSheet()->SetCellValue('E' . $rowCount, $grandTotal);
+            $objPHPExcel->getActiveSheet()->SetCellValue('F' . $rowCount, $productNameJsonDecode[$cnt]);
+            $objPHPExcel->getActiveSheet()->SetCellValue('G' . $rowCount, $decPride_price[$cnt]);
+            $objPHPExcel->getActiveSheet()->SetCellValue('H' . $rowCount, $productQuantityJsonDecode[$cnt]);
+            $objPHPExcel->getActiveSheet()->SetCellValue('I' . $rowCount, $totalTaxAmount);
+            $objPHPExcel->getActiveSheet()->SetCellValue('J' . $rowCount, $element->gas_station_name);
+            $objPHPExcel->getActiveSheet()->SetCellValue('K' . $rowCount, $element->gas_station_city);
+            $objPHPExcel->getActiveSheet()->SetCellValue('L' . $rowCount, $element->gas_station_state);
+            $objPHPExcel->getActiveSheet()->SetCellValue('M' . $rowCount, $element->transaction_date);
+            //$objPHPExcel->getActiveSheet()->SetCellValue('N' . $rowCount, $element['date_created']);
+
+            $rowCount++;
+			}
+        }
+		//die;
+       $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel); 
+
+			$object_writer = new PHPExcel_Writer_Excel2007($objPHPExcel);//pre($object_writer);die;
+			        header('Content-Type: application/vnd.ms-excel');
+/* header("Pragma: public");
+header("Expires: 0");
+header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+header("Content-Type: application/force-download");
+header("Content-Type: application/octet-stream");
+header("Content-Type: application/download"); */					
+			       header("Content-Disposition: attachment;filename=Transactions_".date('Ymd').".xlsx");
+			         ob_end_clean();
+			        $object_writer->save('php://output');
+exit;					
+	}	
 
 	public function export_company_trans_csv($cid){
 		$this->load->model('user/user_model');
@@ -1217,16 +1686,16 @@ exit;
 		$this->db->update('transactions');
 	}
 
-	public function card_transactions($cardNumber=NULL, $daterange=null){
+	public function card_transactions($transid=NULL){
 		$this->settings['title'] = 'View Transactions';
 		$this->breadcrumb->mainctrl("account");
 		$this->breadcrumb->add('View Transactions', base_url() . 'account/card_transactions');
 		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
 
 		//$this->data['cardDetails'] = $this->account_model->get_card_transactions($cardNumber, $daterange);
-		$this->data['cardsTransData'] = $this->account_model->get_card_transactions($cardNumber, $daterange);
+		$this->data['cardsTransData'] = $this->account_model->get_card_transactions($transid);
 		//pre($this->db->last_query());
-		$this->data['driverDetails'] = $this->account_model->get_card_driver($cardNumber);
+		//$this->data['driverDetails'] = $this->account_model->get_card_driver($cardNumber);
 		//die;
 		$this->_render_template('transaction/card_trans_view', $this->data);		
 	}
@@ -1760,9 +2229,11 @@ exit;
 		$this->load->model('card/card_model');			
 		require_once(APPPATH.'libraries/tcpdf/tcpdf.php');  
 		//$obj_pdf = new TCPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+		$daterange = null;
 		if(!empty($this->input->post('daterange'))){
 			$daterange = $this->input->post('daterange');
 		}
+		$company_name = null;
 		if(!empty($this->input->post('company_name'))){
 			$company_name = $this->input->post('company_name');
 		}		
@@ -1814,7 +2285,7 @@ exit;
 			$obj_pdf->setPrintHeader(false);  
 			$obj_pdf->setPrintFooter(true);  
 			$obj_pdf->SetAutoPageBreak(TRUE, 10);  
-			$obj_pdf->SetFont('helvetica', '', 9);
+			$obj_pdf->SetFont('helvetica', '', 12);
 			
 			$image = FCPATH .'assets/images/pride-diesel-logo.png';
 			$maxInvoiceId = $this->db->select_max('id')->get('transaction_invoice')->row();
@@ -1875,15 +2346,22 @@ exit;
 		       <td class="pride">
 			        <table>
 						<tr>
-							<td>
-							<h4>Pride Diesel Inc.</h4><br />
-							Corporate office: 10862 Steeles Ave East,<br/>Milton,ON L9T 2X8<br />
-							Fax: (877)867-8922<br />
+							<td>';
+							if($companyDetails->company_location == 'ca'){
+								$content .= '<h4>Pride Diesel Inc.</h4><br />
+								Corporate office: 10862 Steeles Ave East,<br/>Milton,ON L9T 2X8<br />';
+							}else{
+								$content .= '<h4>Pride Diesel USA Inc.</h4><br />
+								Corporate office: 1100 Brickell Bay DR Unit 310747,<br/>Miami, FL 33231<br />';
+							}
+							$content .= 'Fax: (877)867-8922<br />
 							Ph. 1888-909-7117<br />
 							www.pridediesel.com<br />
-							Email: info@pridediesel.com<br />
-							GST/HST # 808170526RT0001
-							</td>
+							Email: info@pridediesel.com<br />';
+							if($companyDetails->company_location == 'ca'){
+								$content .= 'GST/HST # 808170526RT0001';
+							}
+							$content .= '</td>
 						</tr>
 					</table>
 			   </td>
@@ -1934,7 +2412,7 @@ exit;
 			  <th style="width:7%;">Site name</th>
 			  <th style="width:4%;">Site #</th>
 			  <th style="width:6%;">City</th>
-			  <th style="width:3%;">State</th>
+			  <th style="width:3%;">Province</th>
 			  <th style="width:6%;">Date</th>
 			  <th style="width:5%;">Time</th>
 			  <th style="width:4%;">Unit #</th>
@@ -2127,6 +2605,7 @@ exit;
 			$data['invoice_id'] = "CL".$invoiceID;
 			$data['company_id'] = $cid;
 			$data['invoice_date'] = date('Y-m-d');
+			$data['billingOn'] = 'EFS';
 			$data['billingCurrency'] = 'USD';
 			$data['invoice_data'] = $invoice_data;
 			$data['trans_data'] = $transactionDetails;		  
@@ -2156,15 +2635,15 @@ exit;
 						->from('info@pridediesel.com', 'From Pride Diesel')
 						//->to('jagdishchander6373@gmail.com')
 						->to($company_email_usd)
-						->cc('abhinavdua1435@gmail.com')
+						->bcc('abhinavdua1435@gmail.com')
 						//->cc('jagdishchander4667@gmail.com')
 						->subject($usd_subject)
 						->message($usd_body)
 						->attach($pdfFilePath)
-						//->attach($csvFilePath)
+						->attach($csvFilePath)
 						->send();
 			$this->email->clear($pdfFilePath);
-			//$this->email->clear($csvFilePath);
+			$this->email->clear($csvFilePath);
 
 			//if($usdresult) {
 				//echo "Send";
@@ -2189,7 +2668,8 @@ exit;
 		$obj_pdf->setPrintHeader(false);  
 		$obj_pdf->setPrintFooter(true);  
 		$obj_pdf->SetAutoPageBreak(TRUE, 10);  
-		$obj_pdf->SetFont('helvetica', '', 9);
+		//$obj_pdf->SetFont('helvetica', '', 9);
+		$obj_pdf->SetFont('helvetica', '', 12);
 		
 		$image = FCPATH .'assets/images/pride-diesel-logo.png';
 		$maxInvoiceId = $this->db->select_max('id')->get('transaction_invoice')->row();
@@ -2252,15 +2732,22 @@ exit;
 		       <td class="pride">
 			        <table>
 						<tr>
-							<td>
-							<h4>Pride Diesel Inc.</h4><br />
-							Corporate office: 10862 Steeles Ave East,<br/>Milton,ON L9T 2X8<br />
-							Fax: (877)867-8922<br />
+							<td>';
+							if($companyDetails->company_location == 'ca'){
+								$content .= '<h4>Pride Diesel Inc.</h4><br />
+								Corporate office: 10862 Steeles Ave East,<br/>Milton,ON L9T 2X8<br />';
+							}else{
+								$content .= '<h4>Pride Diesel USA Inc.</h4><br />
+								Corporate office: 1100 Brickell Bay DR Unit 310747,<br/>Miami, FL 33231<br />';
+							}
+							$content .= 'Fax: (877)867-8922<br />
 							Ph. 1888-909-7117<br />
 							www.pridediesel.com<br />
-							Email: info@pridediesel.com<br />
-							GST/HST # 808170526RT0001
-							</td>
+							Email: info@pridediesel.com<br />';
+							if($companyDetails->company_location == 'ca'){
+								$content .= 'GST/HST # 808170526RT0001';
+							}
+							$content .= '</td>
 						</tr>
 					</table>
 			   </td>
@@ -2302,12 +2789,12 @@ exit;
 		<tbody>		
            <tr>
 		      <th style="width:12%;">Card #</th>
-		      <th style="width:8%;">Driver name</th>
+		      <th style="width:7%;">Driver name</th>
 			  <th style="width:7%;">Transaction #</th>
 			  <th style="width:7%;">Site name</th>
 			  <th style="width:4%;">Site #</th>
-			  <th style="width:6%;">City</th>
-			  <th style="width:3%;">State</th>
+			  <th style="width:3%;">City</th>
+			  <th style="width:3%;">Province</th>
 			  <th style="width:6%;">Date</th>
 			  <th style="width:5%;">Time</th>
 			  <th style="width:4%;">Unit #</th>
@@ -2316,6 +2803,7 @@ exit;
 			  <th style="width:7%;">Price per unit</th>
 			  <th style="width:7%;">Total quantity</th>
 			  <th style="width:6%;">HST/GST</th>
+			  <th style="width:4%;">QST</th>
 			  <th style="width:5%;">Total</th>
 			  <th style="width:5%;">Currency</th>
            </tr>';
@@ -2336,7 +2824,7 @@ exit;
 			$CAcardCount = $this->db->get('transactions')->result();
 			//pre($CAcardCount);die;
 			$totalQuantity = 0; $grandTotal = 0; $grandTax=0;
-			$jsonInc = 0; $grandTaxAmt = 0;
+			$jsonInc = 0; $grandQSTTaxAmt = $grandTaxAmt = 0;
 			
 			$transactionCount = 0;
 			$csvdata = "";
@@ -2380,7 +2868,9 @@ exit;
 				if(empty($gst)){$gst = 0;}
 				if(empty($pst)){$pst = 0;}
 				if(empty($qst)){$qst = 0;}
-				$totalTax = $gst + $pst + $qst;
+				//$totalTax = $gst + $pst + $qst;
+				$totalTax = $gst + $pst;
+				########## GST/HST Calculations
 				if(strlen($totalTax) < 2){
 					$revTotalTaxAmt = '1.0'.$totalTax;
 					$amtAfterReversal = floatval($total) / floatval($revTotalTaxAmt);
@@ -2396,15 +2886,34 @@ exit;
 					$amtAfterReversal = floatval($total) / floatval($revTotalTaxAmt);
 					$minuspriceandtax = $total - $amtAfterReversal;
 					$finalTaxAmt =  floor($minuspriceandtax*100)/100;
-				}			
+				}
+				########## QST Calculations
+				$totalTaxQST = $qst;
+				
+				if(strlen($totalTaxQST) < 2){
+					$revTotalQSTAmt = '1.0'.$totalTaxQST;
+					$amtAfterReversalQST = floatval($total) / floatval($revTotalQSTAmt);
+					$minuspriceandQSTtax = $total - $amtAfterReversalQST;
+					$finalQSTTaxAmt =  floor($minuspriceandQSTtax*100)/100;					
+				}elseif(strpos($totalTaxQST, '.')!==false){
+					$revTotalQSTAmt = '1.0'.str_replace(".","",$totalTaxQST);
+					$amtAfterReversalQST = floatval($total) / floatval($revTotalQSTAmt);
+					$minuspriceandQSTtax = $total - $amtAfterReversalQST;
+					$finalQSTTaxAmt =  floor($minuspriceandQSTtax*100)/100;
+				}else{
+					$revTotalQSTAmt = '1.'.$totalTaxQST;
+					$amtAfterReversalQST = floatval($total) / floatval($revTotalQSTAmt);
+					$minuspriceandQSTtax = $total - $amtAfterReversalQST;
+					$finalQSTTaxAmt =  floor($minuspriceandQSTtax*100)/100;
+				}				
 	   
 					$content .='<tr>
 						<td style="width:12%;">'.$cardCountRows->card_number .'</td>
-						<td style="width:8%;">'.$driverName.'</td>
+						<td style="width:7%;">'.$driverName.'</td>
 						<td style="width:7%;">'.$cardCountRows->transaction_id .'</td>
 						<td style="width:7%;">'.$cardCountRows->gas_station_name .'</td>
 						<td style="width:4%;">'.$cardCountRows->gas_station_id .'</td>
-						<td style="width:6%;">'.$cardCountRows->gas_station_city .'</td>
+						<td style="width:3%;">'.$cardCountRows->gas_station_city .'</td>
 						<td style="width:3%;">'.$cardCountRows->gas_station_state .'</td>
 						<td style="width:6%;">'.$transactionDate.'</td>
 						<td style="width:5%;">'.$transactionTime.'</td>
@@ -2414,20 +2923,22 @@ exit;
 						<td style="width:7%;">$ '.$pridePriceJsonDecode[$rowCount].'</td>
 						<td style="width:7%;">'.$productQuantityJsonDecode[$rowCount].'</td>
 						<td style="width:6%;">$ '.$finalTaxAmt.'</td>
+						<td style="width:4%;">$ '.$finalQSTTaxAmt.'</td>
 						<td style="width:5%;">$ '.$total.'</td>
 						<td style="width:5%;">'.$cardCountRows->billing_currency .'</td>
 					</tr>';
 					$totalQuantity += $productQuantityJsonDecode[$rowCount];
 					
 					$grandTaxAmt += $finalTaxAmt;
+					$grandQSTTaxAmt += $finalQSTTaxAmt;
 					$grandTotal += floor($total*100)/100;
 					/*trans_data field*/
-					$CAtransJsonArrayObject = (array($cardCountRows->card_number => array('product_name'=>$productNameJsonDecode[$rowCount], 'quantity'=>$productQuantityJsonDecode[$rowCount], 'unit_price'=>$pridePriceJsonDecode[$rowCount], 'taxamount'=>$finalTaxAmt, 'amountwithouttax' => $total)));
+					$CAtransJsonArrayObject = (array($cardCountRows->card_number => array('product_name'=>$productNameJsonDecode[$rowCount], 'quantity'=>$productQuantityJsonDecode[$rowCount], 'unit_price'=>$pridePriceJsonDecode[$rowCount], 'taxamount'=>$finalTaxAmt, 'qstTax'=>$grandQSTTaxAmt, 'amountwithouttax' => $total)));
 					$transationDetails[$jsonInc] = $CAtransJsonArrayObject;
 					/*invoice_data field*/
 					$CAjsonArrayObject = (array('card_number' =>$cardCountRows->card_number,'transaction_date' => $cardCountRows->transaction_date, 'transaction_id' => $cardCountRows->transaction_id));
 					$arr[$jsonInc] = $CAjsonArrayObject;
-					
+					$total_tax_amount = $finalTaxAmt + $finalQSTTaxAmt;
 					/* CSV for TransPlus Software*/
 					$filename = 'company_trans_plus_CAD_'.$cid."_".date('Ymd').'.csv';
 					$truckNumber = null; $trailerNumber = null;
@@ -2459,7 +2970,7 @@ exit;
 					}					
 					$toalAfterFloor = floor($total*100)/100;
 					/* $csvdata[] = array('"'.$cardCountRows->transaction_id.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).",".$transtime.',"Credit", Pride Diesel Inc.'.',"'.$cardCountRows->card_number .'","'.$cardCountRows->gas_station_name.'","'.$cardCountRows->gas_station_city.'","'.$cardCountRows->gas_station_state .'",'.$itemCode.",".$productQuantityJsonDecode[$rowCount].',"L",'.$pridePriceJsonDecode[$rowCount]." ,".$finalTaxAmt." ,".$toalAfterFloor."\n"); */
-					$csvdata .= '"""'.$cardCountRows->transaction_id.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).",".$transtime.',""""Credit", Pride Diesel Inc.'.',""""'.$cardCountRows->card_number .'",""""'.$cardCountRows->gas_station_name.'",""""'.$cardCountRows->gas_station_city.'",""""'.$cardCountRows->gas_station_state .'",'.$truckNumber.','.$trailerNumber.','.$productNameJsonDecode[$rowCount].','.$productQuantityJsonDecode[$rowCount].',""""L",'.$pridePriceJsonDecode[$rowCount]." ,".$finalTaxAmt.",".$toalAfterFloor."\n";					
+					$csvdata .= '"""'.$cardCountRows->transaction_id.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).",".$transtime.',""""Credit", Pride Diesel Inc.'.',""""'.$cardCountRows->card_number .'",""""'.$cardCountRows->gas_station_name.'",""""'.$cardCountRows->gas_station_city.'",""""'.$cardCountRows->gas_station_state .'",'.$truckNumber.','.$trailerNumber.','.$productNameJsonDecode[$rowCount].','.$productQuantityJsonDecode[$rowCount].',""""L",'.$pridePriceJsonDecode[$rowCount]." ,".$total_tax_amount.",".$toalAfterFloor."\n";					
 					/*Dat file fields*/
 					$datContent .= '"'.$Receipt_Number.'"';
 					$datContent .= date('m/d/Y', strtotime($cardCountRows->transaction_date));
@@ -2471,7 +2982,7 @@ exit;
 					$datContent .= $productQuantityJsonDecode[$rowCount];
 					$datContent .= '"L"';
 					$datContent .= $pridePriceJsonDecode[$rowCount];
-					$datContent .= $finalTaxAmt;
+					$datContent .= $total_tax_amount;
 					$datContent .= $total."\n";
 					/*fields Ended*/					
 		
@@ -2484,6 +2995,7 @@ exit;
 				$transactionDetails = json_encode($transationDetails);
 				$invoice_data = json_encode($arr);
 			}
+			//$grandFinalTotal = $grandTaxAmt + $grandQSTTaxAmt;
 		$content .='<tr>
 			<td></td>
 			<td></td>
@@ -2499,6 +3011,7 @@ exit;
 			<td colspan="2">Subtotal</td>
 			<td>'.$totalQuantity.'</td>
 			<td>$ '.$grandTaxAmt.'</td>
+			<td>$ '.$grandQSTTaxAmt.'</td>
 			<td>$ '.$grandTotal.'</td>
 			<td>CAD</td>
 		</tr>
@@ -2531,6 +3044,7 @@ exit;
 		$data['invoice_id'] = "CL".$invoiceID;
 		$data['company_id'] = $cid;
 		$data['invoice_date'] = date('Y-m-d');
+		$data['billingOn'] = 'EFS';
 		$data['billingCurrency'] = 'CAD';
 		$data['invoice_data'] = $invoice_data;
 		$data['trans_data'] = $transactionDetails;
@@ -2561,15 +3075,15 @@ exit;
 					->from('info@pridediesel.com', 'From Pride Diesel')
 					//->to('jagdishchander6373@gmail.com')
 					->to($company_email_ca)
-					->cc('abhinavdua1435@gmail.com')
+					->bcc('abhinavdua1435@gmail.com')
 					//->cc('jagdishchander4667@gmail.com')
 					->subject($ca_subject)
 					->message($ca_body)
 					->attach($pdfFilePath)
-					//->attach($csvFilePath)
+					->attach($csvFilePath)
 					->send();
 		$this->email->clear($pdfFilePath);
-		//$this->email->clear($csvFilePath);
+		$this->email->clear($csvFilePath);
 
 		//if($result) {
 			//echo "Send";
@@ -2594,7 +3108,7 @@ exit;
 		$obj_pdf->setPrintHeader(false);  
 		$obj_pdf->setPrintFooter(true);  
 		$obj_pdf->SetAutoPageBreak(TRUE, 10);  
-		$obj_pdf->SetFont('helvetica', '', 9);
+		$obj_pdf->SetFont('helvetica', '', 12);
 		
 		$image = FCPATH .'assets/images/pride-diesel-logo.png';
 		$maxInvoiceId = $this->db->select_max('id')->get('transaction_invoice')->row();
@@ -2704,12 +3218,12 @@ exit;
 		<tbody>		
            <tr>
 		      <th style="width:12%;">Card #</th>
-		      <th style="width:8%;">Driver name</th>
+		      <th style="width:7%;">Driver name</th>
 			  <th style="width:7%;">Transaction #</th>
 			  <th style="width:7%;">Site name</th>
 			  <th style="width:4%;">Site #</th>
-			  <th style="width:6%;">City</th>
-			  <th style="width:3%;">State</th>
+			  <th style="width:3%;">City</th>
+			  <th style="width:3%;">Province</th>
 			  <th style="width:6%;">Date</th>
 			  <th style="width:5%;">Time</th>
 			  <th style="width:4%;">Unit #</th>
@@ -2718,10 +3232,11 @@ exit;
 			  <th style="width:7%;">Price per unit</th>
 			  <th style="width:7%;">Total quantity</th>
 			  <th style="width:6%;">HST/GST</th>
+			  <th style="width:4%;">QST</th>
 			  <th style="width:5%;">Total</th>
 			  <th style="width:5%;">Currency</th>
            </tr>';
-			$this->db->select('users.*, transactions.*, cards.driver_id');
+			$this->db->select('users.*, transactions.*, cards.driver_id, transactions.id as transactionid');
 			$this->db->join('cards', 'cards.card_number = transactions.card_number', 'LEFT');
 			$this->db->join('users', 'users.id = cards.company_id');
 			//$this->db->join('drivers', 'drivers.company_id = cards.company_id', 'LEFT');
@@ -2738,7 +3253,7 @@ exit;
 			$CAcardCount = $this->db->get('transactions')->result();
 			//pre($CAcardCount);die;
 			$totalQuantity = 0; $grandTotal = 0; $grandTax=0;
-			$jsonInc = 0; $grandTaxAmt = 0;
+			$jsonInc = 0; $grandQSTTaxAmt = $grandTaxAmt = 0;
 			
 			$transactionCount = 0;
 			$csvdata = "";
@@ -2782,7 +3297,8 @@ exit;
 				if(empty($gst)){$gst = 0;}
 				if(empty($pst)){$pst = 0;}
 				if(empty($qst)){$qst = 0;}
-				$totalTax = $gst + $pst + $qst;
+				//$totalTax = $gst + $pst + $qst;
+				$totalTax = $gst + $pst;
 				if(strlen($totalTax) < 2){
 					$revTotalTaxAmt = '1.0'.$totalTax;
 					$amtAfterReversal = floatval($total) / floatval($revTotalTaxAmt);
@@ -2798,15 +3314,34 @@ exit;
 					$amtAfterReversal = floatval($total) / floatval($revTotalTaxAmt);
 					$minuspriceandtax = $total - $amtAfterReversal;
 					$finalTaxAmt =  floor($minuspriceandtax*100)/100;
-				}			
+				}
+				########## QST Calculations
+				$totalTaxQST = $qst;
+				
+				if(strlen($totalTaxQST) < 2){
+					$revTotalQSTAmt = '1.0'.$totalTaxQST;
+					$amtAfterReversalQST = floatval($total) / floatval($revTotalQSTAmt);
+					$minuspriceandQSTtax = $total - $amtAfterReversalQST;
+					$finalQSTTaxAmt =  floor($minuspriceandQSTtax*100)/100;					
+				}elseif(strpos($totalTaxQST, '.')!==false){
+					$revTotalQSTAmt = '1.0'.str_replace(".","",$totalTaxQST);
+					$amtAfterReversalQST = floatval($total) / floatval($revTotalQSTAmt);
+					$minuspriceandQSTtax = $total - $amtAfterReversalQST;
+					$finalQSTTaxAmt =  floor($minuspriceandQSTtax*100)/100;
+				}else{
+					$revTotalQSTAmt = '1.'.$totalTaxQST;
+					$amtAfterReversalQST = floatval($total) / floatval($revTotalQSTAmt);
+					$minuspriceandQSTtax = $total - $amtAfterReversalQST;
+					$finalQSTTaxAmt =  floor($minuspriceandQSTtax*100)/100;
+				}				
 	   
 					$content .='<tr>
 						<td style="width:12%;">'.$cardCountRows->card_number .'</td>
-						<td style="width:8%;">'.$driverName.'</td>
+						<td style="width:7%;">'.$driverName.'</td>
 						<td style="width:7%;">'.$cardCountRows->transaction_id .'</td>
 						<td style="width:7%;">'.$cardCountRows->gas_station_name .'</td>
 						<td style="width:4%;">'.$cardCountRows->gas_station_id .'</td>
-						<td style="width:6%;">'.$cardCountRows->gas_station_city .'</td>
+						<td style="width:3%;">'.$cardCountRows->gas_station_city .'</td>
 						<td style="width:3%;">'.$cardCountRows->gas_station_state .'</td>
 						<td style="width:6%;">'.$transactionDate.'</td>
 						<td style="width:5%;">'.$transactionTime.'</td>
@@ -2816,22 +3351,25 @@ exit;
 						<td style="width:7%;">$ '.$pridePriceJsonDecode[$rowCount].'</td>
 						<td style="width:7%;">'.$productQuantityJsonDecode[$rowCount].'</td>
 						<td style="width:6%;">$ '.$finalTaxAmt.'</td>
+						<td style="width:4%;">$ '.$finalQSTTaxAmt.'</td>
 						<td style="width:5%;">$ '.$total.'</td>
 						<td style="width:5%;">'.$cardCountRows->billing_currency .'</td>
 					</tr>';
 					$totalQuantity += $productQuantityJsonDecode[$rowCount];
 					
 					$grandTaxAmt += $finalTaxAmt;
+					$grandQSTTaxAmt += $finalQSTTaxAmt;
 					$grandTotal += floor($total*100)/100;
 					/*trans_data field*/
-					$CAtransJsonArrayObject = (array($cardCountRows->card_number => array('product_name'=>$productNameJsonDecode[$rowCount], 'quantity'=>$productQuantityJsonDecode[$rowCount], 'unit_price'=>$pridePriceJsonDecode[$rowCount], 'taxamount'=>$finalTaxAmt, 'amountwithouttax' => $total)));
+					$CAtransJsonArrayObject = (array($cardCountRows->card_number => array('product_name'=>$productNameJsonDecode[$rowCount], 'quantity'=>$productQuantityJsonDecode[$rowCount], 'unit_price'=>$pridePriceJsonDecode[$rowCount], 'taxamount'=>$finalTaxAmt, 'qstTax'=>$grandQSTTaxAmt, 'amountwithouttax' => $total)));
 					$transationDetails[$jsonInc] = $CAtransJsonArrayObject;
 					/*invoice_data field*/
 					$CAjsonArrayObject = (array('card_number' =>$cardCountRows->card_number,'transaction_date' => $cardCountRows->transaction_date, 'transaction_id' => $cardCountRows->transaction_id));
 					$arr[$jsonInc] = $CAjsonArrayObject;
+					$total_tax_amount = $finalTaxAmt + $finalQSTTaxAmt;
 					
 					/* CSV for TransPlus Software*/
-					/* $filename = 'company_trans_plus_CAD_'.$cid."_".date('Ymd').'.csv';
+					$filename = 'company_trans_husky_CAD_'.$cid."_".date('Ymd').'.csv';
 					$truckNumber = null; $trailerNumber = null;
 					if($productNameJsonDecode[$rowCount] == 'ULSD'){
 						$itemCode = 1;
@@ -2851,22 +3389,22 @@ exit;
 							$truckNumber = '""""'.$cardCountRows->unit_number.'"';
 						}
 					}
-					$Receipt_Number = "CL".$invoiceID; */
+					$Receipt_Number = "CL".$invoiceID;
 					/* $csvdata .= '""""'.$Receipt_Number.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).',""""Credit", Pride Diesel Inc.'.',""""'.$cardCountRows->card_number .'",""""'.$cardCountRows->gas_station_state .'",'.$itemCode.",".$productQuantityJsonDecode[$rowCount].',""""L",'.$pridePriceJsonDecode[$rowCount].",".$totalTaxAmount." ,".$total."\n"; */
 					/* $csvdata .= '""""'.$Receipt_Number.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).',""""Credit", Pride Diesel Inc.'.',""""'.$cardCountRows->card_number .'","'.$driverName.'","'.$cardCountRows->transaction_id.'","'.$cardCountRows->gas_station_name.'","'.$cardCountRows->gas_station_id.'",""""'.$cardCountRows->gas_station_state .'","'.$transactionDate.'","'.$transactionTime.'","'.$cardCountRows->unit_number.'",'.$productNameJsonDecode[$rowCount].",".$productQuantityJsonDecode[$rowCount].',""""L",'.$pridePriceJsonDecode[$rowCount].",".$finalTaxAmt." ,".$total.",CAD\n"; */
-					/* if(strpos(date("G:i a", strtotime($cardCountRows->transaction_date)), 'pm') !== false){
+					if(strpos(date("G:i a", strtotime($cardCountRows->transaction_date)), 'pm') !== false){
 						$transtime = date("h:i", strtotime($cardCountRows->transaction_date))." p";
 					}else{
 						$transtime = date("h:i", strtotime($cardCountRows->transaction_date))." a";
 					}					
-					$toalAfterFloor = floor($total*100)/100; */
+					$toalAfterFloor = floor($total*100)/100;
 					/* $csvdata[] = array('"'.$cardCountRows->transaction_id.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).",".$transtime.',"Credit", Pride Diesel Inc.'.',"'.$cardCountRows->card_number .'","'.$cardCountRows->gas_station_name.'","'.$cardCountRows->gas_station_city.'","'.$cardCountRows->gas_station_state .'",'.$itemCode.",".$productQuantityJsonDecode[$rowCount].',"L",'.$pridePriceJsonDecode[$rowCount]." ,".$finalTaxAmt." ,".$toalAfterFloor."\n"); */
-					/* $csvdata .= '"""'.$cardCountRows->transaction_id.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).",".$transtime.',""""Credit", Pride Diesel Inc.'.',""""'.$cardCountRows->card_number .'",""""'.$cardCountRows->gas_station_name.'",""""'.$cardCountRows->gas_station_city.'",""""'.$cardCountRows->gas_station_state .'",'.$truckNumber.','.$trailerNumber.','.$productNameJsonDecode[$rowCount].','.$productQuantityJsonDecode[$rowCount].',""""L",'.$pridePriceJsonDecode[$rowCount]." ,".$finalTaxAmt.",".$toalAfterFloor."\n"; */					
+					$csvdata .= '"""'.$cardCountRows->transaction_id.'"'.','.date('m/d/Y', strtotime($cardCountRows->transaction_date)).",".$transtime.',""""Credit", Pride Diesel Inc.'.',""""'.$cardCountRows->card_number .'",""""'.$cardCountRows->gas_station_name.'",""""'.$cardCountRows->gas_station_city.'",""""'.$cardCountRows->gas_station_state .'",'.$truckNumber.','.$trailerNumber.','.$productNameJsonDecode[$rowCount].','.$productQuantityJsonDecode[$rowCount].',""""L",'.$pridePriceJsonDecode[$rowCount]." ,".$total_tax_amount.",".$toalAfterFloor."\n";					
 		
 					$rowCount++;$jsonInc++;
 				}
 				/* Set Invoice_status as 1 */
-				$this->db->where('transaction_id', $cardCountRows->transaction_id);
+				$this->db->where(['id' => $cardCountRows->transactionid, 'transaction_id' => $cardCountRows->transaction_id]);
 				$this->db->set('invoice_status', 1);
 				$this->db->update('transactions'); 				
 				$transactionDetails = json_encode($transationDetails);
@@ -2887,6 +3425,7 @@ exit;
 			<td colspan="2">Subtotal</td>
 			<td>'.$totalQuantity.'</td>
 			<td>$ '.$grandTaxAmt.'</td>
+			<td>$ '.$grandQSTTaxAmt.'</td>
 			<td>$ '.$grandTotal.'</td>
 			<td>CAD</td>
 		</tr>
@@ -2898,20 +3437,20 @@ exit;
 			fwrite($file,"$datContent");
 			fclose($file); */	
 			/*CSV for TransPlus Software*/
-			//$fd = fopen (FCPATH."assets/modules/invoices/".$filename, "w");
+			$fd = fopen (FCPATH."assets/modules/invoices/".$filename, "w");
 			/* $csvheader ="Receipt_Number,Transaction_Date,Method,Vendor,Card_Number,Province_State,Item_Type,Quantity,Measure,Price,Tax,Total\n"; */
-			/* $csvheader ="Receipt_Number,Transaction_Date,Transaction_Time,Method,Vendor,Card_Number,Supplier,City,Province_State,Truck_Number,Trailer_Number,Item_Type,Quantity,Measure,Price,Tax,Total\n"; */
+			$csvheader ="Receipt_Number,Transaction_Date,Transaction_Time,Method,Vendor,Card_Number,Supplier,City,Province_State,Truck_Number,Trailer_Number,Item_Type,Quantity,Measure,Price,Tax,Total\n";
 			//header('Content-Type: application/csv');
 			//header('Content-Disposition: attachment; filename="'.$filename.'"');
-			/* $fileContent = $csvheader.$csvdata;
-			fputs($fd, $fileContent); */
+			$fileContent = $csvheader.$csvdata;
+			fputs($fd, $fileContent);
 			/* fputcsv($fd, $csvheader);
 			foreach ($csvdata as $line) {
 				// though CSV stands for "comma separated value"
 				// in many countries (including France) separator is ";"
 				fputcsv($fd, $line, ',');
 			} */			
-			//fclose($fd);
+			fclose($fd);
 			//echo $csvheader.$csvdata; 
 			//exit();
 
@@ -2919,6 +3458,7 @@ exit;
 		$data['invoice_id'] = "CL".$invoiceID;
 		$data['company_id'] = $cid;
 		$data['invoice_date'] = date('Y-m-d');
+		$data['billingOn'] = 'HUSKY';
 		$data['billingCurrency'] = 'CAD';
 		$data['invoice_data'] = $invoice_data;
 		$data['trans_data'] = $transactionDetails;
@@ -2943,25 +3483,455 @@ exit;
 		$ca_body = 'Currency CAD';
 		//$pdfFilePath = APPPATH . 'modules/cronjob/invoice_pdf/trans_invoice_CAD_'.$data['invoice_date']."_".$data['company_id'].'.pdf';
 		$pdfFilePath = FCPATH . 'assets/modules/invoices/trans_invoice_CAD_husky_'.$data['invoice_date']."_".$data['company_id'].'.pdf';
-		//$csvFilePath = FCPATH . 'assets/modules/invoices/company_trans_plus_CAD_'.$cid."_".date('Ymd').'.csv';
+		$csvFilePath = FCPATH . 'assets/modules/invoices/company_trans_husky_CAD_'.$cid."_".date('Ymd').'.csv';
 		//$this->email->clear();
 		$result = $this->email
 					->from('info@pridediesel.com', 'From Pride Diesel')
 					//->to('jagdishchander6373@gmail.com')
 					->to($company_email_ca)
-					->cc('abhinavdua1435@gmail.com')
+					->bcc('abhinavdua1435@gmail.com')
 					//->cc('jagdishchander4667@gmail.com')
 					->subject($ca_subject)
 					->message($ca_body)
 					->attach($pdfFilePath)
-					//->attach($csvFilePath)
+					->attach($csvFilePath)
 					->send();
 		$this->email->clear($pdfFilePath);
-		//$this->email->clear($csvFilePath);
+		$this->email->clear($csvFilePath);
 
 		//if($result) {
 			//echo "Send";
 			//unlink($pdfFilePath); //for delete generated pdf file. 
 		//}	
-	}	
+	}
+
+/*********************CAD Rebate Calc ******************/
+	public function cad_rebate_per_invoice(){
+		$this->load->library('pagination');
+		//$this->data['can_edit'] = edit_permissions();
+		//$this->data['can_delete'] = delete_permissions();
+		//$this->data['can_add'] = add_permissions();
+		$this->breadcrumb->add('CAD Rebate Cost and Profit', base_url() . 'CAD Rebate Cost and Profit');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+		$this->settings['pageTitle'] = 'CAD Rebate Cost and Profit';
+			
+			$where = '';
+			$where2 = '';
+			if(!empty($_GET['card_search'])){
+				$where = $_GET['card_search'];
+			}
+			if(!empty($_GET['date_range'])){
+				$explodeDateRange = explode(' - ', $_GET['date_range']);			
+				$where2 = $explodeDateRange;
+			}		
+
+			$this->data['cad_rebate'] = $this->account_model->get_rebate_transactions($where, $where2);
+			
+			$config['base_url'] = site_url('account/cad_rebate_per_invoice');
+			$config['uri_segment'] = 3;
+			$config['total_rows'] = count($this->data['cad_rebate']);
+		   // $config['total_rows'] = 10;
+			$config['per_page'] = 10;
+			$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+			$config['full_tag_close'] = '</ul>';
+			$config['first_link']= '&laquo; First';
+			$config['first_tag_open'] =  '<li class="prev page">';
+			$config['first_tag_close']= '</li>'; 
+			$config['last_link']= 'Last &raquo;';
+			$config['last_tag_open']= '<li class="next page">';
+			$config['last_tag_close']= '</li>';
+			$config['next_link']= 'Next &rarr;';
+			$config['next_tag_open']= '<li class="next page">';
+			$config['next_tag_close']= '</li>';
+			$config['prev_link']= '&larr; Previous';
+			$config['prev_tag_open']= '<li class="prev page">';
+			$config['prev_tag_close']= '</li>';		
+			$config['cur_tag_open'] = '<li class="active"><a href="#">';
+			$config['cur_tag_close'] = '</a></li>';
+			$config['num_tag_open'] = '<li class="page">';
+			$config['num_tag_close'] = '</li>';
+			$config['link_suffix'] = '#content';
+			$config['reuse_query_string'] = true;
+			$config["use_page_numbers"] = TRUE;
+
+			$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+			$this->pagination->initialize($config);
+			$this->data['pagination'] = $this->pagination->create_links();
+
+			$this->data['cad_rebate'] = $this->account_model->get_cad_rebate_transactions($config['per_page'], $page, $where, $where2);		
+			
+			//$this->_render_template('cadRebate_calc/Cad_rebateCalcs', $this->data);
+		}
+
+	public function cad_rebate_calc(){
+		/* $this->data['can_edit'] = edit_permissions();
+		$this->data['can_delete'] = delete_permissions();
+		$this->data['can_add'] = add_permissions(); */
+		$this->settings['title'] = 'Invoices';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Invoices', base_url() . 'account/cad_rebate_calc');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+
+		$this->load->library('pagination');
+
+		$where = '';
+		$where2 = '';
+		if(!empty($_GET['card_search'])){
+			$where = $_GET['card_search'];
+		}
+		if(!empty($_GET['date_range'])){
+			$explodeDateRange = explode(' - ', $_GET['date_range']);			
+			$where2 = $explodeDateRange;
+		}		
+
+		$this->data['allInvoices'] = $this->account_model->get_trans_invoices_rebate($where, $where2);
+		
+		
+		
+        /* Pagination */
+        $config['base_url'] = site_url('account/cad_rebate_calc');
+        $config['uri_segment'] = 3;
+        $config['total_rows'] = count($this->data['allInvoices']);
+        $config['per_page'] = 10;
+        $config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+        $config['full_tag_close'] = '</ul>';
+		$config['first_link']= '&laquo; First';
+		$config['first_tag_open'] =  '<li class="prev page">';
+		$config['first_tag_close']= '</li>'; 
+		$config['last_link']= 'Last &raquo;';
+		$config['last_tag_open']= '<li class="next page">';
+		$config['last_tag_close']= '</li>';
+		$config['next_link']= 'Next &rarr;';
+		$config['next_tag_open']= '<li class="next page">';
+		$config['next_tag_close']= '</li>';
+		$config['prev_link']= '&larr; Previous';
+		$config['prev_tag_open']= '<li class="prev page">';
+		$config['prev_tag_close']= '</li>';		
+        $config['cur_tag_open'] = '<li class="active"><a href="#">';
+        $config['cur_tag_close'] = '</a></li>';
+        $config['num_tag_open'] = '<li class="page">';
+        $config['num_tag_close'] = '</li>';
+        $config['link_suffix'] = '#content';
+		$config['reuse_query_string'] = true;
+		$config["use_page_numbers"] = TRUE;
+
+        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+        $this->pagination->initialize($config);
+        $this->data['pagination'] = $this->pagination->create_links();
+
+        $this->data['allInvoices'] = $this->account_model->get_pagination_trans_invoice_rebate($config['per_page'], $page, $where, $where2);		
+        $this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculation($config['per_page'], $page,$where, $where2);		
+		
+		$this->_render_template('cadRebate_calc/index', $this->data);		
+	}
+	
+	
+	
+	
+	public function view_invoice(){
+		$this->settings['title'] = 'Invoice Detail';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Invoices', base_url() . 'account/cad_rebate_calc');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+
+		$this->load->library('pagination');
+
+		$where = '';
+		$where2 = '';
+		if(!empty($_GET['card_search'])){
+			$where = $_GET['card_search'];
+		}
+		if(!empty($_GET['date_range'])){
+			$explodeDateRange = explode(' - ', $_GET['date_range']);			
+			$where2 = $explodeDateRange;
+		}
+
+		$invoice_id = $this->uri->segment(3); 	
+
+		$this->data['allInvoices'] = $this->account_model->get_trans_invoices_rebatePer($where, $where2,$invoice_id);
+		
+		
+		
+        /* Pagination */
+        $config['base_url'] = site_url('account/cad_rebate_calc');
+        $config['uri_segment'] = 3;
+        $config['total_rows'] = count($this->data['allInvoices']);
+        $config['per_page'] = 10;
+        $config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+        $config['full_tag_close'] = '</ul>';
+		$config['first_link']= '&laquo; First';
+		$config['first_tag_open'] =  '<li class="prev page">';
+		$config['first_tag_close']= '</li>'; 
+		$config['last_link']= 'Last &raquo;';
+		$config['last_tag_open']= '<li class="next page">';
+		$config['last_tag_close']= '</li>';
+		$config['next_link']= 'Next &rarr;';
+		$config['next_tag_open']= '<li class="next page">';
+		$config['next_tag_close']= '</li>';
+		$config['prev_link']= '&larr; Previous';
+		$config['prev_tag_open']= '<li class="prev page">';
+		$config['prev_tag_close']= '</li>';		
+        $config['cur_tag_open'] = '<li class="active"><a href="#">';
+        $config['cur_tag_close'] = '</a></li>';
+        $config['num_tag_open'] = '<li class="page">';
+        $config['num_tag_close'] = '</li>';
+        $config['link_suffix'] = '#content';
+		$config['reuse_query_string'] = true;
+		$config["use_page_numbers"] = TRUE;
+
+        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+        $this->pagination->initialize($config);
+        $this->data['pagination'] = $this->pagination->create_links();
+
+        $this->data['allInvoices'] = $this->account_model->get_pagination_trans_invoice_rebatePer($config['per_page'], $page, $where, $where2,$invoice_id);		
+        $this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculationPer($where, $where2,$invoice_id);		
+		
+		$this->_render_template('cadRebate_calc/view', $this->data);
+		
+	}
+	
+/*********************CAD Rebate Calc ******************/
+/*********************USA Rebate Calc ******************/
+public function usa_rebate_calc(){
+		$this->settings['title'] = 'Invoices';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Invoices', base_url() . 'account/usa_rebate_calc');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+
+		$this->load->library('pagination');
+
+		$where = '';
+		$where2 = '';
+		if(!empty($_GET['card_search'])){
+			$where = $_GET['card_search'];
+		}
+		if(!empty($_GET['date_range'])){
+			$explodeDateRange = explode(' - ', $_GET['date_range']);			
+			$where2 = $explodeDateRange;
+		}		
+		$invoice_id = 0;
+		$this->data['allInvoices'] = $this->account_model->get_trans_invoices_rebate_USA($where, $where2,$invoice_id);
+		
+		
+		
+        /* Pagination */
+        $config['base_url'] = site_url('account/usa_rebate_calc');
+        $config['uri_segment'] = 3;
+        $config['total_rows'] = count($this->data['allInvoices']);
+        $config['per_page'] = 10;
+        $config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+        $config['full_tag_close'] = '</ul>';
+		$config['first_link']= '&laquo; First';
+		$config['first_tag_open'] =  '<li class="prev page">';
+		$config['first_tag_close']= '</li>'; 
+		$config['last_link']= 'Last &raquo;';
+		$config['last_tag_open']= '<li class="next page">';
+		$config['last_tag_close']= '</li>';
+		$config['next_link']= 'Next &rarr;';
+		$config['next_tag_open']= '<li class="next page">';
+		$config['next_tag_close']= '</li>';
+		$config['prev_link']= '&larr; Previous';
+		$config['prev_tag_open']= '<li class="prev page">';
+		$config['prev_tag_close']= '</li>';		
+        $config['cur_tag_open'] = '<li class="active"><a href="#">';
+        $config['cur_tag_close'] = '</a></li>';
+        $config['num_tag_open'] = '<li class="page">';
+        $config['num_tag_close'] = '</li>';
+        $config['link_suffix'] = '#content';
+		$config['reuse_query_string'] = true;
+		$config["use_page_numbers"] = TRUE;
+
+        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+        $this->pagination->initialize($config);
+        $this->data['pagination'] = $this->pagination->create_links();
+
+        $this->data['allInvoices'] = $this->account_model->get_pagination_trans_invoice_rebate_USA($config['per_page'], $page, $where, $where2,$invoice_id);		
+        $this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculation_USA($config['per_page'], $page,$where, $where2,$invoice_id);		
+		
+		$this->_render_template('cadRebate_calc/index_usa', $this->data);		
+	}
+	
+	
+	public function view_invoices(){
+		$this->settings['title'] = 'USA Invoice Detail';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Invoices', base_url() . 'account/usa_rebate_calc');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+
+		$this->load->library('pagination');
+
+		$where = '';
+		$where2 = '';
+		if(!empty($_GET['card_search'])){
+			$where = $_GET['card_search'];
+		}
+		if(!empty($_GET['date_range'])){
+			$explodeDateRange = explode(' - ', $_GET['date_range']);			
+			$where2 = $explodeDateRange;
+		}
+
+		$invoice_id = $this->uri->segment(3); 	
+
+		$this->data['allInvoices'] = $this->account_model->get_trans_invoices_rebate_USA($where, $where2,$invoice_id);
+		
+		
+		
+        /* Pagination */
+        $config['base_url'] = site_url('account/usa_rebate_calc');
+        $config['uri_segment'] = 3;
+        $config['total_rows'] = count($this->data['allInvoices']);
+        $config['per_page'] = 10;
+        $config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+        $config['full_tag_close'] = '</ul>';
+		$config['first_link']= '&laquo; First';
+		$config['first_tag_open'] =  '<li class="prev page">';
+		$config['first_tag_close']= '</li>'; 
+		$config['last_link']= 'Last &raquo;';
+		$config['last_tag_open']= '<li class="next page">';
+		$config['last_tag_close']= '</li>';
+		$config['next_link']= 'Next &rarr;';
+		$config['next_tag_open']= '<li class="next page">';
+		$config['next_tag_close']= '</li>';
+		$config['prev_link']= '&larr; Previous';
+		$config['prev_tag_open']= '<li class="prev page">';
+		$config['prev_tag_close']= '</li>';		
+        $config['cur_tag_open'] = '<li class="active"><a href="#">';
+        $config['cur_tag_close'] = '</a></li>';
+        $config['num_tag_open'] = '<li class="page">';
+        $config['num_tag_close'] = '</li>';
+        $config['link_suffix'] = '#content';
+		$config['reuse_query_string'] = true;
+		$config["use_page_numbers"] = TRUE;
+
+        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+        $this->pagination->initialize($config);
+        $this->data['pagination'] = $this->pagination->create_links();
+
+        $this->data['allInvoices'] = $this->account_model->get_pagination_trans_invoice_rebate_USA($config['per_page'], $page, $where, $where2,$invoice_id);		
+        $this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculation_USA($config['per_page'], $page,$where, $where2,$invoice_id);		
+		
+		$this->_render_template('cadRebate_calc/view_usa', $this->data);
+		
+	}
+
+/*********************USA Rebate Calc ******************/
+/*********************Husky Rebate Calc ******************/
+
+
+public function husky_rebate(){
+		$this->settings['title'] = 'HUSKY Invoices';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Invoices', base_url() . 'account/husky_rebate');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+
+		$this->load->library('pagination');
+
+		$where = '';
+		$where2 = '';
+		if(!empty($_GET['card_search'])){
+			$where = $_GET['card_search'];
+		}
+		if(!empty($_GET['date_range'])){
+			$explodeDateRange = explode(' - ', $_GET['date_range']);			
+			$where2 = $explodeDateRange;
+		}		
+		$invoice_id = 0;
+		$this->data['allInvoices'] = $this->account_model->get_trans_invoices_rebate_husky($where, $where2,$invoice_id);
+		
+		
+		
+        /* Pagination */
+        $config['base_url'] = site_url('account/husky_rebate');
+        $config['uri_segment'] = 3;
+        $config['total_rows'] = count($this->data['allInvoices']);
+        $config['per_page'] = 10;
+        $config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+        $config['full_tag_close'] = '</ul>';
+		$config['first_link']= '&laquo; First';
+		$config['first_tag_open'] =  '<li class="prev page">';
+		$config['first_tag_close']= '</li>'; 
+		$config['last_link']= 'Last &raquo;';
+		$config['last_tag_open']= '<li class="next page">';
+		$config['last_tag_close']= '</li>';
+		$config['next_link']= 'Next &rarr;';
+		$config['next_tag_open']= '<li class="next page">';
+		$config['next_tag_close']= '</li>';
+		$config['prev_link']= '&larr; Previous';
+		$config['prev_tag_open']= '<li class="prev page">';
+		$config['prev_tag_close']= '</li>';		
+        $config['cur_tag_open'] = '<li class="active"><a href="#">';
+        $config['cur_tag_close'] = '</a></li>';
+        $config['num_tag_open'] = '<li class="page">';
+        $config['num_tag_close'] = '</li>';
+        $config['link_suffix'] = '#content';
+		$config['reuse_query_string'] = true;
+		$config["use_page_numbers"] = TRUE;
+
+        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+        $this->pagination->initialize($config);
+        $this->data['pagination'] = $this->pagination->create_links();
+
+        $this->data['allInvoices'] = $this->account_model->get_pagination_trans_invoice_rebate_husky($config['per_page'], $page, $where, $where2,$invoice_id);		
+        //$this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculation_husky($config['per_page'], $page,$where, $where2,$invoice_id);		
+		
+		$this->_render_template('cadRebate_calc/index_cad_husky', $this->data);		
+	}
+	
+	public function husky_rebate_per_invoice(){
+		$this->settings['title'] = 'CAD HUSKY Invoices';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Invoices', base_url() . 'account/husky_rebate');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+
+		$this->load->library('pagination');
+
+		$where = '';
+		$where2 = '';
+		if(!empty($_GET['card_search'])){
+			$where = $_GET['card_search'];
+		}
+		if(!empty($_GET['date_range'])){
+			$explodeDateRange = explode(' - ', $_GET['date_range']);			
+			$where2 = $explodeDateRange;
+		}		
+		$invoice_id = $this->uri->segment(3);
+		$this->data['allInvoices'] = $this->account_model->get_trans_invoices_rebate_husky($where, $where2,$invoice_id);
+		
+		/* Pagination */
+        $config['base_url'] = site_url('account/husky_rebate');
+        $config['uri_segment'] = 3;
+        $config['total_rows'] = count($this->data['allInvoices']);
+        $config['per_page'] = 10;
+        $config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+        $config['full_tag_close'] = '</ul>';
+		$config['first_link']= '&laquo; First';
+		$config['first_tag_open'] =  '<li class="prev page">';
+		$config['first_tag_close']= '</li>'; 
+		$config['last_link']= 'Last &raquo;';
+		$config['last_tag_open']= '<li class="next page">';
+		$config['last_tag_close']= '</li>';
+		$config['next_link']= 'Next &rarr;';
+		$config['next_tag_open']= '<li class="next page">';
+		$config['next_tag_close']= '</li>';
+		$config['prev_link']= '&larr; Previous';
+		$config['prev_tag_open']= '<li class="prev page">';
+		$config['prev_tag_close']= '</li>';		
+        $config['cur_tag_open'] = '<li class="active"><a href="#">';
+        $config['cur_tag_close'] = '</a></li>';
+        $config['num_tag_open'] = '<li class="page">';
+        $config['num_tag_close'] = '</li>';
+        $config['link_suffix'] = '#content';
+		$config['reuse_query_string'] = true;
+		$config["use_page_numbers"] = TRUE;
+
+        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+        $this->pagination->initialize($config);
+        $this->data['pagination'] = $this->pagination->create_links();
+
+        $this->data['allInvoices'] = $this->account_model->get_pagination_trans_invoice_rebate_husky($config['per_page'], $page, $where, $where2,$invoice_id);		
+        $this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculation_husky($config['per_page'], $page,$where, $where2,$invoice_id);		
+		
+		$this->_render_template('cadRebate_calc/view_cad_husky', $this->data);		
+	}
+/*********************Husky Rebate Calc ******************/	
 }
