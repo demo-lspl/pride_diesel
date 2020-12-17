@@ -77,7 +77,7 @@
                 </tr>
 			</thead>
 				<?php 
-				  $Unit_PRICE_total = $Pride_price_total = $QQTY = $pride_total_per_invoice = 0;
+				  $Unit_PRICE_total = $Pride_price_total = $QQTY = $pride_total_per_invoice =  $EFS_amount = 0;
 				    $count = 0;
 					foreach($data_transactions1 as $val){
 						
@@ -113,7 +113,7 @@
 							$Qty_total +=$QQTY;
 							$total = $QQTY * $single_unit_amt;
 							$amt_total +=$total;
-							//$EFS_amount +=$amount_chk;
+							$EFS_amount +=$amount_chk;
 							
 						
 							$Rebte_total +=$rebate_amt;
@@ -167,7 +167,11 @@
 			  <td><?php echo bcdiv($Rebte_total,1,2); ?></td>
 			  </tr>
 			  <tr><td colspan="8"><td/></tr>
-			  <tr><td colspan="8"><td/></tr>
+			 <tr>
+				<td colspan="6" align="right"><b>Total EFS</b></td>
+				<td><?php echo bcdiv($EFS_amount,1,2); ?></td>
+				<td></td>
+			  </tr>
 			 
 			  <tr>
 				<td colspan="6" align="right"><b>Total Diesel</b></td>

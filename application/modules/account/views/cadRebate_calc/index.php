@@ -123,11 +123,10 @@
 			</tr>
 			  
 			  <?php endforeach; ?>
-			  <?php }else{ echo "<tr>
-				<td colspan='7'>No record found</td>
-			  </tr>"; }  ?>
+			  
 			  </tbody>
 			  <?php 
+			 
 			  $amt_total = $Qty_total = $Rebte_total = 0;
 			  	$count = 0;
 			  foreach($allInvoices_rebate_calc as $invoicevalues){
@@ -169,8 +168,14 @@
 						    $cat = $category[$more_transc];
 						    $u_price = $unit_price[$more_transc];
 						    $quantity = $qttys[$more_transc];
-							$rebate_amt = $quantity * 0.068;
-							$withrbate_Amt = $amount_chk - $rebate_amt;
+							 $pride_price_into_qty = $prd_prce * $quantity;
+							 $prid_into_qty[] =  $pride_price_into_qty;
+							 $rebate_amt = $quantity * 0.068;
+							 if($cat == 'DEFD'){
+								$withrbate_Amt = $amount_chk; 
+							 }else{
+								$withrbate_Amt = $amount_chk - $rebate_amt;
+							 }	
 							$single_unit_amt = $withrbate_Amt / $quantity;
 							
 							 
@@ -185,6 +190,8 @@
 								}	
 						$more_transc++; 	
 						}
+						$total_prid_qty = array_sum($prid_into_qty);
+					   $pride_total_per_invoice = $pride_price_into_qty;
 						
 					}
 					
@@ -204,7 +211,7 @@
 			  </tr>
                <tr>
 			  <td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
-			  <td><?php echo bcdiv($amt_total,1,2); ?></td>
+			  <td><?php echo bcdiv($total_prid_qty,1,2); ?></td>
 			  <td><?php echo bcdiv($Qty_total,1,2); ?></td>
 			  <td><?php echo bcdiv($Rebte_total,1,2); ?></td>
 			  </tr>
@@ -214,7 +221,7 @@
 			  <tr>
 				<td colspan="5" align="right"><b>Total Diesel</b></td>
 				<td><?php
-					$ttl_amtt =  $amt_total - @$defd_Amt; 
+					$ttl_amtt =  $total_prid_qty - @$defd_Amt; 
 					echo bcdiv($ttl_amtt ,1,2);
 				?></td>
 				<td><?php 
@@ -232,7 +239,7 @@
 			  </tr>
 			  <tr>
 				<td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
-				<td><?php echo bcdiv($amt_total,1,2); ?></td>
+				<td><?php echo bcdiv($total_prid_qty,1,2); ?></td>
 				<td><?php echo bcdiv($Qty_total,1,2); ?></td>
 				<td></td>
 			  </tr>
@@ -249,7 +256,7 @@
 			  <tr>
 				<td colspan="5" align="right"><b>Actual Cost of Fuel</b></td>
 				<td><?php 
-				       $Actl_cost = $amt_total - $Rebte_total;
+				       $Actl_cost = $total_prid_qty - $Rebte_total;
 						echo bcdiv($Actl_cost,1,2); 
 					?></td>
 				<td></td>
@@ -258,12 +265,15 @@
 			   <tr>
 				<td colspan="5" align="right"><b>Profit</b></td>
 				<td><?php 
-				       $profitd = $amt_total - $Actl_cost;
-						echo bcdiv($profitd,1,2); 
+				       $profittt =  $total_prid_qty - $amt_total;
+						echo bcdiv($profittt,1,2); 
 					?></td>
 				<td></td>
 				<td></td>
 			  </tr> 
+			 <?php }else{ echo "<tr>
+				<td colspan='7'>No record found</td>
+			  </tr>"; }  ?> 
 			</table>
 				<div class="row">
 					<div class="col-md-5 col-sm-12">
@@ -271,7 +281,7 @@
 					</div>
 					<div class="col-md-7 col-sm-12">
 						<div class="pagination-container">
-						<?php echo $pagination ?>
+			  <?php echo $pagination ?>
 						</div>				
 					</div>				
 				</div>				
@@ -279,3 +289,4 @@
 			</div>
 	</section>
 </div>	
+			  
