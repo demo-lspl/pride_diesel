@@ -807,7 +807,7 @@ class Account_model extends MY_Model {
 		$this->db->where('transaction_invoice.billingOn', 'EFS');
        $this->db->limit($limit, $offset);
 	   // $this->db->limit(10);
-		//$this->db->order_by('id','DESC');
+		$this->db->order_by('id','DESC');
 		
         $query = $this->db->get();
         
@@ -841,7 +841,7 @@ class Account_model extends MY_Model {
 		$this->db->where('transaction_invoice.billingCurrency', 'CAD');
 		$this->db->where('transaction_invoice.billingOn', 'EFS');
         $this->db->limit($limit, $offset);
-		//$this->db->order_by('id','DESC');
+		$this->db->order_by('id','DESC');
 		//$this->db->limit(10);
         $query = $this->db->get();
         
