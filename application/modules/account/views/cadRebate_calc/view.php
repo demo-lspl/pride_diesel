@@ -151,7 +151,7 @@
 					<td><?= $val['gas_station_state'];?></td>	
 					<td><?= $val['transaction_id'];?></td>	
 					<td><?= $cat;?></td>
-					<td><?= bcdiv($pride_total_per_invoice,1,2);?></td>	
+					<td><?= floor($pride_total_per_invoice*100)/100;?></td>	
 					<td><?= $QQTY;?></td>	
 					<td><?= $new_Created_Date;?></td>				
 				</tr>
@@ -171,39 +171,38 @@
                <tr>
 			  <td colspan="6" align="right"><b>Total Fuel Qty and Cost</b></td>
 			  <td><?php echo floor($prideTotal*100)/100; ?></td>
-			  <td><?php echo bcdiv($Qty_total,1,2); ?></td>
-			  <td><?php echo bcdiv($Rebte_total,1,2); ?></td>
+			  <td><?php echo floor($Qty_total*100)/100; ?></td>
+			  <td><?php echo floor($Rebte_total*100)/100; ?></td>
 			  </tr>
 			  <tr><td colspan="8"><td/></tr>
 			 <tr>
 				<td colspan="6" align="right"><b>Total EFS</b></td>
-				<td><?php echo bcdiv($EFS_amount,1,2); ?></td>
+				<td><?php echo floor($EFS_amount*100)/100; ?></td>
 				<td></td>
 			  </tr>
 			 
 			  <tr>
 				<td colspan="6" align="right"><b>Total Diesel</b></td>
 				<td><?php
-					//$ttl_amtt =  $total_prid_qty - @$defd_Amt; 
 					echo floor($totDieselEFS *100)/100;
 				?></td>
 				<td><?php 
 					$ttl_qty =  $Qty_total - @$defd_Qty; 
-					echo bcdiv($ttl_qty ,1,2);
+					echo floor($ttl_qty*100)/100;
 					?>
 				</td>
 				<td></td>
 			  </tr>
 			  <tr>
 				<td colspan="6" align="right"><b>Total Def</b></td>
-				<td><?php echo bcdiv(@$defd_Amt,1,2); ?></td>
-				<td><?php echo bcdiv(@$defd_Qty,1,2); ?></td>
+				<td><?php echo floor(@$defd_Amt*100)/100; ?></td>
+				<td><?php echo floor(@$defd_Qty*100)/100; ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
 				<td colspan="6" align="right"><b>Total Fuel Qty and Cost</b></td>
 				<td><?php echo floor($EFS_amount*100)/100; ?></td>
-				<td><?php echo bcdiv($Qty_total,1,2); ?></td>
+				<td><?php echo floor($Qty_total*100)/100; ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
@@ -219,8 +218,7 @@
 			  <tr>
 				<td colspan="6" align="right"><b>Actual Cost of Fuel</b></td>
 				<td><?php 
-				      // $Actl_cost = $total_prid_qty - $Rebte_total;
-						echo bcdiv($amt_total,1,2); 
+				      	echo floor($amt_total*100)/100; 
 					?></td>
 				<td></td>
 				<td></td>
@@ -229,7 +227,7 @@
 				<td colspan="6" align="right"><b>Profit</b></td>
 				<td><?php 
 				       $profittt =  $total_prid_qty - $amt_total;
-						echo bcdiv($profittt,1,2); 
+						echo floor($profittt*100)/100; 
 					?></td>
 				<td></td>
 				<td></td>
