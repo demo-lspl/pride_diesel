@@ -123,9 +123,7 @@
 			</tr>
 			  
 			  <?php endforeach; ?>
-			  <?php }else{ echo "<tr>
-				<td colspan='7'>No record found</td>
-			  </tr>"; }  ?>
+			 
 			  </tbody>
 			  <?php 
 			  $amt_total = $Qty_total = $Rebte_total =  $EFS_amount = 0;
@@ -229,7 +227,7 @@
 			  </tr>
 			  <tr><td colspan="7"><td/></tr>
 			 <tr>
-				<td colspan="6" align="right"><b>Total EFS</b></td>
+				<td colspan="5" align="right"><b>Total EFS</b></td>
 				<td><?php echo floor($EFS_amount*100)/100; ?></td>
 				<td></td>
 			  </tr>
@@ -284,7 +282,10 @@
 					?></td>
 				<td></td>
 				<td></td>
-			  </tr> 
+			  </tr>
+			<?php }else{ echo "<tr>
+				<td colspan='7'>No record found</td>
+			  </tr>"; }  ?>			  
 			</table>
 				<div class="row">
 					<div class="col-md-5 col-sm-12">
