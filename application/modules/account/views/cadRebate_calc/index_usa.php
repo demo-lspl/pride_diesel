@@ -123,9 +123,7 @@
 			</tr>
 			  
 			  <?php endforeach; ?>
-			  <?php }else{ echo "<tr>
-				<td colspan='7'>No record found</td>
-			  </tr>"; }  ?>
+			 
 			  </tbody>
 			  <?php 
 			  $amt_total = $Qty_total = $Rebte_total = 0;
@@ -243,6 +241,9 @@
 				
 				<td></td>
 			  </tr>
+			   <?php }else{ echo "<tr>
+				<td colspan='7'>No record found</td>
+			  </tr>"; }  ?>
 			 <!--tr><td colspan="4" align="right"></td> <td>Amount</td><td>Qty</td></tr-->
 			 
 			</table>
