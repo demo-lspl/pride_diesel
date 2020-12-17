@@ -39,13 +39,13 @@
 				<tr>
 					<th>Id</th> 
 					<th>Card Number</th>
-					<th>Invoice ID</th>
-					<th>Currency</th>					
-					<th>Gas Station Name</th>
 					<th>State</th>
 					<th>City</th>
+					<th>Invoice ID</th>
 					<th>Transcation ID</th>
+					<th>Category</th>
 					<th>Grand Total</th>
+					<th>Quantity</th>
 					<th>Created On</th>
                 </tr>
 			</thead>
@@ -60,6 +60,7 @@
 						$pride_price = json_decode($val['pride_price']);
 						$qttys = json_decode($val['quantity']);
 						$amount = json_decode($val['amount']);
+						$category = json_decode($val['category']);
 						$more_transc = 0;
 					$prid_into_qty =  array();
 					foreach($unit_price as $unit_val){
@@ -67,10 +68,11 @@
 						 $prd_prce = $pride_price[$more_transc];
 						 $QQTY = $qttys[$more_transc];
 						 $amount_chkk = $amount[$more_transc];
+						 $cat = $category[$more_transc];
 						
 						 $unit_into_qty = $amount_chkk;
-						 $pride_price_into_qty = $prd_prce * $QQTY;
-						 $prid_into_qty[] =  $pride_price_into_qty;
+						 $pride_price_into_qty = (floor($prd_prce*100)/100) * $QQTY;
+						 $prid_into_qty[] =  floor($pride_price_into_qty*100)/100;
 						 $Qty_total += $QQTY;
 						 
 						 $amount_grd_totl += $amount_chkk;
@@ -82,20 +84,18 @@
 						$Pride_price_total += $total_prid_qty;
 						$pride_total_per_invoice += $pride_price_into_qty;
 						
-						$Invoice_id = $this->uri->segment(3);
-						
+						$invoice_id = $this->uri->segment(3);
 				?>
 				<tr>
 					<td><?= $val['id'];?></td>
 					<td><?= $val['card_number'];?></td>
-					<td><?= 'CL'.$Invoice_id;?></td>
-					<td><?= $val['billing_currency'];?></td>
-					<td><?= $val['gas_station_name'];?></td>
 					<td><?= $val['gas_station_city'];?></td>
 					<td><?= $val['gas_station_state'];?></td>	
+					<td><?= 'CL'.$invoice_id;?></td>
 					<td><?= $val['transaction_id'];?></td>	
-					
-					<td><?= bcdiv($total_prid_qty,1,2);?></td>	
+					<td><?= $cat;?></td>
+					<td><?= floor($total_prid_qty*100)/100;?></td>
+					<td><?= $QQTY;?></td>		
 					<td><?= $new_Created_Date;?></td>				
 				</tr>
 			</tbody>
@@ -106,38 +106,44 @@
 				<tr><td colspan="9"><td/></tr>
 				<tr><td colspan="9"><td/></tr>
 			   <tr>
-				  <td colspan="8" align="right"></td>
+				  <td colspan="7" align="right"></td>
 				  <th>Amount</th>
 				  <th>Qty</th>
 				</tr>
                <tr>
-				  <td colspan="8" align="right"><b>Total Fuel Qty and Cost</b></td>
-				  <td><?php echo bcdiv($amt_total,1,2); ?></td>
-				  <td><?php echo bcdiv($Qty_total,1,2); ?></td>
+				  <td colspan="7" align="right"><b>Total Fuel Qty and Cost</b></td>
+				  <td><?php echo floor($amt_total*100)/100;?></td>
+				  <td><?php echo floor($Qty_total*100)/100; ?></td>
+				  <td></td>
+				 
 			  </tr>
 				<tr><td colspan="9"><td/></tr>
 				<tr><td colspan="9"><td/></tr>
 			   <tr>
-				<td colspan="8" align="right"><b>Invoice Pricing</b></td>
-				<td><?php echo bcdiv($Pride_price_total ,1,2); ?></td>
+				<td colspan="7" align="right"><b>Invoice Pricing</b></td>
+				<td><?php echo floor($Pride_price_total*100)/100; ?></td>
+				<td></td>
 				<td></td>
 			  </tr>
 			  <tr>
-				<td colspan="8" align="right"><b>EFS Pricing</b></td>
-				<td><?php echo bcdiv($amount_grd_totl ,1,2);?></td>
+				<td colspan="7" align="right"><b>EFS Pricing</b></td>
+				<td><?php echo floor($amount_grd_totl*100)/100;?></td>
+				<td></td>
 				<td></td>
 			  </tr>
 			   <tr>
-				  <td colspan="8" align="right"><b>Transcation FEES</b></td>
+				  <td colspan="7" align="right"><b>Transcation FEES</b></td>
 				  <td >$1.25 x <?php echo $count; ?>  =  <?php echo $count * 1.25; ?></td>
+				  <td></td>
 			  </tr> 
 			  <tr>
-				<td colspan="8" align="right"><b>Profit</b></td>
+				<td colspan="7" align="right"><b>Profit</b></td>
 				<td><?php
 					//$net_profit = $Pride_price_total  -  $Unit_PRICE_total;
 					$net_profit = $Pride_price_total - $amount_grd_totl ;
-					echo bcdiv($net_profit ,1,2);
+					echo floor($net_profit*100)/100;
 				?></td>
+				<td></td>
 				<td></td>
 			  </tr>
 			</table>

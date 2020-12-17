@@ -61,12 +61,13 @@
 					<tr>
 					<th>Id</th> 
 					<th>Card Number</th>
-					<th>Currency</th>					
-					<th>Gas Station Name</th>
 					<th>State</th>
 					<th>City</th>
+					<th>Invoice ID</th>
 					<th>Transcation ID</th>
+					<th>Category</th>
 					<th>Grand Total</th>
+					<th>Quantity</th>
 					<th>Created On</th>
                 </tr>
 				</thead>
@@ -80,6 +81,7 @@
 						$unit_price = json_decode($val['unit_price']);
 						$pride_price = json_decode($val['pride_price']);
 						$qttys = json_decode($val['quantity']);
+						$category = json_decode($val['category']);
 						$more_transc = 0;
 						
 						foreach($unit_price as $unit_val){
@@ -92,57 +94,61 @@
 							 $unt_p = $unit_price[$more_transc];
 							 $prd_prce = $pride_price[$more_transc];
 							 $QQTY = $qttys[$more_transc];
+							 $cat = $category[$more_transc];
 							 $unit_into_qty = $unt_p * $QQTY;
-							 $pride_price_into_qty = $prd_prce * $QQTY;
+							 $pride_price_into_qty = (floor($prd_prce*100)/100) * $QQTY;
 							 $huskyTAX_amt = $unit_into_qty*$total_tax/100;
 							$more_transc++; 
 						}
 						$Unit_PRICE_total  += $unit_into_qty + $huskyTAX_amt; 
 						$Pride_price_total += $pride_price_into_qty;
 						$pride_total_per_invoice = $pride_price_into_qty;
+						$invoice_id = $this->uri->segment(3);
 				?>		
 					<tr>
 					<td><?= $val['id'];?></td>
 					<td><?= $val['card_number'];?></td>
-					<td><?= $val['billing_currency'];?></td>
-					<td><?= $val['gas_station_name'];?></td>
 					<td><?= $val['gas_station_city'];?></td>
-					<td><?= $val['gas_station_state'];?></td>	
-					<td><?= $val['transaction_id'];?></td>	
-					<td><?= bcdiv($pride_total_per_invoice,1,2);?></td>	
+					<td><?= $val['gas_station_state'];?></td>
+					<td><?= 'CL'.$invoice_id;?></td>	
+					<td><?= $val['transaction_id'];?></td>
+                    <td><?= $cat;?></td>					
+					<td><?= floor($pride_total_per_invoice*100)/100;?></td>
+					<td><?= $QQTY;?></td>	
 					<td><?= $new_Created_Date;?></td>				
 				</tr>
 			</tbody>	
 						
 			<?php }  ?>
-			  <tr><td colspan="8"><td/></tr>
-			  <tr><td colspan="8"><td/></tr>
+			  <tr><td colspan="9"><td/></tr>
+			  <tr><td colspan="9"><td/></tr>
 			   <tr>
-				  <td colspan="6" align="right"></td>
+				  <td colspan="7" align="right"></td>
 				  <th>Amount</th>
 				  <th>Qty</th>
 				  <!--th>Rebate</th-->  
 			  </tr>
                <tr>
-				  <td colspan="6" align="right"><b>Total Fuel Qty and Cost</b></td>
-				  <td><?php echo bcdiv($amt_total,1,2); ?></td>
-				  <td><?php echo bcdiv($Qty_total,1,2); ?></td>
+				  <td colspan="7" align="right"><b>Total Fuel Qty and Cost</b></td>
+				  <td><?php echo floor($amt_total*100)/100; ?></td>
+				  <td><?php echo floor($Qty_total*100)/100; ?></td>
 				  <td><?php //echo number_format($Rebte_total,2); ?></td>
 			  </tr>
-			  <tr><td colspan="8"><td/></tr>
-			  <tr><td colspan="8"><td/></tr>
+			  <tr><td colspan="9"><td/></tr>
+			  <tr><td colspan="9"><td/></tr>
 			   <tr>
 				<td colspan="7" align="right"><b>Invoice Pricing</b></td>
 				<td><?php
-					echo bcdiv($Pride_price_total ,1,2);
+					echo floor($Pride_price_total*100)/100;
 				?></td>
 				
+				<td></td>
 				<td></td>
 			  </tr>
 			  <tr>
 				<td colspan="7" align="right"><b>HUSKY Pricing</b></td>
 				<td><?php
-					echo bcdiv($Unit_PRICE_total ,1,2);
+					echo floor($Unit_PRICE_total*100)/100;
 				?></td>
 				
 				<td></td>
@@ -151,10 +157,11 @@
 			  <tr>
 				<td colspan="7" align="right"><b>Profit</b></td>
 				<td><?php
-				  $net_profit =  $Pride_price_total - $Unit_PRICE_total;
-					echo bcdiv($net_profit ,1,2);
+				  $net_profit =  (floor($Pride_price_total*100)/100) - (floor($Unit_PRICE_total*100)/100);
+					echo floor($net_profit*100)/100;
 				?></td>
 				
+				<td></td>
 				<td></td>
 			  </tr>
 			<?php } ?> 

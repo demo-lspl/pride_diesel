@@ -216,7 +216,7 @@
 			  <tr>
 				<td colspan="6" align="right"><b>Invoice Pricing</b></td>
 				<td><?php
-					echo bcdiv($Pride_price_total ,1,2);
+					echo floor($Pride_price_total*100)/100;
 				?></td>
 				
 				<td></td>
@@ -224,7 +224,7 @@
 			  <tr>
 				<td colspan="6" align="right"><b>EFS Pricing</b></td>
 				<td><?php
-					echo bcdiv($Unit_PRICE_total ,1,2);
+					echo floor($Unit_PRICE_total*100)/100;
 				?></td>
 				
 				<td></td>
@@ -238,7 +238,7 @@
 				<td><?php
 				
 				  $net_profit = $Pride_price_total - $amount_grd_totl ;
-					echo bcdiv($net_profit ,1,2);
+					echo floor($net_profit*100)/100;
 				?></td>
 				
 				<td></td>

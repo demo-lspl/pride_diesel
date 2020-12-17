@@ -69,6 +69,7 @@
 					<th>Card Number</th>
 					<th>State</th>
 					<th>City</th>
+					<th>Invoice ID</th>
 					<th>Transcation ID</th>
 					<th>Category</th>
 					<th>Grand Total</th>
@@ -142,13 +143,15 @@
 			
 					$total_prid_qty = array_sum($prid_into_qty);
 					$pride_total_per_invoice = $pride_price_into_qty;
+					$invoice_id = $this->uri->segment(3);
 				?>
 				<tr>
 					<td><?= $val['id'];?></td>
 					<td><?= $val['card_number'];?></td>
 					
 					<td><?= $val['gas_station_city'];?></td>
-					<td><?= $val['gas_station_state'];?></td>	
+					<td><?= $val['gas_station_state'];?></td>
+                    <td><?= 'CL'.$invoice_id;?></td>	 					
 					<td><?= $val['transaction_id'];?></td>	
 					<td><?= $cat;?></td>
 					<td><?= floor($pride_total_per_invoice*100)/100;?></td>	
@@ -160,29 +163,30 @@
 	$count++;
 		} 
 		?>
-			   <tr><td colspan="8"><td/></tr>
-			  <tr><td colspan="8"><td/></tr>
+			   <tr><td colspan="9"><td/></tr>
+			  <tr><td colspan="9"><td/></tr>
 			   <tr>
-				  <td colspan="6" align="right"></td>
+				  <td colspan="7" align="right"></td>
 				  <th>Amount</th>
 				  <th>Qty</th>
 				  <th>Rebate</th>  
 			  </tr>
                <tr>
-			  <td colspan="6" align="right"><b>Total Fuel Qty and Cost</b></td>
+			  <td colspan="7" align="right"><b>Total Fuel Qty and Cost</b></td>
 			  <td><?php echo floor($prideTotal*100)/100; ?></td>
 			  <td><?php echo floor($Qty_total*100)/100; ?></td>
 			  <td><?php echo floor($Rebte_total*100)/100; ?></td>
 			  </tr>
 			  <tr><td colspan="8"><td/></tr>
 			 <tr>
-				<td colspan="6" align="right"><b>Total EFS</b></td>
+				<td colspan="7" align="right"><b>Total EFS</b></td>
 				<td><?php echo floor($EFS_amount*100)/100; ?></td>
+				<td></td>
 				<td></td>
 			  </tr>
 			 
 			  <tr>
-				<td colspan="6" align="right"><b>Total Diesel</b></td>
+				<td colspan="7" align="right"><b>Total Diesel</b></td>
 				<td><?php
 					echo floor($totDieselEFS *100)/100;
 				?></td>
@@ -194,29 +198,29 @@
 				<td></td>
 			  </tr>
 			  <tr>
-				<td colspan="6" align="right"><b>Total Def</b></td>
+				<td colspan="7" align="right"><b>Total Def</b></td>
 				<td><?php echo floor(@$defd_Amt*100)/100; ?></td>
 				<td><?php echo floor(@$defd_Qty*100)/100; ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
-				<td colspan="6" align="right"><b>Total Fuel Qty and Cost</b></td>
+				<td colspan="7" align="right"><b>Total Fuel Qty and Cost</b></td>
 				<td><?php echo floor($EFS_amount*100)/100; ?></td>
 				<td><?php echo floor($Qty_total*100)/100; ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
-				<td colspan="6" align="right"><b>Rebate</b></td>
+				<td colspan="7" align="right"><b>Rebate</b></td>
 				<td><?php echo floor($Rebte_total*100)/100; ?></td>
 				<td></td>
 				<td></td>
 			  </tr>
 			   <tr>
-				  <td colspan="6" align="right"><b>Transcation FEES</b></td>
+				  <td colspan="7" align="right"><b>Transcation FEES</b></td>
 				  <td >$1.25 x <?php echo $count; ?>  =  <?php echo $count * 1.25; ?></td>
 			  </tr>
 			  <tr>
-				<td colspan="6" align="right"><b>Actual Cost of Fuel</b></td>
+				<td colspan="7" align="right"><b>Actual Cost of Fuel</b></td>
 				<td><?php 
 				      	echo floor($amt_total*100)/100; 
 					?></td>
@@ -224,7 +228,7 @@
 				<td></td>
 			  </tr>
 			  <tr>
-				<td colspan="6" align="right"><b>Profit</b></td>
+				<td colspan="7" align="right"><b>Profit</b></td>
 				<td><?php 
 				       $profittt =  $total_prid_qty - $amt_total;
 						echo floor($profittt*100)/100; 

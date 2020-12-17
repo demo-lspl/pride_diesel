@@ -117,7 +117,7 @@
 				<td><?= $invoicevalues->address;?></td>
 				<td><?= $invoicevalues->invoice_id;?></td>
 				<td><?= $invoicevalues->billingCurrency;?></td>
-				<td><?= bcdiv($invoicevalues->grand_total ,1,2);?></td>	
+				<td><?= floor($invoicevalues->grand_total*100)/100;?></td>	
 				<td><?= $new_Created_Date;?></td>
 				<td><a href="<?php echo base_url('account/husky_rebate_per_invoice/').$invoicevalues->id; ?>" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a></td>	
 			</tr>
@@ -186,8 +186,8 @@
 			  </tr>
                <tr>
 			  <td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
-			  <td><?php echo bcdiv($amt_total,1,2); ?></td>
-			  <td><?php echo bcdiv($Qty_total,1,2); ?></td>
+			  <td><?php echo floor($amt_total*100)/100; ?></td>
+			  <td><?php echo floor($Qty_total*100)/100; ?></td>
 			  <td><?php //echo number_format($Rebte_total,2); ?></td>
 			  </tr>
 			  		
@@ -235,7 +235,7 @@
 			   <tr>
 				<td colspan="6" align="right"><b>Invoice Pricing</b></td>
 				<td><?php
-					echo bcdiv($Pride_price_total ,1,2);
+					echo floor($Pride_price_total*100)/100;
 				?></td>
 				
 				<td></td>
@@ -243,7 +243,7 @@
 			  <tr>
 				<td colspan="6" align="right"><b>HUSKY Pricing</b></td>
 				<td><?php
-					echo bcdiv($Unit_PRICE_total ,1,2);
+					echo floor($Unit_PRICE_total*100)/100;
 				?></td>
 				
 				<td></td>
@@ -253,7 +253,7 @@
 				<td colspan="6" align="right"><b>Profit</b></td>
 				<td><?php
 				  $net_profit = $Pride_price_total - $Unit_PRICE_total;
-					echo bcdiv($net_profit ,1,2);
+					echo floor($net_profit*100)/100;
 				?></td>
 				
 				<td></td>

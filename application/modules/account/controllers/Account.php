@@ -3872,7 +3872,7 @@ public function husky_rebate(){
         $this->data['pagination'] = $this->pagination->create_links();
 
         $this->data['allInvoices'] = $this->account_model->get_pagination_trans_invoice_rebate_husky($config['per_page'], $page, $where, $where2,$invoice_id);		
-        //$this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculation_husky($config['per_page'], $page,$where, $where2,$invoice_id);		
+        $this->data['allInvoices_rebate_calc'] = $this->account_model->get_pagination_trans_invoice_rebate_calculation_husky($config['per_page'], $page,$where, $where2,$invoice_id);		
 		
 		$this->_render_template('cadRebate_calc/index_cad_husky', $this->data);		
 	}
