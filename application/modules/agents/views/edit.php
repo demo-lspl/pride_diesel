@@ -33,7 +33,8 @@
 							<?php
 								$roles = ['admin'=>'Admin', 'accounts'=>'Accounts', 'sales'=>'Sales Person'];
 								foreach($roles as $key=>$rolesItems){
-									echo "<option value='{$key}'>{$rolesItems}</option>";
+									if($company->role == $key){$active = 'selected';}else{$active = '';}
+									echo "<option {$active} value='{$key}'>{$rolesItems}</option>";
 								}
 							?>
 						</select>

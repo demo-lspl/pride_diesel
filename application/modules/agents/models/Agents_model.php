@@ -24,7 +24,7 @@ class Agents_model extends MY_Model {
 		$company->province 			= '';
 		$company->postal_code 		= '';
 		$company->company_email 	= '';
-		$company->role 				= 'admin';
+		$company->role 				= '';
 		$company->last_activity 	= '';
 		$company->status 			= 0;
 		$company->company_password 	= '';
