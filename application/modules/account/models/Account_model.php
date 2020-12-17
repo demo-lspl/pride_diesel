@@ -625,20 +625,21 @@ class Account_model extends MY_Model {
         return $query->result_array();
 	}	
 	
-	public function get_card_transactions($transid){
+	public function get_card_transactions($transid, $daterange=null, $card=null){
 		$this->db->join('users', 'users.id = cards.company_id', 'LEFT');
 		$this->db->join('transactions', 'cards.card_number = transactions.card_number', 'LEFT');
 		$this->db->from('cards');
-		/* $oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
+		//$oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
+		
 		if(!empty($daterange)){
-					$expDateRange = explode('%20-%20', $daterange);
-					$startDate = $expDateRange[0];
-					$endDate = $expDateRange[1];			
-			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d H:i:s', strtotime($startDate)). '" and "'. date('Y-m-d H:i:s', strtotime($endDate)).'"');
-		}else{
-			$this->db->where('transactions.transaction_date BETWEEN "'. $oldDate. '" and "'. date('Y-m-d H:i:s').'"');			
-		} */		
-		$this->db->where('transactions.id', $transid);
+			$expDateRange = explode(' - ', $daterange);
+			$startDate = $expDateRange[0];
+			$endDate = $expDateRange[1];			
+			$this->db->where('transactions.transaction_date >= "'. date('Y-m-d', strtotime($startDate)). '" and transactions.transaction_date <= "'. date('Y-m-d', strtotime($endDate)).'"');
+			$this->db->where('transactions.card_number', $card);
+		}else{		
+			$this->db->where('transactions.id', $transid);
+		}
 		return $this->db->get()->result();
 	}
 	

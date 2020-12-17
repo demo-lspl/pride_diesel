@@ -4,31 +4,46 @@
 $getCardNumber = $this->db->select('card_number')->where('id', $this->uri->segment(3))->get('transactions')->row();
 ?>
 	<section class="content box">
-	<div class="addnew-user">
-		<a href="<?php echo base_url('account/company_transactions') ?>" class="btn btn-info"><i class="fa fa-arrow-left"></i> Back</a>
-	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-		<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
-		<div class="btn-group" role="group">
-			<button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			  <i class="fa fa-download"></i> Export
-			</button>
-			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1" style="">
-			  <!--a class="dropdown-item export-csv" data-cid="<?php //echo $cid ?>" href="#">Export CSV</a-->
-			  <a class="dropdown-item export-single-xlsx" data-cardnum="<?php echo $getCardNumber->card_number ?>" href="#">Export Excel</a>
-			  <!--a class="dropdown-item export-xlsx-transplus" data-cid="<?php //echo $cid ?>" href="#">Export Excel TransPlus</a-->
+			<div class="addnew-user">
+				<a href="<?php echo base_url('account/company_transactions') ?>" class="btn btn-info"><i class="fa fa-arrow-left"></i> Back</a>
+			<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+			<form class="form-inline" method="get" action="<?php echo base_url('account/comp_card_transactions/').$this->uri->segment(3) ?>">
+				<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
+				<input type="hidden" name="card" value="<?php echo $getCardNumber->card_number ?>"  />
+				<button type="submit" class="btn btn-default"><i class="fa fa-search"></i>&nbsp;&nbsp;Search</button>
+			</form>
+				
 			</div>
+			<div class="btn-group" role="group">
+				<button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				  <i class="fa fa-download"></i> Export
+				</button>
+				<div class="dropdown-menu" aria-labelledby="btnGroupDrop1" style="">
+					  <!--a class="dropdown-item export-csv" data-cid="<?php //echo $cid ?>" href="#">Export CSV</a-->
+					  <a class="dropdown-item export-single-xlsx" data-cardnum="<?php echo $getCardNumber->card_number ?>" href="#">Export Excel</a>
+					  <!--a class="dropdown-item export-xlsx-transplus" data-cid="<?php //echo $cid ?>" href="#">Export Excel TransPlus</a-->
+				</div>
+			</div>	
 		</div>
-		
-	</div>		
-	</div>
+				<?php 
+				$startDate = date('Y-m-d');
+				$endDate = date('Y-m-d');
+				$daterange = null;
+				if(!empty($_GET['date_range'])){
+					$daterange = $_GET['date_range'];
+					$expDateRange = explode(' - ', $_GET['date_range']);
+					$startDate = $expDateRange[0];
+					$endDate = $expDateRange[1];
+					
+				}?>		
 				<script type="text/javascript">
 					$('.daterange').daterangepicker({
 						locale: {
 							format: 'YYYY-MM-DD',
 
 						},
-							/* "startDate": '<?php echo $startDate; ?>',
-							"endDate": '<?php echo $endDate; ?>' */		
+							"startDate": '<?php echo $startDate; ?>',
+							"endDate": '<?php echo $endDate; ?>'		
 					});
 				</script>	
 	<div class="card card-default">

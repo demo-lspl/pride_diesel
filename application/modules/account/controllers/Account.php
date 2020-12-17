@@ -1706,8 +1706,12 @@ exit;
 		$this->breadcrumb->mainctrl("account");
 		$this->breadcrumb->add('View Transactions', base_url() . 'account/card_transactions');
 		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
-
-		$this->data['cardDetails'] = $this->account_model->get_card_transactions($cardNumber, $daterange);
+		$card = null;
+		if(!empty($_GET['date_range'])){
+			$daterange = $_GET['date_range'];
+			$card = $_GET['card'];
+		}
+		$this->data['cardDetails'] = $this->account_model->get_card_transactions($cardNumber, $daterange, $card);
 		$this->data['driverDetails'] = $this->account_model->get_card_driver($cardNumber);
 		$this->data['dailyPriceList'] = $this->user_model->get_dailypricelist();
 		
