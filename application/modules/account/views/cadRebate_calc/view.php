@@ -67,17 +67,17 @@
 				<tr>
 					<th>Id</th> 
 					<th>Card Number</th>
-					<th>Currency</th>					
 					<th>State</th>
 					<th>City</th>
 					<th>Transcation ID</th>
-					<th>Quantity</th>
+					<th>Category</th>
 					<th>Grand Total</th>
+					<th>Quantity</th>
 					<th>Created On</th>
                 </tr>
 			</thead>
 				<?php 
-				  $Unit_PRICE_total = $Pride_price_total = $QQTY = $pride_total_per_invoice = 0;
+				  $Unit_PRICE_total = $Pride_price_total = $QQTY = $pride_total_per_invoice =  $EFS_amount = 0;
 				    $count = 0;
 					foreach($data_transactions1 as $val){
 						
@@ -113,6 +113,7 @@
 							$Qty_total +=$QQTY;
 							$total = $QQTY * $single_unit_amt;
 							$amt_total +=$total;
+							$EFS_amount +=$amount_chk;
 							
 						
 							$Rebte_total +=$rebate_amt;
@@ -130,20 +131,20 @@
 						 $more_transc++; 
 					}
 					
-				
+			
 					$total_prid_qty = array_sum($prid_into_qty);
 					$pride_total_per_invoice = $pride_price_into_qty;
 				?>
 				<tr>
 					<td><?= $val['id'];?></td>
 					<td><?= $val['card_number'];?></td>
-					<td><?= $val['billing_currency'];?></td>
-					<td><?= $val['gas_station_name'];?></td>
+					
 					<td><?= $val['gas_station_city'];?></td>
 					<td><?= $val['gas_station_state'];?></td>	
 					<td><?= $val['transaction_id'];?></td>	
-					
+					<td><?= $cat;?></td>
 					<td><?= bcdiv($pride_total_per_invoice,1,2);?></td>	
+					<td><?= $QQTY;?></td>	
 					<td><?= $new_Created_Date;?></td>				
 				</tr>
 			</tbody>
@@ -166,7 +167,11 @@
 			  <td><?php echo bcdiv($Rebte_total,1,2); ?></td>
 			  </tr>
 			  <tr><td colspan="8"><td/></tr>
-			  <tr><td colspan="8"><td/></tr>
+			 <tr>
+				<td colspan="6" align="right"><b>Total EFS</b></td>
+				<td><?php echo bcdiv($EFS_amount,1,2); ?></td>
+				<td></td>
+			  </tr>
 			 
 			  <tr>
 				<td colspan="6" align="right"><b>Total Diesel</b></td>
@@ -215,7 +220,7 @@
 			  <tr>
 				<td colspan="6" align="right"><b>Profit</b></td>
 				<td><?php 
-				       $profittt = $total_prid_qty - $Actl_cost;
+				       $profittt =  $total_prid_qty - $amt_total;
 						echo bcdiv($profittt,1,2); 
 					?></td>
 				<td></td>
