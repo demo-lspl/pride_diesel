@@ -231,13 +231,13 @@
 				<td></td>
 			  </tr>
 			  <tr>
-				<td colspan="5" align="right"><b>Total Fuel Qty and Cost(A)</b></td>
+				<td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
 				<td><?php echo bcdiv($amt_total,1,2); ?></td>
 				<td><?php echo bcdiv($Qty_total,1,2); ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
-				<td colspan="5" align="right"><b>Rebate(B)</b></td>
+				<td colspan="5" align="right"><b>Rebate</b></td>
 				<td><?php echo bcdiv($Rebte_total,1,2); ?></td>
 				<td></td>
 				<td></td>
@@ -247,10 +247,19 @@
 				  <td >$1.25 x <?php echo $count; ?>  =  <?php echo $count * 1.25; ?></td>
 			  </tr>
 			  <tr>
-				<td colspan="5" align="right"><b>Actual Cost of Fuel (C)</b></td>
+				<td colspan="5" align="right"><b>Actual Cost of Fuel</b></td>
 				<td><?php 
 				       $Actl_cost = $amt_total - $Rebte_total;
 						echo bcdiv($Actl_cost,1,2); 
+					?></td>
+				<td></td>
+				<td></td>
+			  </tr> 
+			   <tr>
+				<td colspan="5" align="right"><b>Profit</b></td>
+				<td><?php 
+				       $profitd = $amt_total - $Actl_cost;
+						echo bcdiv($profitd,1,2); 
 					?></td>
 				<td></td>
 				<td></td>
