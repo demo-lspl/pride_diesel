@@ -78,7 +78,7 @@
 			</thead>
 				<?php 
 				  $Unit_PRICE_total = $Pride_price_total = $QQTY = $pride_total_per_invoice =  $EFS_amount = 0;
-				    $count = 0;
+				    $totDieselEFS = $count = $prideTotal = 0;
 					foreach($data_transactions1 as $val){
 						
 						$new_Created_Date = date("d-M-Y", strtotime($val['date_created']));
@@ -99,21 +99,29 @@
 						 $cat = $cat[$more_transc];
 						
 						 $unit_into_qty = $unt_p * $QQTY;
-						 $pride_price_into_qty = $prd_prce * $QQTY;
-						  $prid_into_qty[] =  $pride_price_into_qty;
-						
 						 
-							$rebate_amt = $QQTY * 0.068;
+						 $pride_price_into_qty =  $prd_prce * $QQTY;
+						  $prid_into_qty[] =  floor($pride_price_into_qty*100)/100;
+						  $prid_into_UToal =  floor($pride_price_into_qty*100)/100;
+						
+						 $withrbate_AmtEFS = $rebate_amt = 0;
+							
 							if($cat == 'DEFD'){
 								$withrbate_Amt = $amount_chk;
+								
 							}else{
+								$rebate_amt = $QQTY * '0.068';
 								$withrbate_Amt = $amount_chk - $rebate_amt;
+								$withrbate_AmtEFS = $amount_chk;
 							}
+							//pre($QQTY.' 0.068');die;
 							$single_unit_amt = $withrbate_Amt / $QQTY;
 							$Qty_total +=$QQTY;
 							$total = $QQTY * $single_unit_amt;
 							$amt_total +=$total;
 							$EFS_amount +=$amount_chk;
+							$totDieselEFS += $withrbate_AmtEFS;
+							$prideTotal += $prid_into_UToal;
 							
 						
 							$Rebte_total +=$rebate_amt;
@@ -162,7 +170,7 @@
 			  </tr>
                <tr>
 			  <td colspan="6" align="right"><b>Total Fuel Qty and Cost</b></td>
-			  <td><?php echo bcdiv($total_prid_qty,1,2); ?></td>
+			  <td><?php echo floor($prideTotal*100)/100; ?></td>
 			  <td><?php echo bcdiv($Qty_total,1,2); ?></td>
 			  <td><?php echo bcdiv($Rebte_total,1,2); ?></td>
 			  </tr>
@@ -176,8 +184,8 @@
 			  <tr>
 				<td colspan="6" align="right"><b>Total Diesel</b></td>
 				<td><?php
-					$ttl_amtt =  $total_prid_qty - @$defd_Amt; 
-					echo bcdiv($ttl_amtt ,1,2);
+					//$ttl_amtt =  $total_prid_qty - @$defd_Amt; 
+					echo floor($totDieselEFS *100)/100;
 				?></td>
 				<td><?php 
 					$ttl_qty =  $Qty_total - @$defd_Qty; 
@@ -194,13 +202,13 @@
 			  </tr>
 			  <tr>
 				<td colspan="6" align="right"><b>Total Fuel Qty and Cost</b></td>
-				<td><?php echo bcdiv($total_prid_qty,1,2); ?></td>
+				<td><?php echo floor($EFS_amount*100)/100; ?></td>
 				<td><?php echo bcdiv($Qty_total,1,2); ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
 				<td colspan="6" align="right"><b>Rebate</b></td>
-				<td><?php echo bcdiv($Rebte_total,1,2); ?></td>
+				<td><?php echo floor($Rebte_total*100)/100; ?></td>
 				<td></td>
 				<td></td>
 			  </tr>
@@ -211,8 +219,8 @@
 			  <tr>
 				<td colspan="6" align="right"><b>Actual Cost of Fuel</b></td>
 				<td><?php 
-				       $Actl_cost = $total_prid_qty - $Rebte_total;
-						echo bcdiv($Actl_cost,1,2); 
+				      // $Actl_cost = $total_prid_qty - $Rebte_total;
+						echo bcdiv($amt_total,1,2); 
 					?></td>
 				<td></td>
 				<td></td>
