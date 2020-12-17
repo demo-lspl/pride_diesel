@@ -123,12 +123,13 @@
 			</tr>
 			  
 			  <?php endforeach; ?>
-			  
+			  <?php }else{ echo "<tr>
+				<td colspan='7'>No record found</td>
+			  </tr>"; }  ?>
 			  </tbody>
 			  <?php 
-			 
-			  $amt_total = $Qty_total = $Rebte_total = 0;
-			  	$count = 0;
+			  $amt_total = $Qty_total = $Rebte_total =  $EFS_amount = 0;
+				    $totDieselEFS = $count = $prideTotal = 0;
 			  foreach($allInvoices_rebate_calc as $invoicevalues){
 				  
 			    //$get_transaction_details = getNameById('transaction_invoice',$invoicevalues->id,'id');
@@ -155,52 +156,63 @@
 				}
 				
 				foreach($data_transactions1 as $trns_val){
-						$amount = json_decode($trns_val['amount']);
-						$category = json_decode($trns_val['category']);
+						$new_Created_Date = date("d-M-Y", strtotime($trns_val['date_created']));
 						$unit_price = json_decode($trns_val['unit_price']);
 						$pride_price = json_decode($trns_val['pride_price']);
 						$qttys = json_decode($trns_val['quantity']);
+						$amount = json_decode($trns_val['amount']);
+						$cat = json_decode($trns_val['category']);
+						
+						
 						$more_transc = 0;
-						 foreach($amount as $unit_val){
+						 foreach($unit_price as $unit_val){
+						 $unt_p = $unit_price[$more_transc];
+						 $prd_prce = $pride_price[$more_transc];
+						 $QQTY = $qttys[$more_transc];
+						 $amount_chk = $amount[$more_transc];
+						 $cat = $cat[$more_transc];
+						
+						 $unit_into_qty = $unt_p * $QQTY;
+						 
+						 $pride_price_into_qty =  $prd_prce * $QQTY;
+						  $prid_into_qty[] =  floor($pride_price_into_qty*100)/100;
+						  $prid_into_UToal =  floor($pride_price_into_qty*100)/100;
+						
+						 $withrbate_AmtEFS = $rebate_amt = 0;
 							
-						     $prd_prce = $pride_price[$more_transc];
-						    $amount_chk = $amount[$more_transc];
-						    $cat = $category[$more_transc];
-						    $u_price = $unit_price[$more_transc];
-						    $quantity = $qttys[$more_transc];
-							 $pride_price_into_qty = $prd_prce * $quantity;
-							 $prid_into_qty[] =  $pride_price_into_qty;
-							 $rebate_amt = $quantity * 0.068;
-							 if($cat == 'DEFD'){
-								$withrbate_Amt = $amount_chk; 
-							 }else{
+							if($cat == 'DEFD'){
+								$withrbate_Amt = $amount_chk;
+								
+							}else{
+								$rebate_amt = $QQTY * '0.068';
 								$withrbate_Amt = $amount_chk - $rebate_amt;
-							 }	
-							$single_unit_amt = $withrbate_Amt / $quantity;
-							
-							 
-							$total = $quantity * $single_unit_amt;
+								$withrbate_AmtEFS = $amount_chk;
+							}
+							//pre($QQTY.' 0.068');die;
+							$single_unit_amt = $withrbate_Amt / $QQTY;
+							$Qty_total +=$QQTY;
+							$total = $QQTY * $single_unit_amt;
 							$amt_total +=$total;
-							$Qty_total +=$quantity;
+							$EFS_amount +=$amount_chk;
+							$totDieselEFS += $withrbate_AmtEFS;
+							$prideTotal += $prid_into_UToal;
+							
+						
 							$Rebte_total +=$rebate_amt;
 							$defd_Amt; $defd_Qty; 
 								if($cat == 'DEFD'){
 									@$defd_Amt += $total;
-									@$defd_Qty += $quantity;
+									@$defd_Qty += $QQTY;
 								}	
-						$more_transc++; 	
-						}
-						$total_prid_qty = array_sum($prid_into_qty);
-					   $pride_total_per_invoice = $pride_price_into_qty;
-						
+						 $more_transc++; 
 					}
 					
-					
-					
-					
-				
-				//die();
-			  ?>
+			
+					$total_prid_qty = array_sum($prid_into_qty);
+					$pride_total_per_invoice = $pride_price_into_qty;
+						
+			}
+	 ?>
 			   <tr><td colspan="7"><td/></tr>
 			  <tr><td colspan="7"><td/></tr>
 			   <tr>
@@ -211,41 +223,44 @@
 			  </tr>
                <tr>
 			  <td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
-			  <td><?php echo bcdiv($total_prid_qty,1,2); ?></td>
-			  <td><?php echo bcdiv($Qty_total,1,2); ?></td>
-			  <td><?php echo bcdiv($Rebte_total,1,2); ?></td>
+			  <td><?php echo floor($prideTotal*100)/100; ?></td>
+			  <td><?php echo floor($Qty_total*100)/100; ?></td>
+			  <td><?php echo floor($Rebte_total*100)/100; ?></td>
 			  </tr>
 			  <tr><td colspan="7"><td/></tr>
-			  <tr><td colspan="7"><td/></tr>
+			 <tr>
+				<td colspan="6" align="right"><b>Total EFS</b></td>
+				<td><?php echo floor($EFS_amount*100)/100; ?></td>
+				<td></td>
+			  </tr>
 			 
 			  <tr>
 				<td colspan="5" align="right"><b>Total Diesel</b></td>
 				<td><?php
-					$ttl_amtt =  $total_prid_qty - @$defd_Amt; 
-					echo bcdiv($ttl_amtt ,1,2);
+					echo floor($totDieselEFS *100)/100;
 				?></td>
 				<td><?php 
 					$ttl_qty =  $Qty_total - @$defd_Qty; 
-					echo bcdiv($ttl_qty ,1,2);
+					echo floor($ttl_qty*100)/100;
 					?>
 				</td>
 				<td></td>
 			  </tr>
 			  <tr>
 				<td colspan="5" align="right"><b>Total Def</b></td>
-				<td><?php echo bcdiv(@$defd_Amt,1,2); ?></td>
-				<td><?php echo bcdiv(@$defd_Qty,1,2); ?></td>
+				<td><?php echo floor(@$defd_Amt*100)/100; ?></td>
+				<td><?php echo floor(@$defd_Qty*100)/100; ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
 				<td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
-				<td><?php echo bcdiv($total_prid_qty,1,2); ?></td>
-				<td><?php echo bcdiv($Qty_total,1,2); ?></td>
+				<td><?php echo floor($EFS_amount*100)/100; ?></td>
+				<td><?php echo floor($Qty_total*100)/100; ?></td>
 				<td></td>
 			  </tr>
 			  <tr>
 				<td colspan="5" align="right"><b>Rebate</b></td>
-				<td><?php echo bcdiv($Rebte_total,1,2); ?></td>
+				<td><?php echo floor($Rebte_total*100)/100; ?></td>
 				<td></td>
 				<td></td>
 			  </tr>
@@ -256,8 +271,7 @@
 			  <tr>
 				<td colspan="5" align="right"><b>Actual Cost of Fuel</b></td>
 				<td><?php 
-				       $Actl_cost = $total_prid_qty - $Rebte_total;
-						echo bcdiv($Actl_cost,1,2); 
+				       echo floor($amt_total*100)/100; 
 					?></td>
 				<td></td>
 				<td></td>
@@ -265,15 +279,12 @@
 			   <tr>
 				<td colspan="5" align="right"><b>Profit</b></td>
 				<td><?php 
-				       $profittt =  $total_prid_qty - $amt_total;
-						echo bcdiv($profittt,1,2); 
+				      $profittt =  $total_prid_qty - $amt_total;
+						echo floor($profittt*100)/100; 
 					?></td>
 				<td></td>
 				<td></td>
 			  </tr> 
-			 <?php }else{ echo "<tr>
-				<td colspan='7'>No record found</td>
-			  </tr>"; }  ?> 
 			</table>
 				<div class="row">
 					<div class="col-md-5 col-sm-12">
@@ -281,7 +292,7 @@
 					</div>
 					<div class="col-md-7 col-sm-12">
 						<div class="pagination-container">
-			  <?php echo $pagination ?>
+						<?php echo $pagination ?>
 						</div>				
 					</div>				
 				</div>				
@@ -289,4 +300,3 @@
 			</div>
 	</section>
 </div>	
-			  
