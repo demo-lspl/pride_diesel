@@ -14,7 +14,7 @@ class User_model extends MY_Model {
 					//'company_type_ca' => array('field'=>'company_type_ca', 'label'=>'CA Account Type', 'rules'=>'required'), 
 					'company_name' => array('field'=>'company_name', 'label'=>'Company Name', 'rules'=>'required|trim'), 
 					'address' => array('field'=>'address', 'label'=>'Address', 'rules'=>'required|trim'),
-					'company_email' => array('field'=>'company_email', 'label'=>'Email Address', 'rules'=>'required|trim|is_unique[users.company_email]'),
+					'company_email' => array('field'=>'company_email', 'label'=>'Email Address', 'rules'=>'required|trim'),
 					'company_password' => array('field'=>'company_password', 'label'=>'Password', 'rules'=>'trim|matches[confirm_company_password]'),
 					'confirm_company_password' => array('field'=>'confirm_company_password', 'label'=>'Confirm Password', 'rules'=>'trim'));
 					
@@ -711,6 +711,12 @@ class User_model extends MY_Model {
 		$this->db->where(array('id'=> $mid));
 		$this->db->update('money_codes');
 		
+	}
+	
+	public function get_sales_executives(){
+		$this->db->select('id,company_name')->where('role', 'sales');
+		$getMoneyCodeTrans = $this->db->get('users')->result();
+		return $getMoneyCodeTrans;		
 	}
 	
 }

@@ -68,7 +68,8 @@ class User extends MY_Controller {
 	
 	public function edit($id = null){
 		$this->load->model('sales_person/sales_person_model');
-		$this->data['salesPersons'] = $this->sales_person_model->get_sales_executives();			
+		//$this->data['salesPersons'] = $this->sales_person_model->get_sales_executives();			
+		$this->data['salesPersons'] = $this->user_model->get_sales_executives();			
 		$this->data['companyType'] = $this->user_model->get_c_type();			
 		$this->data['products'] = $this->user_model->get_products();			
 		if($id){
@@ -92,6 +93,7 @@ class User extends MY_Controller {
 		$rules = $this->user_model->rules;
 
 		$id || $rules['company_password']['rules'] .= '|required';	
+		$id || $rules['company_email']['rules'] .= '|is_unique[users.company_email]';	
 		$this->form_validation->set_rules($rules);
 		
 		if($this->form_validation->run() == true){
