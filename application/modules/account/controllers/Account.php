@@ -1685,6 +1685,26 @@ exit;
 		$this->db->where('id', $_POST['transid']);
 		$this->db->update('transactions');
 	}
+	
+	public function updateTransactionProductName(){
+		//echo $_POST['rowid'];
+		$getTransData = $this->db->select('category')->where('id', $_POST['transid'])->get('transactions')->row();
+		//$getTransData = $this->db->select('pride_price')->where('id', 39)->get('transactions')->row();
+		$priceDecode = json_decode($getTransData->category);
+		for($i=0;$i<count($priceDecode);$i++){
+			if($i == $_POST['rowid']){
+				$editedPrice = $_POST['editedval'];
+			}else{
+				$editedPrice = $priceDecode[$i];
+			}
+			$finalEditedPrice[] = $editedPrice;
+			
+		}
+		//echo json_encode($finalEditedPrice);
+		$this->db->set('category', json_encode($finalEditedPrice));
+		$this->db->where('id', $_POST['transid']);
+		$this->db->update('transactions');
+	}	
 
 	public function card_transactions($transid=NULL){
 		$this->settings['title'] = 'View Transactions';

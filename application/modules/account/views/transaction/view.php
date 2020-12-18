@@ -274,7 +274,7 @@
 									
 									<div class="col-md-1 col-sm-12 col-xs-12 form-group">															
 										<label class="col-md-12 col-sm-12 col-xs-12" for="productName">Product Name</label>
-										<div class="field-val-div"><?= $cat_values?></div>
+										<div class="field-val-div"><input class="pname" style="width: 100%;" type="text" name="" data-transid="<?= $card->transactionId ?>" data-rownum="<?= $multi_trans ?>" value="<?php echo $cat_values?>" /><?php //$cat_values?></div>
 
 									</div>
 									<div class="col-md-2 col-sm-12 col-xs-12 form-group">	
