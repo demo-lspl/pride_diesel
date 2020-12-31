@@ -171,10 +171,10 @@
 				  <th>Rebate</th>  
 			  </tr>
                <tr>
-			  <td colspan="7" align="right"><b>Total Fuel Qty and Cost</b></td>
-			  <td><?php echo floor($prideTotal*100)/100; ?></td>
-			  <td><?php echo floor($Qty_total*100)/100; ?></td>
-			  <td><?php echo floor($Rebte_total*100)/100; ?></td>
+				  <td colspan="7" align="right"><b>Total Fuel Qty and Cost</b></td>
+				  <td><?php echo floor($prideTotal*100)/100; ?></td>
+				  <td><?php echo floor($Qty_total*100)/100; ?></td>
+				  <td><?php echo floor($Rebte_total*100)/100; ?></td>
 			  </tr>
 			  <tr><td colspan="8"><td/></tr>
 			 <tr>
@@ -183,8 +183,7 @@
 				<td></td>
 				<td></td>
 			  </tr>
-			 
-			  <tr>
+			<tr>
 				<td colspan="7" align="right"><b>Total Diesel</b></td>
 				<td><?php
 					echo floor($totDieselEFS *100)/100;
@@ -195,7 +194,7 @@
 					?>
 				</td>
 				<td></td>
-			  </tr>
+			</tr>
 			  <tr>
 				<td colspan="7" align="right"><b>Total Def</b></td>
 				<td><?php echo floor(@$defd_Amt*100)/100; ?></td>
