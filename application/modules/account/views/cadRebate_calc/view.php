@@ -101,7 +101,10 @@
 						
 						 $unit_into_qty = $unt_p * $QQTY;
 						 
-						 $pride_price_into_qty =  $prd_prce * $QQTY;
+						
+						 
+						  $pride_price_into_qty =  $prd_prce * $QQTY;
+						 
 						  $prid_into_qty[] =  floor($pride_price_into_qty*100)/100;
 						  $prid_into_UToal =  floor($pride_price_into_qty*100)/100;
 						
@@ -111,14 +114,16 @@
 								$withrbate_Amt = $amount_chk;
 								
 							}else{
+								// pre($QQTY);
 								$rebate_amt = $QQTY * '0.068';
 								$withrbate_Amt = $amount_chk - $rebate_amt;
+								
 								$withrbate_AmtEFS = $amount_chk;
 							}
 							//pre($QQTY.' 0.068');die;
 							$single_unit_amt = $withrbate_Amt / $QQTY;
 							$Qty_total +=$QQTY;
-							$total = $QQTY * $single_unit_amt;
+							$total = floor($QQTY*100)/100 * floor($single_unit_amt*100)/100;
 							$amt_total +=$total;
 							$EFS_amount +=$amount_chk;
 							$totDieselEFS += $withrbate_AmtEFS;
@@ -128,7 +133,9 @@
 							$Rebte_total +=$rebate_amt;
 							$defd_Amt; $defd_Qty; 
 								if($cat == 'DEFD'){
-									@$defd_Amt += $total;
+									$pride_price_into_qty_defd =  $prd_prce * $QQTY;
+									
+									@$defd_Amt += $pride_price_into_qty_defd;
 									@$defd_Qty += $QQTY;
 								}	
 						 

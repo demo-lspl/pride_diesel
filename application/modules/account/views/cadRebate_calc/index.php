@@ -199,7 +199,8 @@
 							$Rebte_total +=$rebate_amt;
 							$defd_Amt; $defd_Qty; 
 								if($cat == 'DEFD'){
-									@$defd_Amt += $total;
+									$pride_price_into_qty_defd =  $prd_prce * $QQTY;
+									@$defd_Amt += $pride_price_into_qty_defd;
 									@$defd_Qty += $QQTY;
 								}	
 						 $more_transc++; 
