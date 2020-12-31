@@ -148,7 +148,6 @@
 				<tr>
 					<td><?= $val['id'];?></td>
 					<td><?= $val['card_number'];?></td>
-					
 					<td><?= $val['gas_station_city'];?></td>
 					<td><?= $val['gas_station_state'];?></td>
                     <td><?= 'CL'.$invoice_id;?></td>	 					
