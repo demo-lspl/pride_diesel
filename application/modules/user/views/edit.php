@@ -148,7 +148,7 @@
 						<select name="sales_person" class="form-control select2" style="width: 100%;">
 								<option value="">--Sales Executive--</option>
 								<?php foreach($salesPersons as $salesPersonsRows):?>
-								<option <?php echo ($company->sales_person == $salesPersonsRows->id) ? 'selected':''?> value="<?= $salesPersonsRows->id ?>"><?= $salesPersonsRows->name ?></option>
+								<option <?php echo ($salesPersonsRows->id == $company->sales_person) ? 'selected':''?> value="<?= $salesPersonsRows->id ?>"><?= $salesPersonsRows->company_name ?></option>
 								<?php endforeach;?>
 						</select>
 						<div class="error-single"><?php echo form_error('sales_person'); ?></div>

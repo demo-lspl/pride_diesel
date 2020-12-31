@@ -1,9 +1,10 @@
 //$('.daterange').daterangepicker();
 $(document).ready(function () {
-	$("input").keyup(function(){
+	$(".pprice").keyup(function(){
 		var transid = $(this).data('transid');
 		var rowid = $(this).data('rownum');
 		var editedval = $(this).val();
+		//alert("Work PPrice");
 		$.ajax({
 			url: site_url + 'account/updateTransactionPrice/',
 			type: 'post',
@@ -14,6 +15,22 @@ $(document).ready(function () {
 			}
 		});
 	});
+	
+	$(".pname").keyup(function(){
+		var transid = $(this).data('transid');
+		var rowid = $(this).data('rownum');
+		var editedval = $(this).val();
+		//alert("Work PName");
+		$.ajax({
+			url: site_url + 'account/updateTransactionProductName/',
+			type: 'post',
+			data: {transid:transid, rowid:rowid, editedval:editedval},
+			success: function (response) {
+				// Perform operation on the return value
+				//alert(response);
+			}
+		});
+	});	
 	
 	/* Export Transactions EXCEL/CSV **/
 	$(".export-csv").click(function(e){

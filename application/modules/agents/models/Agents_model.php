@@ -33,8 +33,12 @@ class Agents_model extends MY_Model {
 	}
 	
 	public function get_users($where = null){
+		$this->db->where('id !=', 1);		
 		$this->db->where('role =', 'admin');
-		$this->db->where('company_email !=', 'admin@gmail.com');
+		$this->db->or_where('role =', 'sales');
+		$this->db->or_where('role =', 'accounts');		
+		//$this->db->where(['role' => 'admin', 'role' => 'sales', 'role' => 'accounts']);
+		//$this->db->where('id !=', 1);
 		if(!empty($where)){
 			$this->db->like('company_name', $where);
 		}
@@ -49,8 +53,13 @@ class Agents_model extends MY_Model {
 		if(!empty($where)){
 			$this->db->like('company_name', $where);
 		}
+		$this->db->where('id !=', 1);		
 		$this->db->where('role =', 'admin');
-		$this->db->where('company_email !=', 'admin@gmail.com');
+		$this->db->or_where('role =', 'sales');
+		$this->db->or_where('role =', 'accounts');
+		//$this->db->where(['role' => 'admin', 'role' => 'sales', 'role' => 'accounts']);
+		//$this->db->where('company_email !=', 'admin@gmail.com');
+
         $this->db->limit($limit, $offset);
 		$this->db->order_by('id','DESC');
         $query = $this->db->get($this->table);

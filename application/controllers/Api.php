@@ -499,7 +499,9 @@ class Api extends REST_Controller {
 			//$data = $this->account_model->get_transactions_api($where, $where2);
 		}
 		else{
-			$getTrans = $this->db->order_by('id', 'DESC')->get("transactions")->result();
+			$this->db->select('transactions.*, cards.card_status, cards.driver_id, cards.company_id');
+			$this->db->join('cards', 'cards.card_number = transactions.card_number');
+			$getTrans = $this->db->order_by('transactions.id', 'DESC')->get("transactions")->result();
 		}
 		//print_r($getTrans);die;
 			foreach($getTrans as $getTransItems){
@@ -511,7 +513,12 @@ class Api extends REST_Controller {
 				//$amt = array();
 				//print_r($categoryJsonDecode);
 				//foreach($categoryJsonDecode as $categoryJsonDecodeItems){
-					$commaSepVal = '';
+				$getCompanyName = $this->db->select('company_name')->where('id', $getTransItems->company_id)->get('users')->row();
+				$company_name = "";
+				if(!empty($getCompanyName->company_name)){
+					$company_name = $getCompanyName->company_name;
+				}	
+				$commaSepVal = '';
 				for($trans=0; $trans<count($categoryJsonDecode); $trans++){	
 					
 					$productName = $categoryJsonDecode[$inc];
@@ -525,6 +532,7 @@ class Api extends REST_Controller {
 				}
 				
 				$data[] = array(
+								'companyName' => (string)$company_name,
 								'cardNumber' => $getTransItems->card_number, 
 								'billingCurrency' => $getTransItems->billing_currency, 
 								'gasStationName' => $getTransItems->gas_station_name, 
@@ -535,7 +543,7 @@ class Api extends REST_Controller {
 								'quantity' => $getTransItems->quantity, 
 								'transactionDate' => $getTransItems->transaction_date, 
 								'transactionId' => $getTransItems->transaction_id, 
-								'transactionTotal' => $transTotal,
+								'transactionTotal' => (string)$transTotal,
 								//'amt' => $amt
 								);
 				
@@ -553,6 +561,7 @@ class Api extends REST_Controller {
 			$explodeDateRange = explode('to', $daterange);			
 			$where2 = $explodeDateRange;
 			//$this->db->select('cards.card_number, drivers.name, cards.card_status, transactions.transaction_date');
+			$this->db->select('transactions.*, cards.card_status, cards.driver_id, cards.company_id');
 			$this->db->join('cards', 'cards.card_number = transactions.card_number');
 			if(!empty($where)){
 				$this->db->like('cards.card_number', $where);
@@ -567,6 +576,7 @@ class Api extends REST_Controller {
 			$getTrans = $this->db->order_by('transactions.id', 'DESC')->get("transactions")->result();
 		}
 		else{
+			$this->db->select('transactions.*, cards.card_status, cards.driver_id, cards.company_id');
 			$this->db->join('cards', 'cards.card_number = transactions.card_number');
 			$this->db->where('cards.company_id', $cid);
 			$getTrans = $this->db->order_by('transactions.id', 'DESC')->get("transactions")->result();
@@ -586,6 +596,11 @@ class Api extends REST_Controller {
 					$transTotal += floor($totalAfterMultiplication*100)/100;
 					//$data[] = array('price' => $pridePrice,);
 				}
+				$getDriverName = $this->db->select('name')->where('id', $getTransItems->driver_id)->get('drivers')->row();
+				$driver_name = null;
+				if(!empty($getDriverName)){
+					$driver_name = $getDriverName->name;
+				}
 				$commaSepVal = '';
 				for($pinc=0; $pinc<count($pridePriceJsonDecode); $pinc++){
 					
@@ -593,6 +608,7 @@ class Api extends REST_Controller {
 					
 				}
 				$data[] = array(
+								'driverName' => (string)$driver_name,
 								'cardNumber' => $getTransItems->card_number, 
 								'billingCurrency' => $getTransItems->billing_currency, 
 								'gasStationName' => $getTransItems->gas_station_name, 
@@ -603,7 +619,7 @@ class Api extends REST_Controller {
 								'quantity' => $getTransItems->quantity, 
 								'transactionDate' => $getTransItems->transaction_date, 
 								'transactionId' => $getTransItems->transaction_id, 
-								'transactionTotal' => $transTotal
+								'transactionTotal' => (string)$transTotal
 								);
 				//$inc++;
 				
