@@ -3959,72 +3959,72 @@ public function husky_rebate(){
 	}
 /*********************Husky Rebate Calc ******************/	
 /*********************Commission Calc ******************/
-public function company_commission(){
-		$this->load->library('pagination');
-		$this->breadcrumb->add('Assigned Company', base_url() . 'Assigned Company');
+	public function company_commission(){
+			$this->load->library('pagination');
+			$this->breadcrumb->add('Assigned Company', base_url() . 'Assigned Company');
+			$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+			$this->settings['pageTitle'] = 'Assigned Company';
+				
+				$where = '';
+				$where2 = '';
+				if(!empty($_GET['card_search'])){
+					$where = $_GET['card_search'];
+				}
+				if(!empty($_GET['date_range'])){
+					$explodeDateRange = explode(' - ', $_GET['date_range']);			
+					$where2 = $explodeDateRange;
+				}		
+
+				$config['base_url'] = site_url('account/company_commission');
+				$config['uri_segment'] = 3;
+				$config['total_rows'] = $this->account_model->num_rows('users',$where,$where2);
+			   // $config['total_rows'] = 10;
+				$config['per_page'] = 10;
+				$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+				$config['full_tag_close'] = '</ul>';
+				$config['first_link']= '&laquo; First';
+				$config['first_tag_open'] =  '<li class="prev page">';
+				$config['first_tag_close']= '</li>'; 
+				$config['last_link']= 'Last &raquo;';
+				$config['last_tag_open']= '<li class="next page">';
+				$config['last_tag_close']= '</li>';
+				$config['next_link']= 'Next &rarr;';
+				$config['next_tag_open']= '<li class="next page">';
+				$config['next_tag_close']= '</li>';
+				$config['prev_link']= '&larr; Previous';
+				$config['prev_tag_open']= '<li class="prev page">';
+				$config['prev_tag_close']= '</li>';		
+				$config['cur_tag_open'] = '<li class="active"><a href="#">';
+				$config['cur_tag_close'] = '</a></li>';
+				$config['num_tag_open'] = '<li class="page">';
+				$config['num_tag_close'] = '</li>';
+				$config['link_suffix'] = '#content';
+				$config['reuse_query_string'] = true;
+				$config["use_page_numbers"] = TRUE;
+
+				$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+				$this->pagination->initialize($config);
+				$this->data['pagination'] = $this->pagination->create_links();
+
+				$this->data['get_comp'] = $this->account_model->get_company_dtl($config['per_page'], $page, $where2);		
+				
+				$this->_render_template('commission/index', $this->data);
+		
+	}
+
+	public function view_com_dtls(){
+		$this->settings['title'] = 'Company Details';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Company Details', base_url() . 'account/view_com_dtls');
 		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
-		$this->settings['pageTitle'] = 'Assigned Company';
-			
-			$where = '';
-			$where2 = '';
-			if(!empty($_GET['card_search'])){
-				$where = $_GET['card_search'];
-			}
-			if(!empty($_GET['date_range'])){
-				$explodeDateRange = explode(' - ', $_GET['date_range']);			
-				$where2 = $explodeDateRange;
-			}		
 
-			$config['base_url'] = site_url('account/company_commission');
-			$config['uri_segment'] = 3;
-			$config['total_rows'] = $this->account_model->num_rows('users',$where,$where2);
-		   // $config['total_rows'] = 10;
-			$config['per_page'] = 10;
-			$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
-			$config['full_tag_close'] = '</ul>';
-			$config['first_link']= '&laquo; First';
-			$config['first_tag_open'] =  '<li class="prev page">';
-			$config['first_tag_close']= '</li>'; 
-			$config['last_link']= 'Last &raquo;';
-			$config['last_tag_open']= '<li class="next page">';
-			$config['last_tag_close']= '</li>';
-			$config['next_link']= 'Next &rarr;';
-			$config['next_tag_open']= '<li class="next page">';
-			$config['next_tag_close']= '</li>';
-			$config['prev_link']= '&larr; Previous';
-			$config['prev_tag_open']= '<li class="prev page">';
-			$config['prev_tag_close']= '</li>';		
-			$config['cur_tag_open'] = '<li class="active"><a href="#">';
-			$config['cur_tag_close'] = '</a></li>';
-			$config['num_tag_open'] = '<li class="page">';
-			$config['num_tag_close'] = '</li>';
-			$config['link_suffix'] = '#content';
-			$config['reuse_query_string'] = true;
-			$config["use_page_numbers"] = TRUE;
-
-			$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
-			$this->pagination->initialize($config);
-			$this->data['pagination'] = $this->pagination->create_links();
-
-			$this->data['get_comp'] = $this->account_model->get_company_dtl($config['per_page'], $page, $where2);		
-			
-			$this->_render_template('commission/index', $this->data);
-	
-}
-
-public function view_com_dtls(){
-	$this->settings['title'] = 'Company Details';
-	$this->breadcrumb->mainctrl("account");
-	$this->breadcrumb->add('Company Details', base_url() . 'account/view_com_dtls');
-	$this->settings['breadcrumbs'] = $this->breadcrumb->output();
-
-	if($this->uri->segment(3)!=''){
-		$comp_idd = $this->uri->segment(3);
-			
-			$this->data['comp_detail'] = $this->account_model->get_data_byId('users','id',$comp_idd);			
-			$this->_render_template('commission/view', $this->data);
-		}	
-}	
+		if($this->uri->segment(3)!=''){
+			$comp_idd = $this->uri->segment(3);
+				
+				$this->data['comp_detail'] = $this->account_model->get_data_byId('users','id',$comp_idd);			
+				$this->_render_template('commission/view', $this->data);
+			}	
+	}	
 
 /*********************Commission Calc ******************/	
 
