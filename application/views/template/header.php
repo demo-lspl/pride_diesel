@@ -484,7 +484,35 @@
 		  
 			</ul>		   
 		  </li>	
-<?php } ?>		  
+<?php } ?>
+ <?php if($userSessDetails->role == 'sales'){ ?>
+		  <li class="nav-item has-treeview <?php if($this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'company_commission' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'usa_rebate_calc' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'husky_rebate'){echo 'menu-open';} ?>">
+			<a href="#" class="nav-link ">
+			  <i class="nav-icon fas fa fa-wallet"></i>
+			  <p>Commission
+			  <i class="fas fa-angle-left right"></i>
+			  </p>
+			  
+			</a>
+            <ul class="nav nav-treeview">
+
+              <li class="nav-item">
+                <a href="<?php echo base_url('account/company_commission/')?>" class="nav-link <?php if($this->uri->segment(2) == 'company_commission'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Company</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?php echo base_url('account/')?>" class="nav-link <?php if($this->uri->segment(2) == 'usa_rebate_calc'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Cards</p>
+                </a>
+              </li>
+              		  
+		  
+			</ul>		   
+		  </li>	
+<?php } ?>		  		  
         </ul>
       </nav>
       <!-- /.sidebar-menu -->

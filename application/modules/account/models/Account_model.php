@@ -740,8 +740,8 @@ class Account_model extends MY_Model {
 		//$this->db->where('cards.company_id', $cid);
 		$this->db->where('transactions.billing_currency', 'CAD');
 		$this->db->group_by('transactions.card_number');
-        //$this->db->limit($limit, $offset);
-        $this->db->limit(10);
+        $this->db->limit($limit, $offset);
+        //$this->db->limit(10);
 		$this->db->order_by('transactions.id','DESC');
         $query = $this->db->get('cards');
         
@@ -771,7 +771,7 @@ class Account_model extends MY_Model {
 		//$this->db->where('cards.company_id', $cid);
 		$this->db->group_by('transactions.card_number');	
 		$this->db->order_by('transactions.id', 'DESC');	
-		$this->db->limit(10);
+		//$this->db->limit(10);
 		return $this->db->get('cards')->result();
 	}
 	public function get_trans_invoices_rebate($where = null, $where2){
@@ -930,7 +930,7 @@ class Account_model extends MY_Model {
 		$this->db->where('transaction_invoice.id', $invoice_id);
         //$this->db->limit($limit, $offset);
 		$this->db->order_by('id','DESC');
-		$this->db->limit(10);
+		//$this->db->limit(10);
         $query = $this->db->get();
         
         if(!is_object($query))
@@ -1153,6 +1153,53 @@ class Account_model extends MY_Model {
         return array();
     }
 	/*************************** Get CAD HUSKY Transaction Details ****************************/
+	/***************************Company commission  Details ****************************/
+	public function num_rows($table, $where = array(),$where2){
+		$this->db->select('*');  
+		$this->db->from($table);
+		$this->db->where('sales_person',$_SESSION['userdata']->id);
+	 if($where2!=''){
+		 $this->db->where($where2);
+		 }
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$result = $qry->num_rows();		
+		return $result; 
+	}
+
+	public function get_company_dtl($limit, $offset,$where2){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('*');
+		$this->db->from('users');
+		$this->db->where('sales_person',$_SESSION['userdata']->id);
+		// if(!empty($where2)){
+			// $start_date = $where2[0]. ' 00:00:00';
+			// $end_date = $where2[1]. ' 23:59:59';
+			// $this->db->where("users.date_created >='" . $start_date . "' AND  users.date_created <='" . $end_date. "'");
+		 // }		
+			$this->db->limit($limit, $offset);
+			$this->db->order_by('users.id','DESC');
+			$query = $this->db->get();
+        
+        if(!is_object($query)){
+            exit();
+        }
+		//echo $this->db->last_query();
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+    public function get_data_byId($table ,$field, $id) {
+		$this->db->select('*');  
+		$this->db->from($table);
+		$this->db->where($table.'.'.$field, $id);
+		$qry = $this->db->get();
+		$result = $qry->row();	
+		return $result;
+	
+	}	
+	/***************************Company commission  Details ****************************/
 	
 	
 }
