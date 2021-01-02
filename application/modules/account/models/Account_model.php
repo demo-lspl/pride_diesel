@@ -640,7 +640,7 @@ class Account_model extends MY_Model {
 		}else{		
 			$this->db->where('transactions.id', $transid);
 		}
-		return $this->db->get()->result();
+		return $this->db->get();result();
 	}
 	
 	public function get_card_trans_by_cid($cid, $daterange=null, $companyName=null){
@@ -1198,7 +1198,78 @@ class Account_model extends MY_Model {
 		$result = $qry->row();	
 		return $result;
 	
+	}
+
+    public function get_data($limit, $offset , $where = array(),$where2) {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('cards.id,cards.card_number,cards.policy_number,cards.card_status,cards.cardToken,cards.company_id,cards.cardCompany');
+		$this->db->from('cards');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		$this->db->join('users', 'cards.company_id = users.id', 'LEFT');
+		$this->db->limit($limit, $offset);
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+	
 	}	
+	public function get_data_count($where = array(),$where2) {
+		//$offset = ($offset-1) * $limit;	
+		$this->db->select('cards.id,cards.card_number,cards.policy_number,cards.card_status,cards.cardToken,cards.company_id');
+		$this->db->from('cards');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		$this->db->join('users', 'cards.company_id = users.id', 'LEFT');
+		//$this->db->limit($limit, $offset);
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+	
+	}
+	
+	Public function getTRANS_details($limit, $offset ,$card_no){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('*');
+		$this->db->from('transactions');
+		//$oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
+		
+		// if(!empty($daterange)){
+			// $expDateRange = explode(' - ', $daterange);
+			// $startDate = $expDateRange[0];
+			// $endDate = $expDateRange[1];			
+			// $this->db->where('transactions.transaction_date >= "'. date('Y-m-d', strtotime($startDate)). '" and transactions.transaction_date <= "'. date('Y-m-d', strtotime($endDate)).'"');
+			// $this->db->where('transactions.card_number', $card);
+		//}else{		
+			$this->db->where('transactions.card_number', $card_no);
+			$this->db->limit($limit, $offset);
+			$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+		//}
+	}
+	Public function getTRANS_details_count($card_no){
+		$this->db->select('*');
+		$this->db->from('transactions');
+		
+			$this->db->where('transactions.card_number', $card_no);
+			
+			$qry = $this->db->get();
+		$resultw = $qry->result();	
+		return $resultw;
+		
+	}
+	
+	
+
+
+     	
 	/***************************Company commission  Details ****************************/
 	
 	

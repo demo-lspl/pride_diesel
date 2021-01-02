@@ -503,11 +503,12 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="<?php echo base_url('account/')?>" class="nav-link <?php if($this->uri->segment(2) == 'usa_rebate_calc'){echo 'active';} ?>">
+                <a href="<?php echo base_url('account/get_com_cards')?>" class="nav-link <?php if($this->uri->segment(2) == 'get_com_cards'){echo 'active';} ?>">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Cards</p>
                 </a>
               </li>
+			  
               		  
 		  
 			</ul>		   
