@@ -4089,10 +4089,19 @@ public function husky_rebate(){
 
 		if($this->uri->segment(3)!=''){
 			$card_no = $this->uri->segment(3);
-			$dd = $this->account_model->getTRANS_details_count($card_no);
+			$where2 = 0;
+			if(!empty($_GET['date_range'])){
+				$explodeDateRange = explode(' - ', $_GET['date_range']);			
+				$where2 = $explodeDateRange;
+			}		
 
-				$config['base_url'] = site_url('account/get_com_cards');
-				$config['uri_segment'] = 3;
+			
+			
+			
+				$dd = $this->account_model->getTRANS_details_count($card_no,$where2);
+
+				$config['base_url'] = site_url('account/view_crd_trns_dtls/'.$card_no);
+				$config['uri_segment'] = 4;
 				$config['total_rows'] = count($dd);
 			   // $config['total_rows'] = 10;
 				$config['per_page'] = 10;
@@ -4122,13 +4131,13 @@ public function husky_rebate(){
 				$this->pagination->initialize($config);
 				$this->data['pagination'] = $this->pagination->create_links();
                
-				$this->data['cardsTransData'] = $this->account_model->getTRANS_details($config['per_page'], $page,$card_no);
+				$this->data['cardsTransData'] = $this->account_model->getTRANS_details($config['per_page'], $page,$card_no,$where2);
 				//$this->data['trans_dtials'] = $this->account_model->get_data_by_array('transactions','card_number',$card_no);			
 				$this->_render_template('commission/view_card_trans', $this->data);
 			}	
 	}
 		
-
+   
 /*********************Commission Calc ******************/	
 
 

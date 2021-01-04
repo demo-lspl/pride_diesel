@@ -1233,19 +1233,19 @@ class Account_model extends MY_Model {
 	
 	}
 	
-	Public function getTRANS_details($limit, $offset ,$card_no){
+	Public function getTRANS_details($limit, $offset ,$card_no,$where2){
 		$offset = ($offset-1) * $limit;	
 		$this->db->select('*');
 		$this->db->from('transactions');
 		//$oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
 		
-		// if(!empty($daterange)){
-			// $expDateRange = explode(' - ', $daterange);
-			// $startDate = $expDateRange[0];
-			// $endDate = $expDateRange[1];			
-			// $this->db->where('transactions.transaction_date >= "'. date('Y-m-d', strtotime($startDate)). '" and transactions.transaction_date <= "'. date('Y-m-d', strtotime($endDate)).'"');
-			// $this->db->where('transactions.card_number', $card);
-		//}else{		
+		 if(!empty($where2)){
+			$startDate = $where2[0]. ' 00:00:00';
+			$endDate = $where2[1]. ' 23:59:59';	
+			$this->db->where('transactions.transaction_date >= "'.$startDate.'" and transactions.transaction_date <= "'. $endDate.'"');
+			
+		}
+		//else{		
 			$this->db->where('transactions.card_number', $card_no);
 			$this->db->limit($limit, $offset);
 			$qry = $this->db->get();
@@ -1254,16 +1254,21 @@ class Account_model extends MY_Model {
 		return $resultw;
 		//}
 	}
-	Public function getTRANS_details_count($card_no){
+	Public function getTRANS_details_count($card_no,$where2){
 		$this->db->select('*');
 		$this->db->from('transactions');
-		
-			$this->db->where('transactions.card_number', $card_no);
+		if(!empty($where2)){
 			
-			$qry = $this->db->get();
+			$startDate = $where2[0]. ' 00:00:00';
+			$endDate = $where2[1]. ' 23:59:59';
+			
+			$this->db->where('transactions.transaction_date >= "'. $startDate. '" and transactions.transaction_date <= "'.$endDate.'"');
+			
+		}
+		$this->db->where('transactions.card_number', $card_no);
+		$qry = $this->db->get();
 		$resultw = $qry->result();	
 		return $resultw;
-		
 	}
 	
 	

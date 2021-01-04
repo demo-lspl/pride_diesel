@@ -72,49 +72,45 @@
 										<div class="col-md-12 col-sm-12 col-xs-12 form-group">
 										       <label>Company Type</label>
 											   <div class="col-md-7 col-sm-12 col-xs-6 form-group"><?php 
-											    $com_type =  getNameById('company_types',$comp_detail->company_type,'id');
-											   echo $com_type->company_type;
+											    if(!empty($comp_detail->company_type)){
+												$com_type =  getNameById('company_types',$comp_detail->company_type,'id');
+												
+													echo $com_type->company_type;
+												}
 											   ?></div>
 										</div>
 										<div class="col-md-12 col-sm-12 col-xs-12 form-group">
 										       <label>Company Type CA</label>
 											   <div class="col-md-7 col-sm-12 col-xs-6 form-group"><?php 
+											   if(!empty($comp_detail->company_type_ca)){
 											    $com_type =  getNameById('company_types',$comp_detail->company_type_ca,'id');
 											   echo $com_type->company_type;
+											   }
 											  ?></div>
 										</div>
 										<div class="col-md-12 col-sm-12 col-xs-12 form-group">
 										       <label>Company Type CA Husky</label>
 											   <div class="col-md-7 col-sm-12 col-xs-6 form-group"><?php 
-											    $com_type =  getNameById('company_types',$comp_detail->company_type_ca_husky,'id');
-											   echo $com_type->company_type;
-											  
-
+											    if(!empty($comp_detail->company_type_ca_husky)){
+													$com_type =  getNameById('company_types',$comp_detail->company_type_ca_husky,'id');
+													echo $com_type->company_type;
+												}
 											   ?></div>
 										</div>
 										
 									</div>
 									
-									<div class="col-md-12 col-sm-12 col-xs-12">
-									
-										<div class="x_content">
-											<div class="" role="tabpanel" data-example-id="togglable-tabs">
-
-	
-											</div>
-										</div>
-				
+								<div class="col-md-12 col-sm-12 col-xs-12">
+									<div class="x_content">
+										<div class="" role="tabpanel" data-example-id="togglable-tabs"></div>
 									</div>
+								</div>
 		
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
-		
-	</div>
-
-</div>
-
-</div>
-
-</div>
 	
 
 			
