@@ -57,7 +57,7 @@
 					<th>Fuel Taxes</th>				
 					<th>Amount</th>
 					<th>Commission</th>
-					 <th>Date & Time</th>						
+					<th>Date & Time</th>						
 				</tr>
 			</thead>
 			<tbody>
@@ -74,6 +74,7 @@
 					$productName = $decodeCardCat[$multi_trans];
 					$prideDieselPrice = $decUnitPride_price[$multi_trans];
 					$productQuantity = $decQuantity[$multi_trans];
+					// pre($productQuantity);
 					$calcProductAmount = $prideDieselPrice * $productQuantity;
 					$amount = floor($calcProductAmount*100)/100;
 					if($card->billing_currency == 'CAD'){
@@ -97,11 +98,11 @@
 							$totalTaxAmount = floor($combineTaxes*100)/100;
 						}
 					}
-					$subTotal += $amount - $totalTaxAmount;
-					$gstCount += floor($finalGST*100)/100;
-					$pstCount += floor($finalPST*100)/100;
-					$qstCount += floor($finalQST*100)/100;
-					$grandTotal += floor($amount*100)/100;
+					// $subTotal += $amount - $totalTaxAmount;
+					// $gstCount += floor($finalGST*100)/100;
+					// $pstCount += floor($finalPST*100)/100;
+					// $qstCount += floor($finalQST*100)/100;
+					// $grandTotal += floor($amount*100)/100;
 				?>								
 				<?php 
 					$multi_trans++;	//$subTotal += $amtAfterTax;							
@@ -144,7 +145,7 @@
 					<td></td>
 				</tr>								
 		</tbody>
-</table>
+	</table>
 		<div class="row">
 			<div class="col-md-5 col-sm-12">
 			</div>
