@@ -77,27 +77,7 @@
 					// pre($productQuantity);
 					$calcProductAmount = $prideDieselPrice * $productQuantity;
 					$amount = floor($calcProductAmount*100)/100;
-					if($card->billing_currency == 'CAD'){
-						$getTaxRate = $this->db->select('tax_type, tax_rate')->where('state', $card->gas_station_state)->get('tax')->result();
-						
-						foreach($getTaxRate as $taxTypeRows){
-
-							if($taxTypeRows->tax_type == 'gst'){
-								$gstRate = str_replace('%', '', $taxTypeRows->tax_rate);
-								$finalGST = $amount * $gstRate / 100;
-							}
-							if($taxTypeRows->tax_type == 'pst'){
-								$pstRate = str_replace('%', '', $taxTypeRows->tax_rate);
-								$finalPST = $amount * $pstRate / 100;
-							}
-							if($taxTypeRows->tax_type == 'qst'){
-								$qstRate = str_replace('%', '', $taxTypeRows->tax_rate);
-								$finalQST = $amount * $qstRate / 100;
-							}
-							$combineTaxes = $finalGST + $finalPST + $finalQST;	
-							$totalTaxAmount = floor($combineTaxes*100)/100;
-						}
-					}
+					
 					// $subTotal += $amount - $totalTaxAmount;
 					// $gstCount += floor($finalGST*100)/100;
 					// $pstCount += floor($finalPST*100)/100;
