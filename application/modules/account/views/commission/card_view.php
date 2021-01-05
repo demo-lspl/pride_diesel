@@ -70,17 +70,13 @@
 					
 					$total_amount = $total_qty =  $sale_total = 0;
 					foreach($trans_dtails as $trans_AMT_details){
-						//
 							$amount = json_decode($trans_AMT_details->amount);
 							$cat = json_decode($trans_AMT_details->category);
 							$QTY = json_decode($trans_AMT_details->quantity);
 							$pride_price = json_decode($trans_AMT_details->pride_price);
 							$more_transc = 0;
 							
-							
-							
 							foreach($amount as $total_amtt){
-								
 								$amount_chk = $amount[$more_transc];
 								$cats = $cat[$more_transc];
 								$QTYss = $QTY[$more_transc];
@@ -111,18 +107,9 @@
 						$Qty_rebate = '0.00';
 						$total_QTYS = floor($total_qty*100)/100;
 						$profit = $sale_total - $cost;
+						//$sale_total +=$grnd_total
 					}		
 		}	
-					//}
-						
-						
-						//$grand_total_amt +=$total_QTYS;
-						//$grand_commiion_amt +=$Qty_rebate;
-						
-						
-						
-						
-					
 					
 					//Commission According To Slab
 					   if($profit <= 200000){

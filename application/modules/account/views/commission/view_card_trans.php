@@ -52,7 +52,7 @@
 			<thead>
 				<tr>
 					<th>#</th> 
-					<th>Card Number</th>
+					<th>Billing Currency</th>
 					<th>Qty Total</th>
                     <th>Grand Total</th>
 					<th>Rebate</th>		
@@ -64,8 +64,9 @@
 			</thead>
 			<tbody>
 			 <?php 
-				$total_amount = $total_qty =   0;
+				$total_amount = $total_qty =   $Commision_total = 0 ;
 					foreach($cardsTransData as $trans_AMT_details){
+						// pre($trans_AMT_details);
 						
 						//if($trans_AMT_details->billing_currency == 'CAD'){
 							$amount = json_decode($trans_AMT_details->amount);
@@ -73,11 +74,9 @@
 							$QTY = json_decode($trans_AMT_details->quantity);
 							$pride_price = json_decode($trans_AMT_details->pride_price);
 							$more_transc = 0;
-							
-							
+											
 							$total_qty = $total_amount = $sale_total = 0;
 							foreach($amount as $total_amtt){
-								
 								$amount_chk = $amount[$more_transc];
 								$cats = $cat[$more_transc];
 								$QTYss = $QTY[$more_transc];
@@ -90,7 +89,6 @@
 									$total_qty +=$QTYss;
 									$sale_total +=$grnd_total;
 								}
-								
 								$more_transc++; 
 							}
 							
@@ -117,10 +115,11 @@
 						   $commission = $profit*20/100;
 					   }
 					   $commission = floor($commission*100)/100;
-					//Commission According To Slab   
+					//Commission According To Slab 
+                      $Commision_total += $commission;				
 					 echo '<tr>';
 					 echo '<td>'.$trans_AMT_details->id.'</td>';
-					 echo '<td>'.$trans_AMT_details->card_number.'</td>';
+					 echo '<td>'.$trans_AMT_details->billing_currency.'</td>';
 					 echo '<td>'.$total_qty.'</td>';
 					 echo '<td>'.$sale_total.'</td>';
 					 echo '<td>'.$Qty_rebate.'</td>';
@@ -131,6 +130,13 @@
 					 //echo '<td><a href="'.base_url("account/view_crd_trns_dtls/").$dtld->card_number.'" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a> </td>';
 				
 			}
+			echo '</tr>';
+				echo '<tr>';
+				echo '<td colspan="7" align="right"><b>Grand Total</b></td>';
+				echo '<td><b>'.$Commision_total.'</b></td>';
+				echo '<td></td>';
+				
+				echo '</tr>';
 		?>	
 		</tbody>
 	</table>
