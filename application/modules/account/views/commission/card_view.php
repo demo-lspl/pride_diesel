@@ -27,9 +27,13 @@
 					<th>Company Name</th>					
 					<th>Card Token</th>				
 					<th>Card Status</th>
-                     <th>Grand Total</th>					
-                     <th>Commission</th>					
-					<th>View Transaction</th>					
+                    <th>Qty Total</th>
+                    <th>Grand Total</th>
+					<th>Rebate</th>		
+                    <th>Cost</th>					
+                    <th>Profit</th>					
+                    <th>Commission</th>					
+                  	<th>View Transaction</th>					
 				</tr>
 			</thead>
 			<tbody>
@@ -61,52 +65,96 @@
 					 $comID =  getNameById('users',$dtld->company_id,'id');
 					$trans_dtails = $this->account_model->getTRANS_details_count($dtld->card_number,$where2);
 					
-					$total_amount = 0;
-					foreach($trans_dtails as $trans_AMT_details){
-						$amount = json_decode($trans_AMT_details->amount);
-						$cat = json_decode($trans_AMT_details->category);
-						$more_transc = 0;
-						
-						
-						
-						foreach($amount as $total_amtt){
-							// pre($total_amtt);
-							$amount_chk = $amount[$more_transc];
-							$cats = $cat[$more_transc];
-							
-							if($cats != 'DEFD'){
-								$total_amount +=$amount_chk;
-								
-							}
-						    $more_transc++; 
-						}
-					}
-					// floor($total_amount*100)/100 * floor($single_unit_amt*100)/100;
 					
-					$commision = ($total_amount*0.05)/100;
-					$commision = floor($commision*100)/100;
-					$total_amount = floor($total_amount*100)/100;
-					$grand_total_amt +=$total_amount;
-					$grand_commiion_amt +=$commision;
+					
+					
+					$total_amount = $total_qty =  $sale_total = 0;
+					foreach($trans_dtails as $trans_AMT_details){
+						//
+							$amount = json_decode($trans_AMT_details->amount);
+							$cat = json_decode($trans_AMT_details->category);
+							$QTY = json_decode($trans_AMT_details->quantity);
+							$pride_price = json_decode($trans_AMT_details->pride_price);
+							$more_transc = 0;
+							
+							
+							
+							foreach($amount as $total_amtt){
+								
+								$amount_chk = $amount[$more_transc];
+								$cats = $cat[$more_transc];
+								$QTYss = $QTY[$more_transc];
+								$pride_prices = $pride_price[$more_transc];
+								
+								if($cats != 'DEFD'){
+									$grnd_total = $pride_prices * $QTYss;
+									$grnd_total = floor($grnd_total*100)/100;
+									$total_amount +=$amount_chk;
+									$total_qty +=$QTYss;
+									$sale_total +=$grnd_total;
+								}
+								
+								$more_transc++; 
+							}
+							
+					if($trans_AMT_details->billing_currency == 'CAD'){		
+						$Qty_rebate = ($total_qty*0.05);
+						$Qty_rebate = floor($Qty_rebate*100)/100;
+						$cost = $total_amount - $Qty_rebate;
+						$Qty_rebate = floor($Qty_rebate*100)/100;
+						$total_QTYS = floor($total_qty*100)/100;
+						$profit = $sale_total - $cost;
+					}else{
+						$Qty_rebate = ($total_qty*0.05);
+						$Qty_rebate = floor($Qty_rebate*100)/100;
+						$cost = $total_amount;
+						$Qty_rebate = '0.00';
+						$total_QTYS = floor($total_qty*100)/100;
+						$profit = $sale_total - $cost;
+					}		
+		}	
+					//}
+						
+						
+						//$grand_total_amt +=$total_QTYS;
+						//$grand_commiion_amt +=$Qty_rebate;
+						
+						
+						
+						
+					
+					
+					//Commission According To Slab
+					   if($profit <= 200000){
+						   $commission = $profit*10/100;
+					   }elseif($profit >= 300000){
+						   $commission = $profit*20/100;
+					   }
+					   $commission = floor($commission*100)/100;
+					//Commission According To Slab   
 					 echo '<tr>';
 					 echo '<td>'.$dtld->id.'</td>';
 					 echo '<td>'.$dtld->card_number.'</td>';
 					 echo '<td>'.$comID->company_name.'</td>';
 					 echo '<td>'.$dtld->cardCompany.'</td>';
 					 echo '<td>'.$crdsttus.'</td>';
-					 echo '<td>'.$total_amount.'</td>';
-					 echo '<td>'.$commision.'</td>';
+					 echo '<td>'.$total_qty.'</td>';
+					 echo '<td>'.$sale_total.'</td>';
+					 echo '<td>'.$Qty_rebate.'</td>';
+					 echo '<td>'.$cost.'</td>';
+					 echo '<td>'.$profit.'</td>';
+					 echo '<td>'.$commission.'</td>';
 					 echo '<td><a href="'.base_url("account/view_crd_trns_dtls/").$dtld->card_number.'" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a> </td>';
 				
 			}
-			echo '</tr>';
-				echo '<tr>';
-				echo '<td colspan="5" align="right"><b>Total</b></td>';
-				echo '<td><b>'. $grand_total_amt .'</b></td>';
-				echo '<td><b>'. $grand_commiion_amt .'</b></td>';
-				echo '<td></td>';
+			// echo '</tr>';
+				// echo '<tr>';
+				// echo '<td colspan="5" align="right"><b>Total</b></td>';
+				// echo '<td><b>'. $grand_total_amt .'</b></td>';
+				// echo '<td><b>'. $grand_commiion_amt .'</b></td>';
+				// echo '<td></td>';
 				
-				echo '</tr>';
+				// echo '</tr>';
 		}else{ 
 				echo "<tr>
 					<td colspan='7'>No record found</td>

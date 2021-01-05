@@ -51,79 +51,87 @@
 		<table id="" class="table table-bordered table-hover">
 			<thead>
 				<tr>
-					<th>Product Name </th> 
-					<th>Quantity</th>
-					<th>Price</th>					
-					<th>Fuel Taxes</th>				
-					<th>Amount</th>
-					<th>Commission</th>
-					<th>Date & Time</th>						
+					<th>#</th> 
+					<th>Card Number</th>
+					<th>Qty Total</th>
+                    <th>Grand Total</th>
+					<th>Rebate</th>		
+                    <th>Cost</th>					
+                    <th>Profit</th>					
+                    <th>Commission</th>					
+                  	<th>Date & Time</th>				
 				</tr>
 			</thead>
 			<tbody>
 			 <?php 
-				$subTotal = 0; $gstCount = 0; $pstCount = 0; $qstCount = 0; $grandTotal = $grand_total_amt = $grand_commision_amt = 0;
-				foreach($cardsTransData as $card){
-					$decodeCardCat = json_decode($card->category);
-					$decUnit_price = json_decode($card->unit_price);
-					$decUnitPride_price = json_decode($card->pride_price);
-					$decQuantity = json_decode($card->quantity);								
-					$multi_trans = 0;
-					$totalTaxAmount=0;	$finalGST=0;$finalPST=0;$finalQST=0;							
-				foreach($decodeCardCat as $cat_vals){
-					$productName = $decodeCardCat[$multi_trans];
-					$prideDieselPrice = $decUnitPride_price[$multi_trans];
-					$productQuantity = $decQuantity[$multi_trans];
-					// pre($productQuantity);
-					$calcProductAmount = $prideDieselPrice * $productQuantity;
-					$amount = floor($calcProductAmount*100)/100;
-					
-					// $subTotal += $amount - $totalTaxAmount;
-					// $gstCount += floor($finalGST*100)/100;
-					// $pstCount += floor($finalPST*100)/100;
-					// $qstCount += floor($finalQST*100)/100;
-					// $grandTotal += floor($amount*100)/100;
-				?>								
-				<?php 
-					$multi_trans++;	//$subTotal += $amtAfterTax;							
-				}
-				?>
-				<tr>	
-						<td><?= $productName?></td>
-						<td><?= $productQuantity?></td>
-						<td><?php echo $prideDieselPrice;?></td>														
-						<td><?php echo $totalTaxAmount ?></td>														
-						<td><?php echo $amount?></td>
-						<?php
-						$grand_total_amt +=$amount;
-							if($productName != 'DEFD'){	
-								if($amount< 1){
-									$commision = ($amount*0.05);
-								}else{	
-									$commision = ($amount*0.05)/100;
-									$commision = floor($commision*100)/100;
-								}
-							$comm =  $commision;
-							}else{
-								$comm =  '0.00';
-							}
-								$grand_commision_amt += $comm;
-							?>													
-							<td><?php echo $comm; ?></td>
+				$total_amount = $total_qty =   0;
+					foreach($cardsTransData as $trans_AMT_details){
 						
-						<td><?= $card->transaction_date?></td>
-							<input type="hidden" class="" name="transaction_date[]" value="<?= $card->transaction_date?>" />
-					</tr>
-				<?php	
-					unset($taxOutput, $ppfTot, $gst, $pst);
-					}
-					?>
-				<tr>
-					<td colspan="4" align="right"><b>Total</b></td>
-					<td><b><?php echo $grand_total_amt;?></b></td>
-					<td><b><?php echo $grand_commision_amt; ?> </b></td>
-					<td></td>
-				</tr>								
+						//if($trans_AMT_details->billing_currency == 'CAD'){
+							$amount = json_decode($trans_AMT_details->amount);
+							$cat = json_decode($trans_AMT_details->category);
+							$QTY = json_decode($trans_AMT_details->quantity);
+							$pride_price = json_decode($trans_AMT_details->pride_price);
+							$more_transc = 0;
+							
+							
+							$total_qty = $total_amount = $sale_total = 0;
+							foreach($amount as $total_amtt){
+								
+								$amount_chk = $amount[$more_transc];
+								$cats = $cat[$more_transc];
+								$QTYss = $QTY[$more_transc];
+								$pride_prices = $pride_price[$more_transc];
+								
+								if($cats != 'DEFD'){
+									$grnd_total = $pride_prices * $QTYss;
+									$grnd_total = floor($grnd_total*100)/100;
+									$total_amount +=$amount_chk;
+									$total_qty +=$QTYss;
+									$sale_total +=$grnd_total;
+								}
+								
+								$more_transc++; 
+							}
+							
+							if($trans_AMT_details->billing_currency == 'CAD'){
+								$Qty_rebate = ($total_qty*0.05);
+								$Qty_rebate = floor($Qty_rebate*100)/100;
+								$cost = $total_amount - $Qty_rebate;
+								$Qty_rebate = floor($Qty_rebate*100)/100;
+								$total_QTYS = floor($total_qty*100)/100;
+								$profit = $sale_total - $cost;
+							}else{
+								$Qty_rebate = ($total_qty*0.05);
+								$Qty_rebate = floor($Qty_rebate*100)/100;
+								$cost = $total_amount;
+								$Qty_rebate = '0.00';
+								$total_QTYS = floor($total_qty*100)/100;
+								$profit = $sale_total - $cost;
+							}
+					
+					//Commission According To Slab
+					   if($profit <= 200000){
+						   $commission = $profit*10/100;
+					   }elseif($profit >= 300000){
+						   $commission = $profit*20/100;
+					   }
+					   $commission = floor($commission*100)/100;
+					//Commission According To Slab   
+					 echo '<tr>';
+					 echo '<td>'.$trans_AMT_details->id.'</td>';
+					 echo '<td>'.$trans_AMT_details->card_number.'</td>';
+					 echo '<td>'.$total_qty.'</td>';
+					 echo '<td>'.$sale_total.'</td>';
+					 echo '<td>'.$Qty_rebate.'</td>';
+					 echo '<td>'.$cost.'</td>';
+					 echo '<td>'.$profit.'</td>';
+					 echo '<td>'.$commission.'</td>';
+					 echo '<td>'.$trans_AMT_details->transaction_date.'</td>';
+					 //echo '<td><a href="'.base_url("account/view_crd_trns_dtls/").$dtld->card_number.'" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a> </td>';
+				
+			}
+		?>	
 		</tbody>
 	</table>
 		<div class="row">
