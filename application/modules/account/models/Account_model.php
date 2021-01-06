@@ -1223,7 +1223,7 @@ class Account_model extends MY_Model {
 		$this->db->join('users', 'cards.company_id = users.id', 'LEFT');
 		$this->db->limit($limit, $offset);
 		$qry = $this->db->get();
-		echo $this->db->last_query();
+		//echo $this->db->last_query();
 		$resultw = $qry->result();	
 		return $resultw;
 	
@@ -1283,6 +1283,7 @@ class Account_model extends MY_Model {
 		return $resultw;
 	}
 	/***************************Company commission  Details ****************************/
+	
 	/***************************Sales commission  Details ****************************/
 	public function get_sales_person_data($limit, $offset , $where = array(),$where2) {
 		$offset = ($offset-1) * $limit;	

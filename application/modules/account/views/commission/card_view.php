@@ -140,8 +140,7 @@
 				// echo '<td><b>'. $grand_total_amt .'</b></td>';
 				// echo '<td><b>'. $grand_commiion_amt .'</b></td>';
 				// echo '<td></td>';
-				
-				// echo '</tr>';
+			// echo '</tr>';
 		}else{ 
 				echo "<tr>
 					<td colspan='7'>No record found</td>

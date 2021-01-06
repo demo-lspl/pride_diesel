@@ -4573,7 +4573,8 @@ public function husky_rebate(){
 	}
 		
    
-/*********************Commission Calc ******************/	
+/*********************Commission Calc ******************/
+	
 /*********************Sale Comission  Calc ******************/	
 public function sale_comission(){
 	$this->load->library('pagination');
@@ -4646,8 +4647,8 @@ public function sale_comission(){
 				// }		
 				$dd = $this->account_model->get_sales_person_company_data_count($where,$where2,$userid);
 				
-				$config['base_url'] = site_url('account/view_users_dtls');
-				$config['uri_segment'] = 3;
+				$config['base_url'] = site_url('account/view_users_dtls/'.$userid);
+				$config['uri_segment'] = 4;
 				$config['total_rows'] = count($dd);
 			   // $config['total_rows'] = 10;
 				$config['per_page'] = 10;
