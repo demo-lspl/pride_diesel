@@ -1,7 +1,7 @@
  </div>
- <footer class="main-footer">
+ <footer class="main-footer" style="clear:both;">
     <div class="float-right d-none d-sm-block">
-      <b>Online Portal</b>
+     
     </div>
 	<!--.$_SERVER['HTTP_HOST'] -->
     <strong><?php echo "&copy; ". date('Y');?> <a href="javascript:void();">Pride Diesel </a>.</strong> All rights

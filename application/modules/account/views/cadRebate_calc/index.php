@@ -1,92 +1,52 @@
 <!-- Main Container -->
 <div class="">
-
-
 	<section class="content box">
-	<div class="addnew-user"><!--a href="<?php //echo base_url('account/invoice_edit') ?>" class="btn btn-success"><i class="fa fa-plus"></i> Create Invoice</a--></div>
+		<div class="addnew-user"><!--a href="<?php //echo base_url('account/invoice_edit') ?>" class="btn btn-success"><i class="fa fa-plus"></i> Create Invoice</a--></div>
 	<div class="card card-default">
 			<div class="card-header bg-card-header">
 				<h3 class="card-title">Invoice</h3>
-
-				<div class="card-tools">
-				  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-				  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
-				</div>
+					<div class="card-tools">
+						<button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+						<button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+					</div>
 			</div>
 			<div class="card-body">
 				<form class="search form-inline" action="<?php echo base_url().'account/cad_rebate_calc'; ?>" method="get" autocomplete="off">
-
-				  <div class="form-group">
-
-					<!--input class="form-control search-input" name="card_search" value="<?php //if(!empty($_GET['card_search'])){echo $_GET['card_search'];} ?>" placeholder="<?php //echo "Search by card"; ?>" type="text" /-->
-
-					<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
-
-				  </div>
-
-				  <button type="submit" class="btn btn-default" ><i class="fa fa-search"></i>&nbsp;&nbsp;<?php echo 'Search'; ?></button>
+					<div class="form-group">
+						<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
+					</div>
+					<button type="submit" class="btn btn-default" ><i class="fa fa-search"></i>&nbsp;&nbsp;<?php echo 'Search'; ?></button>
 					<a href="<?php echo base_url(); ?>account/cad_rebate_calc">
 						<input type="button" name="submitSearchReset" class="btn btn-primary" value="Reset"></a>
 				</form>
-<?php 
-
+			<?php 
 				$startDate = date('Y-m-d');
-
 				$endDate = date('Y-m-d');
-
 				$daterange = null;
-
-				if(!empty($_GET['date_range'])){
-
-					$daterange = $_GET['date_range'];
-
-					$expDateRange = explode(' - ', $_GET['date_range']);
-
-					$startDate = $expDateRange[0];
-
-					$endDate = $expDateRange[1];
-
-					
-
-				}?>
-
+					if(!empty($_GET['date_range'])){
+						$daterange = $_GET['date_range'];
+						$expDateRange = explode(' - ', $_GET['date_range']);
+						$startDate = $expDateRange[0];
+						$endDate = $expDateRange[1];
+					}
+				?>
 				<script type="text/javascript">
-
 					$('.daterange').daterangepicker({
-
 						autoUpdateInput: false,
-
 						locale: {
-
 							format: 'YYYY-MM-DD',
-
 							cancelLabel: 'Clear'
-
-
-
 						},
-
 							"startDate": '<?php echo $startDate; ?>',
-
 							"endDate": '<?php echo $endDate; ?>'		
-
 					});
-
-					$('.daterange').on('apply.daterangepicker', function (ev, picker) {
-
-						$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-
-					});
-
-
-
+						$('.daterange').on('apply.daterangepicker', function (ev, picker) {
+							$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+						});
 					$('.daterange').on('cancel.daterangepicker', function (ev, picker) {
-
 						$(this).val('');
-
 					});
-
-				</script>				
+			</script>				
 			<table id="" class="table table-bordered table-hover">
 			<thead>
 				<tr>
@@ -103,13 +63,9 @@
 			</thead>
 			<tbody>
 			  <?php if(!empty($allInvoices)){ ?>
-			  <?php foreach($allInvoices as $invoicevalues): 
+				<?php foreach($allInvoices as $invoicevalues): 
 			     $new_Created_Date = date("d-M-Y", strtotime($invoicevalues->date_created));
-				 
-				 //$get_transaction_details = getNameById('transaction_invoice',$invoicevalues->id,'id');
-				 
-				
-					
+				 	
 			  ?>
 			<tr>
 				<td><?= $invoicevalues->id;?></td>
@@ -121,39 +77,29 @@
 				<td><?= $new_Created_Date;?></td>				
 				<td><a href="<?php echo base_url('account/view_invoice/').$invoicevalues->id; ?>" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a> </td>				
 			</tr>
-			  
-			  <?php endforeach; ?>
-			 
-			  </tbody>
-			  <?php 
-			  $amt_total = $Qty_total = $Rebte_total =  $EFS_amount = 0;
-				    $totDieselEFS = $count = $prideTotal = 0;
-			  foreach($allInvoices_rebate_calc as $invoicevalues){
-				  
-			    //$get_transaction_details = getNameById('transaction_invoice',$invoicevalues->id,'id');
-				$trans_data = json_decode($invoicevalues->trans_data);
-				$trans_id_data = json_decode($invoicevalues->invoice_data);
-				
-				
+		<?php endforeach; ?>
+		</tbody>
+			<?php 
+				$amt_total = $Qty_total = $Rebte_total =  $EFS_amount = 0;
+				$totDieselEFS = $count = $prideTotal = 0;
+					foreach($allInvoices_rebate_calc as $invoicevalues){
+					//$get_transaction_details = getNameById('transaction_invoice',$invoicevalues->id,'id');
+					$trans_data = json_decode($invoicevalues->trans_data);
+					$trans_id_data = json_decode($invoicevalues->invoice_data);
 				foreach($trans_id_data as $trans_id){
 				   $trans_idd = $trans_id->transaction_id;
 				   $get_transaction_details[] = getNameById_new('transactions',$trans_idd,'transaction_id');
 				   $data_transactions = $get_transaction_details;
 				}
-				//pre($data_transactions);
-				
 				$count++;
 			  }
-			  
-			   $unique_data = array_unique(array_column($data_transactions, 'transaction_id'));
-			   
-				foreach($unique_data as $trans_id){
-					$get_transaction_details1[] = getNameById_new('transactions',$trans_id,'transaction_id');
-					$data_transactions1 = $get_transaction_details1;
-					//
-				}
+			    $unique_data = array_unique(array_column($data_transactions, 'transaction_id'));
+					foreach($unique_data as $trans_id){
+						$get_transaction_details1[] = getNameById_new('transactions',$trans_id,'transaction_id');
+						$data_transactions1 = $get_transaction_details1;
+					}
 				
-				foreach($data_transactions1 as $trns_val){
+					foreach($data_transactions1 as $trns_val){
 						$new_Created_Date = date("d-M-Y", strtotime($trns_val['date_created']));
 						$unit_price = json_decode($trns_val['unit_price']);
 						$pride_price = json_decode($trns_val['pride_price']);
@@ -199,7 +145,8 @@
 							$Rebte_total +=$rebate_amt;
 							$defd_Amt; $defd_Qty; 
 								if($cat == 'DEFD'){
-									@$defd_Amt += $total;
+									$pride_price_into_qty_defd =  $prd_prce * $QQTY;
+									@$defd_Amt += $pride_price_into_qty_defd;
 									@$defd_Qty += $QQTY;
 								}	
 						 $more_transc++; 
@@ -211,28 +158,27 @@
 						
 			}
 	 ?>
-			   <tr><td colspan="7"><td/></tr>
-			  <tr><td colspan="7"><td/></tr>
+			<tr><td colspan="7"><td/></tr>
+			<tr><td colspan="7"><td/></tr>
 			   <tr>
 				  <td colspan="5" align="right"></td>
 				  <th>Amount</th>
 				  <th>Qty</th>
 				  <th>Rebate</th>  
 			  </tr>
-               <tr>
+            <tr>
 			  <td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
 			  <td><?php echo floor($prideTotal*100)/100; ?></td>
 			  <td><?php echo floor($Qty_total*100)/100; ?></td>
 			  <td><?php echo floor($Rebte_total*100)/100; ?></td>
-			  </tr>
-			  <tr><td colspan="7"><td/></tr>
+			</tr>
+			<tr><td colspan="7"><td/></tr>
 			 <tr>
 				<td colspan="5" align="right"><b>Total EFS</b></td>
 				<td><?php echo floor($EFS_amount*100)/100; ?></td>
 				<td></td>
-			  </tr>
-			 
-			  <tr>
+			</tr>
+			<tr>
 				<td colspan="5" align="right"><b>Total Diesel</b></td>
 				<td><?php
 					echo floor($totDieselEFS *100)/100;
@@ -243,38 +189,38 @@
 					?>
 				</td>
 				<td></td>
-			  </tr>
-			  <tr>
+			</tr>
+			<tr>
 				<td colspan="5" align="right"><b>Total Def</b></td>
 				<td><?php echo floor(@$defd_Amt*100)/100; ?></td>
 				<td><?php echo floor(@$defd_Qty*100)/100; ?></td>
 				<td></td>
-			  </tr>
-			  <tr>
+			</tr>
+			<tr>
 				<td colspan="5" align="right"><b>Total Fuel Qty and Cost</b></td>
 				<td><?php echo floor($EFS_amount*100)/100; ?></td>
 				<td><?php echo floor($Qty_total*100)/100; ?></td>
 				<td></td>
-			  </tr>
-			  <tr>
+			</tr>
+			<tr>
 				<td colspan="5" align="right"><b>Rebate</b></td>
 				<td><?php echo floor($Rebte_total*100)/100; ?></td>
 				<td></td>
 				<td></td>
-			  </tr>
-			   <tr>
-				  <td colspan="5" align="right"><b>Transcation FEES</b></td>
-				  <td >$1.25 x <?php echo $count; ?>  =  <?php echo $count * 1.25; ?></td>
-			  </tr>
-			  <tr>
+			</tr>
+			<tr>
+				<td colspan="5" align="right"><b>Transcation FEES</b></td>
+				<td >$1.25 x <?php echo $count; ?>  =  <?php echo $count * 1.25; ?></td>
+			</tr>
+			<tr>
 				<td colspan="5" align="right"><b>Actual Cost of Fuel</b></td>
 				<td><?php 
 				       echo floor($amt_total*100)/100; 
 					?></td>
 				<td></td>
 				<td></td>
-			  </tr> 
-			   <tr>
+			</tr> 
+			<tr>
 				<td colspan="5" align="right"><b>Profit</b></td>
 				<td><?php 
 				      $profittt =  $total_prid_qty - $amt_total;
@@ -282,7 +228,7 @@
 					?></td>
 				<td></td>
 				<td></td>
-			  </tr>
+			</tr>
 			<?php }else{ echo "<tr>
 				<td colspan='7'>No record found</td>
 			  </tr>"; }  ?>			  

@@ -4393,4 +4393,199 @@ public function husky_rebate(){
 		$this->_render_template('cadRebate_calc/view_cad_husky', $this->data);		
 	}
 /*********************Husky Rebate Calc ******************/	
+
+
+
+/*********************Commission Calc ******************/
+	public function company_commission(){
+			$this->load->library('pagination');
+			$this->breadcrumb->add('Assigned Company', base_url() . 'Assigned Company');
+			$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+			$this->settings['pageTitle'] = 'Assigned Company';
+				
+				$where = '';
+				$where2 = '';
+				if(!empty($_GET['card_search'])){
+					$where = $_GET['card_search'];
+				}
+				if(!empty($_GET['date_range'])){
+					$explodeDateRange = explode(' - ', $_GET['date_range']);			
+					$where2 = $explodeDateRange;
+				}		
+
+				$config['base_url'] = site_url('account/company_commission');
+				$config['uri_segment'] = 3;
+				$config['total_rows'] = $this->account_model->num_rows('users',$where,$where2);
+			   // $config['total_rows'] = 10;
+				$config['per_page'] = 10;
+				$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+				$config['full_tag_close'] = '</ul>';
+				$config['first_link']= '&laquo; First';
+				$config['first_tag_open'] =  '<li class="prev page">';
+				$config['first_tag_close']= '</li>'; 
+				$config['last_link']= 'Last &raquo;';
+				$config['last_tag_open']= '<li class="next page">';
+				$config['last_tag_close']= '</li>';
+				$config['next_link']= 'Next &rarr;';
+				$config['next_tag_open']= '<li class="next page">';
+				$config['next_tag_close']= '</li>';
+				$config['prev_link']= '&larr; Previous';
+				$config['prev_tag_open']= '<li class="prev page">';
+				$config['prev_tag_close']= '</li>';		
+				$config['cur_tag_open'] = '<li class="active"><a href="#">';
+				$config['cur_tag_close'] = '</a></li>';
+				$config['num_tag_open'] = '<li class="page">';
+				$config['num_tag_close'] = '</li>';
+				$config['link_suffix'] = '#content';
+				$config['reuse_query_string'] = true;
+				$config["use_page_numbers"] = TRUE;
+
+				$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+				$this->pagination->initialize($config);
+				$this->data['pagination'] = $this->pagination->create_links();
+
+				$this->data['get_comp'] = $this->account_model->get_company_dtl($config['per_page'], $page, $where2);		
+				
+				$this->_render_template('commission/index', $this->data);
+		
+	}
+
+	public function view_com_dtls(){
+		$this->settings['title'] = 'Company Details';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Company Details', base_url() . 'account/view_com_dtls');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+		if($this->uri->segment(3)!=''){
+			$comp_idd = $this->uri->segment(3);
+				$this->data['comp_detail'] = $this->account_model->get_data_byId('users','id',$comp_idd);			
+				$this->_render_template('commission/view', $this->data);
+			}	
+	}
+
+	public function get_com_cards(){
+		$this->load->library('pagination');
+		$this->settings['title'] = 'Company Cards Details';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Company Cards Details', base_url() . 'account/get_com_cards');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+		$where = '';
+				$where2 = '';
+					if(!empty($_GET['search'])){
+						$where = $_GET['search'];
+					}
+				if(!empty($_GET['date_range'])){
+					$explodeDateRange = explode(' - ', $_GET['date_range']);			
+					$where2 = $explodeDateRange;
+				}		
+				$dd = $this->account_model->get_data_count($where, $where2);
+				$config['base_url'] = site_url('account/get_com_cards');
+				$config['uri_segment'] = 3;
+				$config['total_rows'] = count($dd);
+			   // $config['total_rows'] = 10;
+				$config['per_page'] = 10;
+				$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+				$config['full_tag_close'] = '</ul>';
+				$config['first_link']= '&laquo; First';
+				$config['first_tag_open'] =  '<li class="prev page">';
+				$config['first_tag_close']= '</li>'; 
+				$config['last_link']= 'Last &raquo;';
+				$config['last_tag_open']= '<li class="next page">';
+				$config['last_tag_close']= '</li>';
+				$config['next_link']= 'Next &rarr;';
+				$config['next_tag_open']= '<li class="next page">';
+				$config['next_tag_close']= '</li>';
+				$config['prev_link']= '&larr; Previous';
+				$config['prev_tag_open']= '<li class="prev page">';
+				$config['prev_tag_close']= '</li>';		
+				$config['cur_tag_open'] = '<li class="active"><a href="#">';
+				$config['cur_tag_close'] = '</a></li>';
+				$config['num_tag_open'] = '<li class="page">';
+				$config['num_tag_close'] = '</li>';
+				$config['link_suffix'] = '#content';
+				$config['reuse_query_string'] = true;
+				$config["use_page_numbers"] = TRUE;
+
+				$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+				$this->pagination->initialize($config);
+				$this->data['pagination'] = $this->pagination->create_links();
+
+				$this->data['get_comp_cards'] = $this->account_model->get_data($config['per_page'], $page, $where, $where2);		
+			
+				$this->_render_template('commission/card_view', $this->data);
+	}
+
+
+    public function view_crd_trns_dtls(){
+		$this->load->library('pagination');
+		$this->settings['title'] = 'Transaction Details';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Transaction Details', base_url() . 'account/view_crd_trns_dtls');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+
+		if($this->uri->segment(3)!=''){
+			$card_no = $this->uri->segment(3);
+			$where2 = 0;
+			if(!empty($_GET['date_range'])){
+				$explodeDateRange = explode(' - ', $_GET['date_range']);			
+				$where2 = $explodeDateRange;
+			}		
+
+			
+			
+			
+				$dd = $this->account_model->getTRANS_details_count($card_no,$where2);
+
+				$config['base_url'] = site_url('account/view_crd_trns_dtls/'.$card_no);
+				$config['uri_segment'] = 4;
+				$config['total_rows'] = count($dd);
+			   // $config['total_rows'] = 10;
+				$config['per_page'] = 10;
+				$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+				$config['full_tag_close'] = '</ul>';
+				$config['first_link']= '&laquo; First';
+				$config['first_tag_open'] =  '<li class="prev page">';
+				$config['first_tag_close']= '</li>'; 
+				$config['last_link']= 'Last &raquo;';
+				$config['last_tag_open']= '<li class="next page">';
+				$config['last_tag_close']= '</li>';
+				$config['next_link']= 'Next &rarr;';
+				$config['next_tag_open']= '<li class="next page">';
+				$config['next_tag_close']= '</li>';
+				$config['prev_link']= '&larr; Previous';
+				$config['prev_tag_open']= '<li class="prev page">';
+				$config['prev_tag_close']= '</li>';		
+				$config['cur_tag_open'] = '<li class="active"><a href="#">';
+				$config['cur_tag_close'] = '</a></li>';
+				$config['num_tag_open'] = '<li class="page">';
+				$config['num_tag_close'] = '</li>';
+				$config['link_suffix'] = '#content';
+				$config['reuse_query_string'] = true;
+				$config["use_page_numbers"] = TRUE;
+
+				$page = ($this->uri->segment(4)) ? $this->uri->segment(4) : 1;
+				$this->pagination->initialize($config);
+				$this->data['pagination'] = $this->pagination->create_links();
+               
+				$this->data['cardsTransData'] = $this->account_model->getTRANS_details($config['per_page'], $page,$card_no,$where2);
+				//$this->data['trans_dtials'] = $this->account_model->get_data_by_array('transactions','card_number',$card_no);			
+				$this->_render_template('commission/view_card_trans', $this->data);
+			}	
+	}
+		
+   
+/*********************Commission Calc ******************/	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

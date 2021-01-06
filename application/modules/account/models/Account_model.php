@@ -652,7 +652,7 @@ class Account_model extends MY_Model {
 		}else{		
 			$this->db->where('transactions.id', $transid);
 		}
-		return $this->db->get()->result();
+		return $this->db->get();result();
 	}
 	
 	public function get_card_trans_by_cid($cid, $daterange=null, $companyName=null){
@@ -752,8 +752,8 @@ class Account_model extends MY_Model {
 		//$this->db->where('cards.company_id', $cid);
 		$this->db->where('transactions.billing_currency', 'CAD');
 		$this->db->group_by('transactions.card_number');
-        //$this->db->limit($limit, $offset);
-        $this->db->limit(10);
+        $this->db->limit($limit, $offset);
+        //$this->db->limit(10);
 		$this->db->order_by('transactions.id','DESC');
         $query = $this->db->get('cards');
         
@@ -783,7 +783,7 @@ class Account_model extends MY_Model {
 		//$this->db->where('cards.company_id', $cid);
 		$this->db->group_by('transactions.card_number');	
 		$this->db->order_by('transactions.id', 'DESC');	
-		$this->db->limit(10);
+		//$this->db->limit(10);
 		return $this->db->get('cards')->result();
 	}
 	public function get_trans_invoices_rebate($where = null, $where2){
@@ -942,7 +942,7 @@ class Account_model extends MY_Model {
 		$this->db->where('transaction_invoice.id', $invoice_id);
         //$this->db->limit($limit, $offset);
 		$this->db->order_by('id','DESC');
-		$this->db->limit(10);
+		//$this->db->limit(10);
         $query = $this->db->get();
         
         if(!is_object($query))
@@ -1165,6 +1165,129 @@ class Account_model extends MY_Model {
         return array();
     }
 	/*************************** Get CAD HUSKY Transaction Details ****************************/
+	/***************************Company commission  Details ****************************/
+	public function num_rows($table, $where = array(),$where2){
+		$this->db->select('*');  
+		$this->db->from($table);
+		$this->db->where('sales_person',$_SESSION['userdata']->id);
+	 if($where2!=''){
+		 $this->db->where($where2);
+		 }
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$result = $qry->num_rows();		
+		return $result; 
+	}
+
+	public function get_company_dtl($limit, $offset,$where2){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('*');
+		$this->db->from('users');
+		$this->db->where('sales_person',$_SESSION['userdata']->id);
+		// if(!empty($where2)){
+			// $start_date = $where2[0]. ' 00:00:00';
+			// $end_date = $where2[1]. ' 23:59:59';
+			// $this->db->where("users.date_created >='" . $start_date . "' AND  users.date_created <='" . $end_date. "'");
+		 // }		
+			$this->db->limit($limit, $offset);
+			$this->db->order_by('users.id','DESC');
+			$query = $this->db->get();
+        
+        if(!is_object($query)){
+            exit();
+        }
+		//echo $this->db->last_query();
+        if ($query->num_rows() > 0)
+            return $query->result();
+            
+        return array();
+    }
+    public function get_data_byId($table ,$field, $id) {
+		$this->db->select('*');  
+		$this->db->from($table);
+		$this->db->where($table.'.'.$field, $id);
+		$qry = $this->db->get();
+		$result = $qry->row();	
+		return $result;
+	
+	}
+
+    public function get_data($limit, $offset , $where = array(),$where2) {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('cards.id,cards.card_number,cards.policy_number,cards.card_status,cards.cardToken,cards.company_id,cards.cardCompany');
+		$this->db->from('cards');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		$this->db->join('users', 'cards.company_id = users.id', 'LEFT');
+		$this->db->limit($limit, $offset);
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+	
+	}	
+	public function get_data_count($where = array(),$where2) {
+		//$offset = ($offset-1) * $limit;	
+		$this->db->select('cards.id,cards.card_number,cards.policy_number,cards.card_status,cards.cardToken,cards.company_id');
+		$this->db->from('cards');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		$this->db->join('users', 'cards.company_id = users.id', 'LEFT');
+		//$this->db->limit($limit, $offset);
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+	
+	}
+	
+	Public function getTRANS_details($limit, $offset ,$card_no,$where2){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('*');
+		$this->db->from('transactions');
+		//$oldDate = date('Y-m-d H:i:s', strtotime('-30 days'));
+		
+		 if(!empty($where2)){
+			$startDate = $where2[0]. ' 00:00:00';
+			$endDate = $where2[1]. ' 23:59:59';	
+			$this->db->where('transactions.transaction_date >= "'.$startDate.'" and transactions.transaction_date <= "'. $endDate.'"');
+			
+		}
+		//else{		
+			$this->db->where('transactions.card_number', $card_no);
+			$this->db->limit($limit, $offset);
+			$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+		//}
+	}
+	Public function getTRANS_details_count($card_no,$where2){
+		$this->db->select('*');
+		$this->db->from('transactions');
+		if(!empty($where2)){
+			
+			$startDate = $where2[0]. ' 00:00:00';
+			$endDate = $where2[1]. ' 23:59:59';
+			
+			$this->db->where('transactions.transaction_date >= "'. $startDate. '" and transactions.transaction_date <= "'.$endDate.'"');
+			
+		}
+		$this->db->where('transactions.card_number', $card_no);
+		$qry = $this->db->get();
+		$resultw = $qry->result();	
+		return $resultw;
+	}
+	
+	
+
+
+     	
+	/***************************Company commission  Details ****************************/
 	
 	
 }

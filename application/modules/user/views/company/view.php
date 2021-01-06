@@ -43,7 +43,8 @@
 								<th>State</th>
 								<th>Product</th>
 								<th>Retail Price</th>
-								<?php $i=0;$cnt =0;$companyTypes = '';foreach($companyTypeResult as $key=>$companyTypeResultRows): 
+								<?php $i=0;$cnt =0;$companyTypes = '';
+								foreach($companyTypeResult as $key=>$companyTypeResultRows): 
 								$cTYPE = $companyTypeResultRows->company_type;
 
 								if(strtolower($cTYPE) == strtolower($get_user_type->company_type)){?>
