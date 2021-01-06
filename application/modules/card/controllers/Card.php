@@ -74,6 +74,7 @@ class Card extends MY_Controller {
 	
 	public function edit($id = null){
 		$this->load->library("NuSoap_lib");
+		$this->load->model("settings/settings_model");
 		$this->soapclient = new nusoap_client(site_url('/EFS_WS/index/wsdl'), true);	
 
 		$companySession = $this->session->userdata('userdata');
@@ -99,6 +100,14 @@ class Card extends MY_Controller {
 
 			$this->data['card'] = $this->card_model->get_new();	
 		}
+		$getCredentials = $this->settings_model->get('husky');
+		$HuskyUser = $HuskyPassword = null;
+		if(!empty($getCredentials)){
+			foreach($getCredentials as $getCredentialsItems){
+				$HuskyUser = $getCredentialsItems->username;
+				$HuskyPassword = $getCredentialsItems->password;
+			}
+		}		
 		
 		$id == NULL || $this->data['card'] = $this->card_model->get_by_id($id);
 		
@@ -121,7 +130,7 @@ class Card extends MY_Controller {
 		$ws_url = 'https://api.iconnectdata.com:443/FleetCreditWS/services/FleetCreditWS0200';
 		$headers = array(
 			"Content-type: application/xml;charset=utf-8",
-			'Authorization: Basic '. base64_encode('HS1-14OHL:Pride@3963'),
+			'Authorization: Basic '. base64_encode($HuskyUser.':'.$HuskyPassword),
 			'Connection: keep-alive'.
 			'Content-Encoding: gzip',
 			"SOAPAction: http://fleetCredit02.comdata.com/FleetCreditWS0200/cardListing",
@@ -130,8 +139,8 @@ class Card extends MY_Controller {
 		  <soapenv:Header>
 			<wsse:Security soapenv:mustUnderstand="1" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
 				<wsse:UsernameToken>
-					<wsse:Username>HS1-14OHL</wsse:Username>
-					<wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">Pride@3963</wsse:Password>
+					<wsse:Username>'.$HuskyUser.'</wsse:Username>
+					<wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">'.$HuskyPassword.'</wsse:Password>
 				</wsse:UsernameToken>
 			</wsse:Security>
 		</soapenv:Header>
@@ -172,7 +181,13 @@ class Card extends MY_Controller {
 			
 			/* Update card status EFS */
 			if(empty($this->input->post('cardToken'))){
-			$clientToken = $this->soapclient->call('login', array('user'=>'HSINGH3', 'password' => 'Harry0044'));
+			$getCredentials = $this->settings_model->get('efs');
+			$username = $password = null;
+			foreach($getCredentials as $getCredentialsItems){
+				$username = $getCredentialsItems->username;
+				$password = $getCredentialsItems->password;
+			}				
+			$clientToken = $this->soapclient->call('login', array('user'=>$username, 'password' => $password));
 			$cardResult['infos'] = null;
 			$cardResult = $this->soapclient->call('getCard', array('clientId'=>$clientToken, 'cardNumber' => $this->input->post('card_number')));
 			

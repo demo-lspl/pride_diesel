@@ -2,7 +2,21 @@
 <div class="">
 
 	<section class="content box">
-	<div class="addnew-user"><!--a href="<?php //echo base_url('account/invoice_edit') ?>" class="btn btn-success"><i class="fa fa-plus"></i> Create Invoice</a--></div>
+	<div class="addnew-user">
+		<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+			<div class="btn-group" role="group">
+			<button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			  <i class="fa fa-download"></i> Export
+			</button>			
+			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1" style="">
+				<!--a class="dropdown-item export-csv" data-cid="" href="#">Export CSV</a-->
+				<a class="dropdown-item export-invoices-xlsx" data-cid="undefined" href="#">Export Excel</a>
+			</div>
+			</div>
+		</div>
+		<div class="display-none export-msg"><img src="<?php echo base_url('assets/images/please-wait.gif') ?>" width="210" /></div>	
+	</div>
+	
 	<div class="card card-default">
 			<div class="card-header bg-card-header">
 				<h3 class="card-title">Invoice</h3>
@@ -18,6 +32,9 @@
 					<input class="form-control search-input" name="search" value="<?php if(!empty($_GET['search'])){echo $_GET['search'];} ?>" placeholder="<?php echo "Search Invoice ID"; ?>" type="text" />
 					
 				  </div>
+				<div class="form-group">
+					<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
+				</div>				  
 				  <div class="form-group">
 					<?php $options = array('efs' => 'EFS', 'husky' => 'HUSKY'); ?>
 					<select class="form-control" name="transactions_from">
@@ -34,7 +51,41 @@
 					</select>
 				  </div>&nbsp;&nbsp;				  
 				  <button type="submit" class="btn btn-default" ><i class="fa fa-search"></i>&nbsp;&nbsp;<?php echo 'Search'; ?></button>
-				</form>		
+				</form>
+				<?php 
+				$startDate = date('Y-m-d');
+				$endDate = date('Y-m-d');
+				$daterange = null;
+				if(!empty($_GET['date_range'])){
+					$daterange = $_GET['date_range'];
+					$expDateRange = explode(' - ', $_GET['date_range']);
+					$startDate = $expDateRange[0];
+					$endDate = $expDateRange[1];
+					
+				}
+				
+				?>				
+	<script type="text/javascript">
+		$('.daterange').daterangepicker({
+				//autoUpdateInput: false,
+				startDate: '<?php echo $startDate; ?>',
+				endDate: '<?php echo $endDate; ?>',
+				//"startDate": '2020-12-22'	,			
+			locale: {
+				format: 'YYYY-MM-DD',
+				cancelLabel: 'Clear'
+
+			},
+		});
+		//alert('<?php echo $endDate; ?>');
+		$('.daterange').on('apply.daterangepicker', function (ev, picker) {
+			$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+		});
+
+		$('.daterange').on('cancel.daterangepicker', function (ev, picker) {
+			$(this).val('');
+		});
+	</script>				
 			<table id="" class="table table-bordered table-hover">
 			<thead>
 				<tr>

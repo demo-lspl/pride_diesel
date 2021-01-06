@@ -188,19 +188,25 @@ class Account_model extends MY_Model {
         return array();
     }	
 
-	public function get_trans_invoices($where = array()){
+	public function get_trans_invoices($where = array(), $dateRange=null){
 		$this->db->select('transaction_invoice.*, users.company_name');
 		$this->db->from('transaction_invoice', 'users', 'drivers');
 		$this->db->join('users', 'users.id=transaction_invoice.company_id');
 		//$this->db->where('transaction_invoice.status', 0);
 		if(!empty($where)){
 			$this->db->like($where);
-		}		
-//pre($where);die;
+		}
+		if($dateRange){
+			$expDateRange = explode(' - ', $dateRange);
+			$startDate = $expDateRange[0];
+			$endDate = $expDateRange[1];			
+			$this->db->where('transaction_invoice.date_created >= "'. date('Y-m-d', strtotime($startDate)). '" and transaction_invoice.date_created <= "'. date('Y-m-d', strtotime($endDate)).'"');			
+		}	
+
 		return $this->db->get()->result();
 	}
 	
-    public function get_pagination_trans_invoice($limit, $offset, $where = null)
+    public function get_pagination_trans_invoice($limit, $offset, $where = null, $dateRange=null)
     {
 		$offset = ($offset-1) * $limit;	
 		$this->db->select('transaction_invoice.*, users.company_name, users.address');
@@ -211,6 +217,12 @@ class Account_model extends MY_Model {
 			//$this->db->like('invoice_id', $where);
 			$this->db->like($where);
 		}
+		if($dateRange){
+			$expDateRange = explode(' - ', $dateRange);
+			$startDate = $expDateRange[0];
+			$endDate = $expDateRange[1];			
+			$this->db->where('date(transaction_invoice.date_created) >= "'. date('Y-m-d', strtotime($startDate)). '" and date(transaction_invoice.date_created) <= "'. date('Y-m-d', strtotime($endDate)).'"');			
+		}		
         $this->db->limit($limit, $offset);
 		$this->db->order_by('id','DESC');
         $query = $this->db->get();

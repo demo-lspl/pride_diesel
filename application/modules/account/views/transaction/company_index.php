@@ -12,12 +12,16 @@
 		  <a class="dropdown-item export-csv" data-cid="<?php echo $cid ?>" href="#">Export CSV</a>
 		  <a class="dropdown-item export-xlsx" data-cid="<?php echo $cid ?>" href="#">Export Excel Expert</a>
 		  <a class="dropdown-item export-xlsx-transplus" data-cid="<?php echo $cid ?>" href="#">Export Excel TransPlus</a>
+		  <a class="dropdown-item export-xlsx-othersoft" data-cid="<?php echo $cid ?>" href="#">Export Excel for Xpert</a>
 		  <!--a class="dropdown-item export-fleetmanager" href="http://localhost/pride_diesel/card/exportCards">Export for Fleet Manager</a>
 		  <a class="dropdown-item" href="http://localhost/pride_diesel/card/exportCards">Export Xlsx</a>
 		  <a class="dropdown-item" href="http://localhost/pride_diesel/card/exportCards">Export CSV</a-->
 		</div>
+		
 		</div>
-	</div>	
+		
+	</div>
+		<div class="display-none export-msg"><img src="<?php echo base_url('assets/images/please-wait.gif') ?>" width="210" /></div>	
 	<!--a href="<?php echo base_url('account/exportTransactionByCompany/').$cid ?>" class="btn btn-success"><i class="fa fa-download"></i> Export Xlsx</a>
 	<a href="<?php echo base_url('account/export_company_trans_csv/').$cid ?>" class="btn btn-success"><i class="fa fa-download"></i> Export CSV</a-->
 	</div>

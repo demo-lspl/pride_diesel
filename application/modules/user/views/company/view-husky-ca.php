@@ -26,7 +26,7 @@
 					$getPriceDate = $this->db->select('date, date_created')->where('id', 1)->get('retail_pricing_husky_ca')->row();	
 					$userSessDetails = $this->session->userdata('userdata');
 					$this->db->select('users.*, company_types.*');
-					$this->db->join('company_types', 'company_types.id=users.company_type_ca');
+					$this->db->join('company_types', 'company_types.id=users.company_type_ca_husky');
 					//$this->db->join('retail_pricing_ca', 'retail_pricing_ca.id=users.company_type');
 					$this->db->where('users.id', $userSessDetails->id);
 					$get_user_type = $this->db->get('users')->row();
@@ -47,7 +47,7 @@
 								<?php $i=0;$cnt =0;$companyTypes = '';
 								foreach($companyTypeResult as $key=>$companyTypeResultRows): 
 								$cTYPE = $companyTypeResultRows->company_type;
-
+//pre($get_user_type->company_type);
 								if(strtolower($cTYPE) == strtolower($get_user_type->company_type)){?>
 								<th><?php echo "Pride Diesel Price"; //$companyTypeResultRows->company_type ?></th>
 								<th>Date</th>
@@ -82,7 +82,7 @@
 								if(!empty($dynamicrows->$pname[$i]->$compTypes[$i])){
 									$amtAfterDec = $dynamicrows->$pname[$i]->$compTypes[$i];			
 									//echo "<td>".number_format($taxTotal, 4)."</td>"; 
-									echo "<td>".number_format($amtAfterDec, 4)."</td>"; 
+									echo "<td>".$amtAfterDec."</td>"; 
 									 } } } }
 								}} 	} ?>
 								<td>

@@ -16,7 +16,7 @@
 				<form class="search form-inline" action="<?php echo base_url().'account/ledgers'; ?>" method="get" autocomplete="off">
 				  <div class="form-group">
 					<!--input class="form-control search-input" name="search" value="<?php if(!empty($_GET['search'])){echo $_GET['search'];} ?>" placeholder="<?php echo "Search company name"; ?>" type="text" /-->
-						<select name="company_name" class="form-control select2" style="width: 250px">
+						<select id="search-company" name="company_name" class="form-control select2" style="width: 250px">
 							<option value="">-- Search by Company --</option>
 							<?php foreach($getuserdata as $usernames): ?>
 								<option <?php if(!empty($_GET['company_name'])){if(str_replace('+', ' ', $_GET['company_name'] == $usernames->company_name)){echo "selected";}} ?> value="<?php echo $usernames->company_name; ?>"><?php echo ucwords($usernames->company_name); ?></option>
@@ -26,7 +26,7 @@
 				  </div>
 				  <div class="form-group">
 					<?php $filterOptions = array('invoiced' => 'Invoiced', 'non-invoiced' => 'Non-invoiced'); ?>
-						<select name="invoice_status" class="form-control select2" style="width: 250px">
+						<select name="invoice_status" class="form-control " style="width: 250px">
 							<option value="">-- Filter By --</option>
 							<option value="">All</option>
 							<?php foreach($filterOptions as $key=>$filterOptionsItems): ?>

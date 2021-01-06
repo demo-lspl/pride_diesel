@@ -2,12 +2,11 @@
 set_time_limit(0);
 ini_set('memory_limit', '256M');
 class Soap_client extends MY_controller {
-	
-/* 	protected $username = 'WS352369';
-	protected $password = 'WEX2020'; */
-/*Live Credenttials*/
-	protected $username = 'HSINGH3';
-	protected $password = 'Harry0044';	
+	/* 	protected $username = 'WS352369';
+		protected $password = 'WEX2020'; */
+	/*Live Credenttials*/
+	protected $username;
+	protected $password;
     function __construct() {
         parent::__construct();
 		date_default_timezone_set('America/Toronto');
@@ -20,10 +19,20 @@ class Soap_client extends MY_controller {
         if ($err) {
             echo '<h2>Constructor error</h2><pre>' . $err . '</pre>';
 
-        }		
+        }
+		$this->load->model("settings/settings_model");
+		$getCredentials = $this->settings_model->get('efs');
+		$username = $password = null;
+		foreach($getCredentials as $getCredentialsItems){
+			$username = $getCredentialsItems->username;
+			$password = $getCredentialsItems->password;
+		}
+		$this->username = $username;
+		$this->password = $password;		
     }
 	
     function index() {
+		//pre($this->password);die;
 		$clientToken = $this->soapclient->call('login', array('user'=>$this->username, 'password' => $this->password));
 		$cardSummResult = $this->soapclient->call('getCardSummaries', array('clientId'=>$clientToken, 'request' => 'all'));
 
@@ -367,7 +376,8 @@ class Soap_client extends MY_controller {
 											if(array_key_exists($setUSCompanyType, $decodeDefdPricesRows)){
 												$defdOurPrice = $decodeDefdPricesRows->$setUSCompanyType[0];
 												if($jsonCategoryArrayObject == 'DEFD'){
-													$exactCompanyPrice = number_format($transSummResult['value'][$i]['lineItems'][$j]['retailPPU'] + $defdOurPrice, 3);
+													/* $exactCompanyPrice = number_format($transSummResult['value'][$i]['lineItems'][$j]['retailPPU'] + $defdOurPrice, 3); */
+													$exactCompanyPrice = $transSummResult['value'][$i]['lineItems'][$j]['retailPPU'] + $defdOurPrice;
 												}
 											}
 										}
@@ -389,7 +399,7 @@ class Soap_client extends MY_controller {
 							$arrCategory[$j] = $jsonCategoryArrayObjectActual;
 							$arrGroupCategory[$j] = $jsonGroupCategoryArrayObject;
 							$arrPpu[$j] = $jsonPpuArrayObject;
-							$arrPridePricePpu[$j] = $prideDiesel_ppu;
+							$arrPridePricePpu[$j] = (string)$prideDiesel_ppu;
 							$arrQuantity[$j] = $jsonQuantityArrayObject;
 							
 							$j++;
@@ -468,9 +478,9 @@ class Soap_client extends MY_controller {
 
 						$efsRetailPrice = $transSummResult['value'][$i]['lineItems']['retailPPU'];
 
-						$prideDiesel_ppu = $exactCompanyPrice;
+						$prideDiesel_ppu = (string)$exactCompanyPrice;
 						//unset($exactCompanyPrice);
-						$descr_of_pride_price_ppu_array = json_encode(array(number_format($prideDiesel_ppu, 3)));
+						$descr_of_pride_price_ppu_array = json_encode(array($prideDiesel_ppu));
 						$descr_of_ppu_array = json_encode(array($efsRetailPrice));
 						$descr_of_quantity_array = json_encode(array($transSummResult['value'][$i]['lineItems']['quantity']));					
 					}

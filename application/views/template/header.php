@@ -484,6 +484,14 @@
 		  
 			</ul>		   
 		  </li>	
+		  <li class="nav-item ">
+            <a href="<?php echo base_url('settings/index') ?>" class="nav-link <?php if($this->uri->segment(1) == 'settings' && $this->uri->segment(2) == 'index'){echo 'active';} ?>">
+              <i class="nav-icon far fa fa-cog"></i>
+              <p>
+                Third Party Settings
+              </p>
+            </a>	
+		  </li>		  
 <?php } ?>		  
         </ul>
       </nav>

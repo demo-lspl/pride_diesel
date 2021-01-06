@@ -80,12 +80,12 @@
 								echo set_value('card_status', $card->card_status) == 3 ? "checked" : ""; ?> />Block
 						  </label>
 						</div>
-						<div class="form-check-inline disabled">
+						<!--div class="form-check-inline disabled">
 						  <label class="form-check-label">
 							<input type="radio" class="form-check-input" name="card_status" value="4" <?php 
 								echo set_value('card_status', $card->card_status) == 4 ? "checked" : ""; ?> />Clear
 						  </label>
-						</div>
+						</div-->
 						<?php } ?>						
 						<?php //}else{ ?>
 						<!--div class="form-check-inline disabled">

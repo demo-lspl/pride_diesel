@@ -10,23 +10,30 @@ class Soap_client_husky extends MY_controller {
     function index() {
 		error_reporting(0);
 		$this->load->model("card/card_model");
+		$this->load->model("settings/settings_model");
 		//Get All cards
 		$allCardData = $this->card_model->get_cards();
 		$cardids = array();
 		foreach($allCardData as $allCardDatas){
 			$cardids[] = $allCardDatas->cardToken;
-		}		
+		}
+		$getCredentials = $this->settings_model->get('husky');
+		$HuskyUser = $HuskyPassword = null;
+		foreach($getCredentials as $getCredentialsItems){
+			$HuskyUser = $getCredentialsItems->username;
+			$HuskyPassword = $getCredentialsItems->password;
+		}	
 		/* $getHuskyUsers = $this->db->select('customer_id')->where('customer_id != ""')->get('users')->result();
 		foreach($getHuskyUsers as $getHuskyUsersRows){
 			$customerIds[] = $getHuskyUsersRows->customer_id;
 		}
 		$customerIdMult = array_chunk($customerIds, 2); */
-		
+		//pre($getCredentials);die;
 		$ws_url = 'https://api.iconnectdata.com:443/FleetCreditWS/services/FleetCreditWS0200';
 		$headers = array(
 			"Content-type: application/xml;charset=utf-8",
 			
-			'Authorization: Basic '. base64_encode('HS1-14OHL:Pride@3963'),
+			'Authorization: Basic '. base64_encode($HuskyUser.':'.$HuskyPassword),
 			'Connection: keep-alive'.
 			'Content-Encoding: gzip',
 			"SOAPAction: http://fleetCredit02.comdata.com/FleetCreditWS0200/cardListing",
@@ -40,8 +47,8 @@ class Soap_client_husky extends MY_controller {
 		  <soapenv:Header>
 			<wsse:Security soapenv:mustUnderstand="1" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
 				<wsse:UsernameToken>
-					<wsse:Username>HS1-14OHL</wsse:Username>
-					<wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">Pride@3963</wsse:Password>
+					<wsse:Username>'.$HuskyUser.'</wsse:Username>
+					<wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">'.$HuskyPassword.'</wsse:Password>
 				</wsse:UsernameToken>
 			</wsse:Security>
 		</soapenv:Header>
@@ -78,7 +85,7 @@ class Soap_client_husky extends MY_controller {
 				
 			} */		
 		$curl = curl_init();
-//pre($xml_post_string1); 
+		//pre($xml_post_string1); 
 		curl_setopt_array($curl, array(
 		  CURLOPT_URL => $ws_url,
 			CURLOPT_HTTPHEADER => $headers,

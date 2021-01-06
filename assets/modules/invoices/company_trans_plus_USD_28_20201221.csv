@@ -1,0 +1,26 @@
+Receipt_Number,Transaction_Date,Transaction_Time,Method,Vendor,Card_Number,Supplier,City,Province_State,Truck_Number,Trailer_Number,Item_Type,Quantity,Measure,Price,Total
+""""816513713",09/18/2020,06:51 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA ELGIN",""""HAMPSHIRE",""""IL",""""1254",,ULSD,77.03,""""G",2.1781 ,167.77
+""""816513713",09/18/2020,06:51 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA ELGIN",""""HAMPSHIRE",""""IL",""""1254",,DEFD,11.84,""""G",2.979 ,35.27
+""""816513713",09/18/2020,06:51 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA ELGIN",""""HAMPSHIRE",""""IL",,""""1254",ULSR,10.56,""""G",2.1780 ,22.99
+""""817250341",09/22/2020,07:22 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA WOODSTOCK",""""WOODSTOCK",""""ON",,,ULSD,325.28,""""G",0.9890 ,321.7
+""""817250341",09/22/2020,07:22 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA WOODSTOCK",""""WOODSTOCK",""""ON",,,ULSR,78.52,""""G",0.9890 ,77.65
+""""817532901",09/23/2020,05:02 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA TROY",""""TROY",""""IL",,,ULSD,96.74,""""G",2.2885 ,221.38
+""""817532901",09/23/2020,05:02 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA TROY",""""TROY",""""IL",,,DEFD,11.54,""""G",3.369 ,38.87
+""""817788381",09/23/2020,08:24 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA SAYRE",""""SAYRE",""""OK",,,ULSD,90.4,""""G",2.1096 ,190.7
+""""817788381",09/23/2020,08:24 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA SAYRE",""""SAYRE",""""OK",,,DEFD,3.17,""""G",3.368 ,10.67
+""""817788381",09/23/2020,08:24 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA SAYRE",""""SAYRE",""""OK",,,ULSR,8.81,""""G",2.1096 ,18.58
+""""818018036",09/24/2020,03:00 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA BARSTOW",""""BARSTOW",""""CA",,,ULSD,139.41,""""G",3.138 ,437.46
+""""818441045",09/26/2020,05:58 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""PETRO SANTA NELLA",""""SANTA NELLA",""""CA",,,ULSD,105.71,""""G",3.0511 ,322.53
+""""818441045",09/26/2020,05:58 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""PETRO SANTA NELLA",""""SANTA NELLA",""""CA",,,DEFD,8.15,""""G",3.349 ,27.29
+""""818441045",09/26/2020,05:58 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""PETRO SANTA NELLA",""""SANTA NELLA",""""CA",,,ULSR,18.98,""""G",3.0511 ,57.9
+""""818578347",09/26/2020,06:01 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA KINGMAN",""""KINGMAN",""""AZ",,,ULSD,51.85,""""G",2.5067 ,129.97
+""""818578347",09/26/2020,06:01 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA KINGMAN",""""KINGMAN",""""AZ",,,DEFD,3.38,""""G",3.370 ,11.39
+""""818578347",09/26/2020,06:01 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA KINGMAN",""""KINGMAN",""""AZ",,,ULSR,11.51,""""G",2.5067 ,28.85
+""""818674280",09/27/2020,11:34 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA OKLAHOMA CITY WEST",""""OKLAHOMA CITY",""""OK",,,ULSD,129.99,""""G",2.056 ,267.25
+""""818840554",09/28/2020,08:39 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA MONROE",""""MONROE",""""MI",,,ULSD,143.45,""""G",2.3222 ,333.11
+""""818840554",09/28/2020,08:39 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA MONROE",""""MONROE",""""MI",,,DEFD,10.29,""""G",3.369 ,34.66
+""""818840554",09/28/2020,08:39 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA MONROE",""""MONROE",""""MI",,,ULSR,18.77,""""G",2.3222 ,43.58
+""""819375120",09/30/2020,12:31 a,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA OGALLALA",""""OGALLALA",""""NE",""""1896",,ULSD,140.33,""""G",2.235 ,313.63
+""""819587801",09/30/2020,03:40 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA PAROWAN",""""PAROWAN",""""UT",,,ULSD,106.76,""""G",2.3367 ,249.46
+""""819587801",09/30/2020,03:40 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA PAROWAN",""""PAROWAN",""""UT",,,DEFD,12.68,""""G",3.369 ,42.71
+""""819587801",09/30/2020,03:40 p,""""Credit", Pride Diesel Inc.,""""7083050030565357451",""""TA PAROWAN",""""PAROWAN",""""UT",,,ULSR,18.31,""""G",2.3367 ,42.78

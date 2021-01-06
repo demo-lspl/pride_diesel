@@ -1,6 +1,10 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
-
+require_once APPPATH.'libraries/sendgrid-php.php';
+require_once APPPATH.('libraries/sendgrid-php/lib/SendGrid.php');
+require_once APPPATH.('libraries/sendgrid-php/lib/BaseSendGridClientInterface.php');
+require_once APPPATH.('libraries/sendgrid-php/lib/TwilioEmail.php');
+use SendGrid\Mail\Mail;
 class Auth extends MY_Controller {
 	public function __construct(){
 		parent::__construct();
@@ -105,7 +109,7 @@ class Auth extends MY_Controller {
 	}
 	
 	public function send_varification_email($uemail, $vercode, $userRole){
-		$this->load->library('email');
+		//$this->load->library('email');
 		/* $config = Array(        
 		'protocol' => 'sendmail',
 		'smtp_host' => 'ssl://smtp.googlemail.com',
@@ -127,7 +131,100 @@ class Auth extends MY_Controller {
 			'newline' => "\r\n", //REQUIRED! Notice the double quotes!
 			'smtp_port' => 587,
 			'mailtype' => 'html'    
-		]; */		
+		]; jagdish@lastingerp.com */
+		//require APPPATH .'third_party/sendgrid-php/sendgrid-php.php';
+		//require APPPATH .'third_party/sendgrid-php/lib/SendGrid.php';
+		/* require_once (APPPATH.'third_party/sendgrid-php/lib/BaseSendGridClientInterface.php');
+		require_once (APPPATH.'third_party/sendgrid-php/lib/SendGrid.php');
+		
+		//SendGrid::register_autoloader();
+		$to = "jagdish@lastingerp.com";
+		$from = "info@pridediesel.com";
+		$subject = "Sending with SendGrid is Fun";
+		$html = "<strong>and easy to do anywhere, even with PHP</strong>";
+    $sendgrid = new SendGrid('dev@lastingerp.com', 'LastingSoftware@123');
+    $email    = new SendGrid\Email();
+    $email->addTo( $to)->
+           setFrom($from)->
+           setSubject($subject)->
+           setText('Test')->
+           setHtml($html);
+
+    $x = $sendgrid->send($email); */		
+		/* require FCPATH .'vendor/sendgrid-php/sendgrid-php.php';
+
+		$email = new \SendGrid\Mail\Mail();
+		$email->setFrom("info@pridediesel.com", "Example User");
+		$email->setSubject("Sending with SendGrid is Fun");
+		$email->addTo("jagdish@lastingerp.com", "Example User");
+		$email->addContent(
+			"text/plain", "and easy to do anywhere, even with PHP"
+		);
+		$email->addContent(
+			"text/html", "<strong>and easy to do anywhere, even with PHP</strong>"
+		);
+		//$sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+		$sendgrid = new \SendGrid(getenv('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'));
+		try {
+			$response = $sendgrid->send($email);
+			print $response->statusCode() . "\n";
+			print_r($response->headers());
+			print $response->body() . "\n";
+		} catch (Exception $e) {
+			echo 'Caught exception: ',  $e->getMessage(), "\n";
+		} */
+		//die;
+		/* $this->email->initialize(array(
+		  'protocol' => 'smtp',
+		  'smtp_host' => 'smtp.sendgrid.net',
+		  //'smtp_user' => 'apikey',
+		  'smtp_user' => 'Adua@pridediesel.com',
+		  'smtp_pass' => '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',
+		  //'smtp_timeout' => '30',
+		  'smtp_port' => 587,
+		  //'smtp_port' => 587,
+		  'crlf' => "\r\n",
+		  'newline' => "\r\n"
+		)); */
+$config = Array(
+		  'protocol' => 'sendmail',
+		  'smtp_host' => 'ssl://smtp.sendgrid.net',
+		  //'smtp_user' => 'apikey',
+		  'smtp_user' => 'Adua@pridediesel.com',
+		  'smtp_pass' => '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',
+		  //'smtp_timeout' => '30',
+		  'smtp_port' => 587,
+		  //'smtp_port' => 587,
+		  'crlf' => "\r\n",
+		  'newline' => "\r\n"
+);		
+		//$this->load->library('email');
+		$this->load->library('email', $config);
+// Uncomment next line if you're not using a dependency loader (such as Composer)
+
+
+/* $email = new Mail();
+$email->setFrom("info@pridediesel.com", "Example User");
+$tos = [
+    "test+jagdish@lastingerp.com" => "Example User1",
+    "test+test2@example.com" => "Example User2",
+    "test+test3@example.com" => "Example User3"
+];
+$email->addTos($tos);
+$email->setSubject("Sending with Twilio SendGrid is Fun");
+$email->addContent("text/plain", "and easy to do anywhere, even with PHP");
+$email->addContent(
+    "text/html", "<strong>and easy to do anywhere, even with PHP</strong>"
+);
+$sendgrid = new \SendGrid(getenv('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'));
+try {
+    $response = $sendgrid->send($email);
+    print $response->statusCode() . "\n";
+    print_r($response->headers());
+    print $response->body() . "\n";
+} catch (Exception $e) {
+    echo 'Caught exception: '.  $e->getMessage(). "\n";
+} */		
 		//$this->load->library('email', $config);
 		$config['mailtype'] = 'html';
 		$this->email->initialize($config);
@@ -135,7 +232,7 @@ class Auth extends MY_Controller {
 		$this->email->from('info@pridediesel.com');				
 		$this->email->to($uemail);
 		if($userRole == 'admin'){
-			$this->email->cc('H.lakhiann@gmail.com,Guribani8171@gmail.com');
+			//$this->email->cc('H.lakhiann@gmail.com,Guribani8171@gmail.com');
 		}
 		$this->email->subject('Pride Diesel login verification code');
 		
@@ -145,7 +242,7 @@ class Auth extends MY_Controller {
 		$this->email->message($message);
 		
 		$this->email->send();
-				
+		//$this->email->print_debugger();		
 	}
 	
 	public function resend_verification_email(){

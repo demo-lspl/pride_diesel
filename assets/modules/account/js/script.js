@@ -104,6 +104,47 @@ $(document).ready(function () {
 			}
 		});
 	});
+	
+	$(document).on('click','.export-othersoft-xlsx',function(){	
+			var cid = $(this).data('cid');
+			var cur = $('.currency').val();
+			var acid = $('.companyname').val();
+			var daterange = $('.daterange').val();
+					if (cid === null){
+						var cid = 'undefined';
+					}
+					if (cur === null){
+						var cur = 'undefined';
+					}					
+					if(acid === null || acid == ""){
+						acid = 'undefined';
+					}
+					if (daterange === ""){
+						var daterange = 'undefined';
+					}
+			//console.log(acid);					
+			$.ajax({
+			url: site_url + 'account/exportTransactionsOtherSoftware/'+cid+'/'+acid+'/'+daterange+'/'+cur,
+			type: 'post',
+			//escape : 'false',
+			//contentType: false,
+			//processData: false,
+			beforeSend: function(){$('.export-msg').show();},
+			data: {cid:cid, acid:acid, daterange:daterange, cur:cur},
+			success: function (response) {
+				//alert(cid);
+			$('.export-msg').hide();
+				if(response != 'notransaction'){					
+					window.open("exportTransactionsOtherSoftware/"+ cid +"/" + acid+"/" + daterange+"/" + cur, '_blank');
+				}
+				if(response == 'notransaction'){
+					alert("No transaction available for given dates");
+					//return false;
+				}				
+			}
+		});
+	});	
+	
 	$(document).on('click','.export-xlsx-transplus',function(){	
 			var cid = $(this).data('cid');
 			var cur = $('.currency').val();
@@ -128,10 +169,10 @@ $(document).ready(function () {
 			//escape : 'false',
 			//contentType: false,
 			//processData: false,
-			beforeSend: function(){/*alert(cur);*/},
+			beforeSend: function(){$('.export-msg').show();},
 			data: {cid:cid, acid:acid, daterange:daterange, cur:cur},
 			success: function (response) {
-				//alert(cid);
+				$('.export-msg').hide();
 				if(response != 'notransaction'){					
 					window.open("exportTransactionByCompanyTransPlus/"+ cid +"/" + acid+"/" + daterange+"/" + cur, '_blank');
 				}
@@ -141,7 +182,70 @@ $(document).ready(function () {
 				}				
 			}
 		});
-	});	
+	});
+
+	$(document).on('click','.export-xlsx-othersoft',function(){	
+			var cid = $(this).data('cid');
+			var cur = $('.currency').val();
+			var acid = $('.companyname').val();
+			var daterange = $('.daterange').val();
+					if (cid === null){
+						var cid = 'undefined';
+					}
+					if (cur === null){
+						var cur = 'undefined';
+					}					
+					if(acid === null){
+						acid = 'undefined';
+						//cid = 'undefined';
+					}
+					if (daterange === ""){
+						var daterange = 'undefined';
+					}			
+			$.ajax({
+			url: site_url + 'account/exportTransactionByOtherSoftwares/'+cid+'/'+acid+'/'+daterange+'/'+cur,
+			type: 'post',
+			//escape : 'false',
+			//contentType: false,
+			//processData: false,
+			beforeSend: function(){$('.export-msg').show();},
+			data: {cid:cid, acid:acid, daterange:daterange, cur:cur},
+			success: function (response) {
+				$('.export-msg').hide();
+				if(response != 'notransaction'){					
+					window.open("exportTransactionByOtherSoftwares/"+ cid +"/" + acid+"/" + daterange+"/" + cur, '_blank');
+				}
+				if(response == 'notransaction'){
+					alert("No transaction available for given dates");
+					//return false;
+				}				
+			}
+		});
+	});
+
+	$(document).on('click','.export-invoices-xlsx',function(){	
+			var daterange = $('.daterange').val();
+			if (daterange === ""){
+				var daterange = 'undefined';
+			}			
+			$.ajax({
+			url: site_url + 'account/exportInvoicesXlsx/'+daterange,
+			type: 'post',
+			beforeSend: function(){$('.export-msg').show();},
+			data: {daterange:daterange},
+			success: function (response) {
+				$('.export-msg').hide();
+				if(response != 'noinvoice'){					
+					window.open("exportInvoicesXlsx/"+ daterange, '_blank');
+				}
+				if(response == 'noinvoice'){
+					alert("No invoice available for given dates");
+					//return false;
+				}				
+			}
+		});
+	});
+	
 	$(".export-xlsx1").click(function(e){
 		//e.preventDefault();
 		//alert("Avaals");
@@ -286,5 +390,6 @@ $('select').select2({
     }
 });
 
+$("#search-company").select2();
 
 });
