@@ -112,10 +112,10 @@
 		}	
 					
 					//Commission According To Slab
-					   if($profit <= 200000){
-						   $commission = $profit*10/100;
+					   if(@$profit <= 200000){
+						   $commission = @$profit*10/100;
 					   }elseif($profit >= 300000){
-						   $commission = $profit*20/100;
+						   $commission = @$profit*20/100;
 					   }
 					   $commission = floor($commission*100)/100;
 					//Commission According To Slab   
@@ -127,9 +127,9 @@
 					 echo '<td>'.$crdsttus.'</td>';
 					 echo '<td>'.$total_qty.'</td>';
 					 echo '<td>'.$sale_total.'</td>';
-					 echo '<td>'.$Qty_rebate.'</td>';
-					 echo '<td>'.$cost.'</td>';
-					 echo '<td>'.$profit.'</td>';
+					 echo '<td>'.@$Qty_rebate.'</td>';
+					 echo '<td>'.@$cost.'</td>';
+					 echo '<td>'.@$profit.'</td>';
 					 echo '<td>'.$commission.'</td>';
 					 echo '<td><a href="'.base_url("account/view_crd_trns_dtls/").$dtld->card_number.'" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a> </td>';
 				
