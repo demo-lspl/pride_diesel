@@ -480,7 +480,13 @@
                   <i class="far fa-circle nav-icon"></i>
                   <p>Husky Rebate</p>
                 </a>
-              </li>			  
+              </li>	
+			  <li class="nav-item">
+                <a href="<?php echo base_url('account/sale_comission')?>" class="nav-link <?php if($this->uri->segment(2) == 'sale_comission'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Sale Commission</p>
+                </a>
+              </li>		
 		  
 			</ul>		   
 		  </li>	

@@ -4574,6 +4574,115 @@ public function husky_rebate(){
 		
    
 /*********************Commission Calc ******************/	
+/*********************Sale Comission  Calc ******************/	
+public function sale_comission(){
+	$this->load->library('pagination');
+		$this->settings['title'] = 'Sales Person Detail';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Company Cards Details', base_url() . 'account/sale_comission');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+		$where = '';
+				$where2 = '';
+					if(!empty($_GET['search'])){
+						$where = $_GET['search'];
+					}
+				if(!empty($_GET['date_range'])){
+					$explodeDateRange = explode(' - ', $_GET['date_range']);			
+					$where2 = $explodeDateRange;
+				}		
+				$dd = $this->account_model->get_data_count($where, $where2);
+				$config['base_url'] = site_url('account/sale_comission');
+				$config['uri_segment'] = 3;
+				$config['total_rows'] = count($dd);
+			   // $config['total_rows'] = 10;
+				$config['per_page'] = 10;
+				$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+				$config['full_tag_close'] = '</ul>';
+				$config['first_link']= '&laquo; First';
+				$config['first_tag_open'] =  '<li class="prev page">';
+				$config['first_tag_close']= '</li>'; 
+				$config['last_link']= 'Last &raquo;';
+				$config['last_tag_open']= '<li class="next page">';
+				$config['last_tag_close']= '</li>';
+				$config['next_link']= 'Next &rarr;';
+				$config['next_tag_open']= '<li class="next page">';
+				$config['next_tag_close']= '</li>';
+				$config['prev_link']= '&larr; Previous';
+				$config['prev_tag_open']= '<li class="prev page">';
+				$config['prev_tag_close']= '</li>';		
+				$config['cur_tag_open'] = '<li class="active"><a href="#">';
+				$config['cur_tag_close'] = '</a></li>';
+				$config['num_tag_open'] = '<li class="page">';
+				$config['num_tag_close'] = '</li>';
+				$config['link_suffix'] = '#content';
+				$config['reuse_query_string'] = true;
+				$config["use_page_numbers"] = TRUE;
+
+				$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 1;
+				$this->pagination->initialize($config);
+				$this->data['pagination'] = $this->pagination->create_links();
+
+				$this->data['get_sales_commision'] = $this->account_model->get_sales_person_data($config['per_page'], $page, $where, $where2);		
+			
+				$this->_render_template('commission/commision_view', $this->data);
+	
+}
+
+	public function view_users_dtls(){$this->load->library('pagination');
+		$this->settings['title'] = 'User Company Details ';
+		$this->breadcrumb->mainctrl("account");
+		$this->breadcrumb->add('Company Cards Details', base_url() . 'account/view_users_dtls');
+		$this->settings['breadcrumbs'] = $this->breadcrumb->output();
+		$where = '';
+		$where2 = '';
+		if($this->uri->segment(3)!=''){
+			$userid = $this->uri->segment(3);	
+			if(!empty($_GET['search'])){
+				$where = $_GET['search'];
+			}
+				// if(!empty($_GET['date_range'])){
+					// $explodeDateRange = explode(' - ', $_GET['date_range']);			
+					// $where2 = $explodeDateRange;
+				// }		
+				$dd = $this->account_model->get_sales_person_company_data_count($where,$where2,$userid);
+				
+				$config['base_url'] = site_url('account/view_users_dtls');
+				$config['uri_segment'] = 3;
+				$config['total_rows'] = count($dd);
+			   // $config['total_rows'] = 10;
+				$config['per_page'] = 10;
+				$config['full_tag_open'] = '<ul class="pagination custom-pagination">';
+				$config['full_tag_close'] = '</ul>';
+				$config['first_link']= '&laquo; First';
+				$config['first_tag_open'] =  '<li class="prev page">';
+				$config['first_tag_close']= '</li>'; 
+				$config['last_link']= 'Last &raquo;';
+				$config['last_tag_open']= '<li class="next page">';
+				$config['last_tag_close']= '</li>';
+				$config['next_link']= 'Next &rarr;';
+				$config['next_tag_open']= '<li class="next page">';
+				$config['next_tag_close']= '</li>';
+				$config['prev_link']= '&larr; Previous';
+				$config['prev_tag_open']= '<li class="prev page">';
+				$config['prev_tag_close']= '</li>';		
+				$config['cur_tag_open'] = '<li class="active"><a href="#">';
+				$config['cur_tag_close'] = '</a></li>';
+				$config['num_tag_open'] = '<li class="page">';
+				$config['num_tag_close'] = '</li>';
+				$config['link_suffix'] = '#content';
+				$config['reuse_query_string'] = true;
+				$config["use_page_numbers"] = TRUE;
+
+				$page = ($this->uri->segment(4)) ? $this->uri->segment(4) : 1;
+				$this->pagination->initialize($config);
+				$this->data['pagination'] = $this->pagination->create_links();
+				$this->data['sales_commission'] = $this->account_model->get_sales_person_company_data($config['per_page'], $page, $where,$userid);		
+			
+				$this->_render_template('commission/sale_person_comm_view', $this->data);
+		}		
+		
+	} 
+/*********************Sale Comission  Calc  ******************/	
 
 
 
