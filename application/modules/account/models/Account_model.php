@@ -572,10 +572,11 @@ class Account_model extends MY_Model {
 			$this->db->like('cards.card_number', $where);
 		}
 		if(!empty($where2)){
-			$start_date=$where2[0];
-			$end_date=$where2[1];
+			$start_date=$where2[0].' 00:00:00';
+			$end_date=$where2[1].' 23:59:59';
 
-			$this->db->where('transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+			/* $this->db->where('transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"'); */
+			$this->db->where("DATE(transactions.transaction_date) >='" . date('Y-m-d H:i:s', strtotime($start_date)) . "' AND transactions.transaction_date <='" . date('Y-m-d H:i:s', strtotime($end_date)). "'");
 		}		
 		$this->db->where('cards.company_id', $cid);
 		//$this->db->group_by('transactions.card_number');	
@@ -592,9 +593,10 @@ class Account_model extends MY_Model {
 			$this->db->like('cards.card_number', $where);
 		}
 		if(!empty($where2)){
-			$start_date=$where2[0];
-			$end_date=$where2[1];
-			$this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"');
+			$start_date=$where2[0].' 00:00:00';
+			$end_date=$where2[1].' 23:59:59';
+			/* $this->db->where('transactions.transaction_date BETWEEN "'. date('Y-m-d', strtotime($start_date)). '" and "'. date('Y-m-d', strtotime($end_date)).'"'); */
+			$this->db->where("DATE(transactions.transaction_date) >='" . date('Y-m-d H:i:s', strtotime($start_date)) . "' AND transactions.transaction_date <='" . date('Y-m-d H:i:s', strtotime($end_date)). "'");
 		}		
 		$this->db->where('cards.company_id', $cid);
 		//$this->db->group_by('transactions.card_number');

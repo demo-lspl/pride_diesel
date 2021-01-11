@@ -1028,7 +1028,7 @@ class Account extends MY_Controller {
         $this->data['pagination'] = $this->pagination->create_links();
 
         $this->data['transactionData'] = $this->account_model->get_comp_pagination_transactions($config['per_page'], $page, $where, $where2, $cid);		
-		
+		//echo $this->db->last_query();
 		$this->_render_template('transaction/company_index', $this->data);
 	}
 	

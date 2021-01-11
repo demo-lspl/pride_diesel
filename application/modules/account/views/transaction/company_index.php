@@ -41,7 +41,7 @@
 			<div class="card-body">
 				<form class="search form-inline" action="<?php echo base_url().'account/company_transactions'; ?>" method="get" autocomplete="off">
 				  <div class="form-group">
-					<!--input class="form-control search-input" name="search" value="<?php //if(!empty($_GET['search'])){echo $_GET['search'];} ?>" placeholder="<?php //echo "Search card number"; ?>" type="text" /-->
+					<input class="form-control search-input" name="search" value="<?php if(!empty($_GET['search'])){echo $_GET['search'];} ?>" placeholder="<?php echo "Search by card"; ?>" type="text" />
 					<input type="text" name="date_range" class="daterange form-control"  />&nbsp;&nbsp;
 				  </div>
 				  <button type="submit" class="btn btn-default" ><i class="fa fa-search"></i>&nbsp;&nbsp;<?php echo 'Search'; ?></button>
