@@ -143,6 +143,46 @@ $(document).ready(function () {
 				}				
 			}
 		});
+	});
+
+	$(document).on('click','.export-us-by-retail',function(){	
+			var cid = $(this).data('cid');
+			var cur = $('.currency').val();
+			var acid = $('.companyname').val();
+			var daterange = $('.daterange').val();
+					if (cid === null){
+						var cid = 'undefined';
+					}
+					if (cur === null){
+						var cur = 'undefined';
+					}					
+					if(acid === null || acid == ""){
+						acid = 'undefined';
+					}
+					if (daterange === ""){
+						var daterange = 'undefined';
+					}
+			//console.log(acid);					
+			$.ajax({
+			url: site_url + 'account/exportTransactionsByUSretail/'+cid+'/'+acid+'/'+daterange+'/'+cur,
+			type: 'post',
+			//escape : 'false',
+			//contentType: false,
+			//processData: false,
+			beforeSend: function(){$('.export-msg').show();},
+			data: {cid:cid, acid:acid, daterange:daterange, cur:cur},
+			success: function (response) {
+				//alert(cid);
+			$('.export-msg').hide();
+				if(response != 'notransaction'){					
+					window.open("exportTransactionsByUSretail/"+ cid +"/" + acid+"/" + daterange+"/" + cur, '_blank');
+				}
+				if(response == 'notransaction'){
+					alert("No transaction available for given dates");
+					//return false;
+				}				
+			}
+		});
 	});	
 	
 	$(document).on('click','.export-xlsx-transplus',function(){	

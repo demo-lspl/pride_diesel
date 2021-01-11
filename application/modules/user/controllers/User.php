@@ -2818,5 +2818,29 @@ class User extends MY_Controller {
 		//ob_end_flush(); 
 		$obj_pdf->Output('moneycodeinvoice.pdf', 'I');		
 	}
+	
+	public function sendgridtestmail(){
+		include APPPATH . 'third_party/sendgrid-php/sendgrid-php.php';
+
+        //$this->load->third_party('sendgrid-php');
+
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom("dev@lastingerp.com", "Pride");
+        $email->setSubject("MailTest");
+        $email->addTo('jagdish@lastingerp.com', "User");
+        $email->addContent("text/plain", "subject");
+        $email->addContent(
+            "text/html",'<html><body>Message</body><html>');
+
+        $sendgrid = new \SendGrid(('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'));
+        try {
+            $response = $sendgrid->send($email);
+            print $response->statusCode() . "\n";
+            print_r($response->headers());
+            print $response->body() . "\n";
+        } catch (Exception $e) {
+            echo "<pre>";echo 'Caught exception: '. $e->getMessage() ."\n";
+        }		
+	}
 		
 }
