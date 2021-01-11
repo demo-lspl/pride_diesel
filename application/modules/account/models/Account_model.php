@@ -1282,12 +1282,66 @@ class Account_model extends MY_Model {
 		$resultw = $qry->result();	
 		return $resultw;
 	}
-	
-	
-
-
-     	
 	/***************************Company commission  Details ****************************/
+	
+	/***************************Sales commission  Details ****************************/
+	public function get_sales_person_data($limit, $offset , $where = array(),$where2) {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('*');
+		$this->db->from('users');
+		if(!empty($where)){
+			$this->db->like('users.company_name', $where);
+		}
+		$this->db->where('users.role', 'sales');
+		$this->db->limit($limit, $offset);
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+	
+	}	
+	
+	public function get_sales_person_company_data($limit, $offset , $where = array(),$userid) {
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('cards.id,cards.card_number,cards.policy_number,cards.card_status,cards.cardToken,cards.company_id,cards.cardCompany');
+		$this->db->from('cards');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		$this->db->where('users.sales_person', $userid);
+		$this->db->join('users', 'cards.company_id = users.id', 'LEFT');
+		$this->db->limit($limit, $offset);
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		//pre($resultw);
+		return $resultw;
+	
+	}	
+	public function get_sales_person_company_data_count($where = array(),$where2,$userid) {
+		$this->db->select('cards.id,cards.card_number,cards.policy_number,cards.card_status,cards.cardToken,cards.company_id,cards.cardCompany');
+		$this->db->from('cards');
+		if(!empty($where)){
+			$this->db->like('cards.card_number', $where);
+		}
+		$this->db->where('users.sales_person', $userid);
+		$this->db->join('users', 'cards.company_id = users.id', 'LEFT');
+		$qry = $this->db->get();
+		//echo $this->db->last_query();
+		$resultw = $qry->result();	
+		return $resultw;
+	}	
+	/***************************Sales commission  Details ****************************/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 }

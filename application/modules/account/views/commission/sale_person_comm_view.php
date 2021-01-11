@@ -5,27 +5,27 @@
 		</div>
 	<div class="card card-default">
 		<div class="card-header bg-card-header">
-			<h3 class="card-title">Company Card Details</h3>
+			<h3 class="card-title">Card Commission Details</h3>
 				<div class="card-tools">
 					<button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
 					<button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
 				</div>
 		</div>
 		<div class="card-body">
-			<form class="search form-inline" action="<?php echo base_url().'account/get_com_cards'; ?>" method="get" autocomplete="off">
+			<!--form class="search form-inline" action="<?php echo base_url().'account/view_users_dtls'; ?>" method="get" autocomplete="off">
 				<div class="form-group">
-					<input class="form-control search-input card-search-input" name="search" value="<?php if(!empty($_GET['search'])){echo $_GET['search'];} ?>" placeholder="<?php echo "Search Card Number"; ?>" type="text" />
+					<input class="form-control search-input card-search-input" name="search" value="<?php //if(!empty($_GET['search'])){echo $_GET['search'];} ?>" placeholder="<?php //echo "Search Card Number"; ?>" type="text" />
 				</div>
 				  &nbsp;
 				<button type="submit" class="btn btn-default" ><i class="fa fa-search"></i>&nbsp;&nbsp;<?php echo 'Search'; ?></button>
-			</form>
+			</form-->
 			<table id="" class="table table-bordered table-hover">
 			<thead>
 				<tr>
 					<th>Id</th> 
 					<th>Card Number</th>
 					<th>Company Name</th>					
-					<th>Card Token</th>				
+							
 					<th>Card Status</th>
                     <th>Qty Total</th>
                     <th>Grand Total</th>
@@ -33,15 +33,15 @@
                     <th>Cost</th>					
                     <th>Profit</th>					
                     <th>Commission</th>					
-                  	<th>View Transaction</th>					
+                  	<!--th>View Transaction</th-->					
 				</tr>
 			</thead>
 			<tbody>
 			 <?php 
-			 if(!empty($get_comp_cards)){
+			 if(!empty($sales_commission)){
 				 $grand_total_amt = 0;
-				 $grand_commiion_amt = 0;
-				 foreach($get_comp_cards as $dtld){
+				 $Total_comission = 0;
+				 foreach($sales_commission as $dtld){
 					 if($dtld->card_status == 0){
 						 $crdsttus = 'Inactive';
 						 }elseif($dtld->card_status == 1){
@@ -118,12 +118,14 @@
 						   $commission = @$profit*20/100;
 					   }
 					   $commission = floor($commission*100)/100;
-					//Commission According To Slab   
+					   @$profit = floor(@$profit*100)/100;
+					//Commission According To Slab 
+						$Total_comission +=$commission;
 					 echo '<tr>';
 					 echo '<td>'.$dtld->id.'</td>';
 					 echo '<td>'.$dtld->card_number.'</td>';
 					 echo '<td>'.$comID->company_name.'</td>';
-					 echo '<td>'.$dtld->cardCompany.'</td>';
+					
 					 echo '<td>'.$crdsttus.'</td>';
 					 echo '<td>'.$total_qty.'</td>';
 					 echo '<td>'.$sale_total.'</td>';
@@ -131,16 +133,16 @@
 					 echo '<td>'.@$cost.'</td>';
 					 echo '<td>'.@$profit.'</td>';
 					 echo '<td>'.$commission.'</td>';
-					 echo '<td><a href="'.base_url("account/view_crd_trns_dtls/").$dtld->card_number.'" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a> </td>';
+					 //echo '<td><a href="'.base_url("account/view_crd_trns_dtls/").$dtld->card_number.'" class="btn btn-default" ><i class="fa fa-eye" aria-hidden="true"></i></a> </td>';
 				
 			}
-			// echo '</tr>';
-				// echo '<tr>';
-				// echo '<td colspan="5" align="right"><b>Total</b></td>';
-				// echo '<td><b>'. $grand_total_amt .'</b></td>';
-				// echo '<td><b>'. $grand_commiion_amt .'</b></td>';
-				// echo '<td></td>';
-			// echo '</tr>';
+			echo '</tr>';
+				echo '<tr>';
+				echo '<td colspan="9" align="right"><b>Total</b></td>';
+				echo '<td><b>'.$Total_comission.'</b></td>';
+				
+				
+				echo '</tr>';
 		}else{ 
 				echo "<tr>
 					<td colspan='7'>No record found</td>

@@ -480,7 +480,13 @@
                   <i class="far fa-circle nav-icon"></i>
                   <p>Husky Rebate</p>
                 </a>
-              </li>			  
+              </li>	
+			  <li class="nav-item">
+                <a href="<?php echo base_url('account/sale_comission')?>" class="nav-link <?php if($this->uri->segment(2) == 'sale_comission'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Sale Person Commission</p>
+                </a>
+              </li>		
 		  
 			</ul>		   
 		  </li>	
@@ -494,6 +500,7 @@
             </a>	
 		  </li>		  
 <?php } ?>		  
+
  <?php if($userSessDetails->role == 'sales'){ ?>
 		  <li class="nav-item has-treeview <?php if($this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'company_commission' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'usa_rebate_calc' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'husky_rebate'){echo 'menu-open';} ?>">
 			<a href="#" class="nav-link ">
