@@ -1,6 +1,7 @@
 <!-- Main Container -->
 <div class="">
 	<?php $userSessDetails = $this->session->userdata('userdata'); $cid = $userSessDetails->id;?>
+	<?php $getUSstatus = $this->db->select('usa_pricing')->where(['id'=> $cid])->get('users')->row();?>
 	<section class="content box">
 	<div class="addnew-user">
 	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
@@ -13,6 +14,9 @@
 		  <a class="dropdown-item export-xlsx" data-cid="<?php echo $cid ?>" href="#">Export Excel Expert</a>
 		  <a class="dropdown-item export-xlsx-transplus" data-cid="<?php echo $cid ?>" href="#">Export Excel TransPlus</a>
 		  <a class="dropdown-item export-xlsx-othersoft" data-cid="<?php echo $cid ?>" href="#">Export Excel for Xpert</a>
+		  <?php if($getUSstatus->usa_pricing != "" && $getUSstatus->usa_pricing != 'no'): ?>
+			<a class="dropdown-item export-us-by-retail" data-cid="<?php echo $cid ?>" href="#">Export USA by Retail Price</a>
+		  <?php endif; ?>
 		  <!--a class="dropdown-item export-fleetmanager" href="http://localhost/pride_diesel/card/exportCards">Export for Fleet Manager</a>
 		  <a class="dropdown-item" href="http://localhost/pride_diesel/card/exportCards">Export Xlsx</a>
 		  <a class="dropdown-item" href="http://localhost/pride_diesel/card/exportCards">Export CSV</a-->

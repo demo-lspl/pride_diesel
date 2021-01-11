@@ -25,6 +25,7 @@
 				<!--a class="dropdown-item export-csv" data-cid="" href="#">Export CSV</a-->
 				<a class="dropdown-item export-xlsx" data-cid="undefined" href="#">Export Excel</a>
 				<a class="dropdown-item export-othersoft-xlsx" data-cid="undefined" href="#">Export Excel for Xpert</a>
+				<a class="dropdown-item export-us-by-retail" data-cid="undefined" href="#">Export USA by Retail Price</a>
 			</div>
 			</div>
 		</div>

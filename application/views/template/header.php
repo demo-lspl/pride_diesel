@@ -494,8 +494,6 @@
             </a>	
 		  </li>		  
 <?php } ?>		  
-
-<?php } ?>
  <?php if($userSessDetails->role == 'sales'){ ?>
 		  <li class="nav-item has-treeview <?php if($this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'company_commission' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'usa_rebate_calc' || $this->uri->segment(1) == 'account' && $this->uri->segment(2) == 'husky_rebate'){echo 'menu-open';} ?>">
 			<a href="#" class="nav-link ">
