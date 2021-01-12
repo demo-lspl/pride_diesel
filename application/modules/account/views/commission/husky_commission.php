@@ -201,7 +201,7 @@
 			$rebate_amount_total = $afterMinus_Deff_Qty*0.05;
 			
 			$rebate_amount_total = floor($rebate_amount_total*100)/100;
-			      $total_cost    = $total_CostAmt - $rebate_amount_total;
+			      $total_cost    = $total_CostAmt;
 				  
 				  $profit =     $toalSaleAmount - $total_cost;
 				echo '<tr>';
@@ -231,15 +231,7 @@
 				echo '<td></td>';
 				echo '<td></td>';
 				echo '</tr>';
-				echo '<tr>';
-				echo '<td  colspan="5" align="right"><b>Rebate Amount</b></td>';
-				echo '<td><b>'.$rebate_amount_total.'</b></td>';
-				echo '<td></td>';
-				echo '<td></td>';
-				echo '<td></td>';
-				echo '<td></td>';
-				echo '<td></td>';
-				echo '</tr>';
+				
 				echo '<tr>';
 				echo '<td  colspan="5" align="right"><b>Cost</b></td>';
 				echo '<td><b>'.$total_cost.'</b></td>';
