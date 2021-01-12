@@ -2825,14 +2825,14 @@ class User extends MY_Controller {
         //$this->load->third_party('sendgrid-php');
 
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("dev@lastingerp.com", "Pride");
+        $email->setFrom("info@pridediesel.com", "Pride");
         $email->setSubject("MailTest");
         $email->addTo('jagdish@lastingerp.com', "User");
         $email->addContent("text/plain", "subject");
         $email->addContent(
             "text/html",'<html><body>Message</body><html>');
 
-        $sendgrid = new \SendGrid(('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'));
+        $sendgrid = new \SendGrid(('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'));
         try {
             $response = $sendgrid->send($email);
             print $response->statusCode() . "\n";
