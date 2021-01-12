@@ -1321,6 +1321,7 @@ class Account_model extends MY_Model {
 	
 	}	
 	public function get_sales_person_company_data_count($where = array(),$where2,$userid) {
+		
 		$this->db->select('cards.id,cards.card_number,cards.policy_number,cards.card_status,cards.cardToken,cards.company_id,cards.cardCompany');
 		$this->db->from('cards');
 		if(!empty($where)){
@@ -1332,7 +1333,139 @@ class Account_model extends MY_Model {
 		//echo $this->db->last_query();
 		$resultw = $qry->result();	
 		return $resultw;
+	}
+ public function get_efswith_pagination($limit, $offset ,$where2){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('users.*, transactions.*');
+		$this->db->from('transactions');
+		$this->db->join('cards', 'transactions.card_number = cards.card_number', 'INNER');		
+		$this->db->join('users', 'cards.company_id = users.id', 'INNER');
+		$this->db->where('transactions.billing_currency', 'CAD');
+		$this->db->where('transactions.transactionAt', 'EFS');
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		//$this->db->where('transactions.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transactions.date_created >='" . $start_date . "' AND  transactions.date_created <='" . $end_date. "'");
+		}	
+		$this->db->limit($limit, $offset);
+		//$this->db->limit(10);
+		$query=$this->db->get();
+		//echo $this->db->last_query();
+		
+		return $query->result();
+	}
+    public function get_efs_data($where2){
+		$this->db->select('users.*, transactions.*');
+		$this->db->from('transactions');
+		$this->db->join('cards', 'transactions.card_number = cards.card_number', 'INNER');		
+		$this->db->join('users', 'cards.company_id = users.id', 'INNER');
+		$this->db->where('transactions.billing_currency', 'CAD');
+		$this->db->where('transactions.transactionAt', 'EFS');
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		//$this->db->where('transactions.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		// if(!empty($where2)){
+			// $start_date = $where2[0]. ' 00:00:00';
+			// $end_date = $where2[1]. ' 23:59:59';
+			// $this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+		// }
+		//$this->db->limit(10);
+		$query=$this->db->get();
+		//echo $this->db->last_query();die();
+		return $query->result();
 	}	
+	
+	public function get_efs_data_count($where2 = array()){
+		
+		$this->db->select('users.*, transactions.*');
+		$this->db->from('transactions');
+		$this->db->join('cards', 'transactions.card_number = cards.card_number', 'INNER');		
+		$this->db->join('users', 'cards.company_id = users.id', 'INNER');
+		$this->db->where('transactions.billing_currency', 'CAD');
+		$this->db->where('transactions.transactionAt', 'EFS');
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		//$this->db->where('transactions.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transactions.date_created >='" . $start_date . "' AND  transactions.date_created <='" . $end_date. "'");
+		}	
+		//$this->db->limit($limit, $offset);
+		//$this->db->limit(10);
+		$query=$this->db->get();
+		//echo $this->db->last_query();die();
+		return $query->result();
+	}
+
+   /******************************* HUSKY Commision Details **********************/
+   public function get_huskywith_pagination($limit, $offset ,$where2){
+		$offset = ($offset-1) * $limit;	
+		$this->db->select('users.*, transactions.*');
+		$this->db->from('transactions');
+		$this->db->join('cards', 'transactions.card_number = cards.card_number', 'INNER');		
+		$this->db->join('users', 'cards.company_id = users.id', 'INNER');
+		$this->db->where('transactions.billing_currency', 'CAD');
+		$this->db->where('transactions.transactionAt', 'HUSKY');
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		//$this->db->where('transactions.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transactions.date_created >='" . $start_date . "' AND  transactions.date_created <='" . $end_date. "'");
+		}	
+		$this->db->limit($limit, $offset);
+		//$this->db->limit(20);
+		$query=$this->db->get();
+		//echo $this->db->last_query();
+		
+		return $query->result();
+	}
+    public function get_husky_data($where2){
+		$this->db->select('users.*, transactions.*');
+		$this->db->from('transactions');
+		$this->db->join('cards', 'transactions.card_number = cards.card_number', 'INNER');		
+		$this->db->join('users', 'cards.company_id = users.id', 'INNER');
+		$this->db->where('transactions.billing_currency', 'CAD');
+		$this->db->where('transactions.transactionAt', 'HUSKY');
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		//$this->db->where('transactions.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		// if(!empty($where2)){
+			// $start_date = $where2[0]. ' 00:00:00';
+			// $end_date = $where2[1]. ' 23:59:59';
+			// $this->db->where("transaction_invoice.date_created >='" . $start_date . "' AND  transaction_invoice.date_created <='" . $end_date. "'");
+		// }
+		//$this->db->limit(20);
+		$query=$this->db->get();
+		//echo $this->db->last_query();die();
+		return $query->result();
+	}	
+	
+	public function get_husky_data_count($where2 = array()){
+		
+		$this->db->select('users.*, transactions.*');
+		$this->db->from('transactions');
+		$this->db->join('cards', 'transactions.card_number = cards.card_number', 'INNER');		
+		$this->db->join('users', 'cards.company_id = users.id', 'INNER');
+		$this->db->where('transactions.billing_currency', 'CAD');
+		$this->db->where('transactions.transactionAt', 'HUSKY');
+		$this->db->where('users.sales_person', $_SESSION['userdata']->id);
+		//$this->db->where('transactions.date_created BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()');
+		if(!empty($where2)){
+			$start_date = $where2[0]. ' 00:00:00';
+			$end_date = $where2[1]. ' 23:59:59';
+			$this->db->where("transactions.date_created >='" . $start_date . "' AND  transactions.date_created <='" . $end_date. "'");
+		}	
+		//$this->db->limit($limit, $offset);
+		//$this->db->limit(20);
+		$query=$this->db->get();
+		//echo $this->db->last_query();die();
+		return $query->result();
+	}
+   /******************************* HUSKY Commision Details **********************/
+
+
+	
 	/***************************Sales commission  Details ****************************/
 	
 	

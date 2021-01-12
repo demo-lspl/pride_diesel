@@ -511,17 +511,28 @@
 			  
 			</a>
             <ul class="nav nav-treeview">
-
-              <li class="nav-item">
-                <a href="<?php echo base_url('account/company_commission/')?>" class="nav-link <?php if($this->uri->segment(2) == 'company_commission'){echo 'active';} ?>">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Company</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="<?php echo base_url('account/get_com_cards')?>" class="nav-link <?php if($this->uri->segment(2) == 'get_com_cards'){echo 'active';} ?>">
+				<li class="nav-item">
+					<a href="<?php echo base_url('account/company_commission/')?>" class="nav-link <?php if($this->uri->segment(2) == 'company_commission'){echo 'active';} ?>">
+					  <i class="far fa-circle nav-icon"></i>
+					  <p>Company</p>
+					</a>
+				</li>
+              <!--li class="nav-item">
+                <a href="<?php //echo base_url('account/get_com_cards')?>" class="nav-link <?php //if($this->uri->segment(2) == 'get_com_cards'){echo 'active';} ?>">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Cards</p>
+                </a>
+              </li-->
+			  <li class="nav-item">
+                <a href="<?php echo base_url('account/get_cadEFS_Trans')?>" class="nav-link <?php if($this->uri->segment(2) == 'get_cadEFS_Trans'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>EFS CAD</p>
+                </a>
+              </li>
+			  <li class="nav-item">
+                <a href="<?php echo base_url('account/get_cadhusky_Trans')?>" class="nav-link <?php if($this->uri->segment(2) == 'get_cadhusky_Trans'){echo 'active';} ?>">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Husky CAD</p>
                 </a>
               </li>
 			</ul>		   
